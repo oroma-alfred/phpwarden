@@ -24,7 +24,9 @@ classifiers = [
 dependencies = []       # stdlib only
 
 [project.urls]
-Homepage = "https://github.com/localprime/phpwarden"
+Homepage = "https://phpwarden.io"
+Source = "https://github.com/primeagent001-bot/phpwarden"
+Issues = "https://github.com/primeagent001-bot/phpwarden/issues"
 
 [project.scripts]
 phpwarden = "phpwarden.cli:main"
