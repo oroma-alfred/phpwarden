@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phpwarden"
+version = "2.0.0"
+description = "PHP exposure and exploitation guard — assess any PHP host against an evolving CVE feed, and watch PHP-FPM for active exploitation"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "localprime" }]
+keywords = ["php", "php-fpm", "security", "cve", "vulnerability", "exploitation", "detection", "rce"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Security",
+    "Topic :: System :: Monitoring",
+]
+dependencies = []       # stdlib only
+
+[project.urls]
+Homepage = "https://github.com/localprime/phpwarden"
+
+[project.scripts]
+phpwarden = "phpwarden.cli:main"
+phpwarden-guard = "phpwarden.guard:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+phpwarden = ["data/*.json"]

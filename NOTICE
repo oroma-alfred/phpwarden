@@ -1,0 +1,18 @@
+phpwarden
+Copyright 2026 the phpwarden authors
+
+The phpwarden engine — the command-line scanner and its library
+(src/phpwarden/) together with the bundled community vulnerability feed
+(src/phpwarden/data/) — is licensed under the Apache License, Version 2.0.
+See the LICENSE file.
+
+The hosted-service components (saas/ and server/) and the maintained
+(continuously-updated) vulnerability feed are proprietary and are NOT covered
+by the Apache License. See LICENSING.md for the full scope breakdown and
+saas/LICENSE.txt / server/LICENSE.txt for their terms.
+
+This product builds on publicly available vulnerability data from OSV.dev, the
+National Vulnerability Database (NVD), the FriendsOfPHP security-advisories
+database, the CISA Known Exploited Vulnerabilities (KEV) catalog, and FIRST's
+Exploit Prediction Scoring System (EPSS). Those datasets remain under their
+respective terms.

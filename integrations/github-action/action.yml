@@ -1,0 +1,53 @@
+name: "phpwarden"
+description: "Scan PHP, Composer and WordPress for exploited vulnerabilities, and report to phpwarden."
+branding:
+  icon: "shield"
+  color: "red"
+inputs:
+  composer-lock:
+    description: "Path to composer.lock (empty to skip dependency scan)"
+    default: "composer.lock"
+  wordpress-path:
+    description: "Path to a WordPress install (empty to skip)"
+    default: ""
+  report-url:
+    description: "phpwarden SaaS ingest URL, e.g. https://app.phpwarden.io/v1/reports"
+    default: ""
+  report-token:
+    description: "Project ingest token (store as a secret)"
+    default: ""
+  fail-on:
+    description: "Fail the build on 'exposed' (default) or 'never'"
+    default: "exposed"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - shell: bash
+      run: pip install --quiet phpwarden
+    - shell: bash
+      env:
+        PHPWARDEN_REPORT_URL: ${{ inputs.report-url }}
+        PHPWARDEN_REPORT_TOKEN: ${{ inputs.report-token }}
+        FAIL_ON: ${{ inputs.fail-on }}
+        COMPOSER_LOCK: ${{ inputs.composer-lock }}
+        WP_PATH: ${{ inputs.wordpress-path }}
+      run: |
+        set -e
+        rc=0
+        report=()
+        [ -n "$PHPWARDEN_REPORT_URL" ] && report=(--report-to "$PHPWARDEN_REPORT_URL" --report-token "$PHPWARDEN_REPORT_TOKEN")
+        echo "::group::phpwarden deps"
+        if [ -n "$COMPOSER_LOCK" ] && [ -f "$COMPOSER_LOCK" ]; then
+          phpwarden deps "$COMPOSER_LOCK" "${report[@]}" || rc=$?
+        fi
+        echo "::endgroup::"
+        if [ -n "$WP_PATH" ]; then
+          echo "::group::phpwarden wordpress"; phpwarden wordpress "$WP_PATH" "${report[@]}" || rc=$?; echo "::endgroup::"
+        fi
+        if [ "$FAIL_ON" = "never" ]; then exit 0; fi
+        if [ "$rc" -ne 0 ]; then
+          echo "::error::phpwarden found vulnerable components (see logs above)"; exit 1
+        fi

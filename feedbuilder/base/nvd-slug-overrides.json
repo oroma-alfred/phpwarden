@@ -1,0 +1,14 @@
+{
+ "_readme": [
+  "Curated corrections to NVD CPE assignments for WordPress CVEs, keyed by CVE id.",
+  "Used by import_nvd_wordpress.py. Each entry either remaps the CVE to the real",
+  "wordpress.org slug ({\"slug\": ..., \"type\": plugin|theme}) or drops it ({\"drop\": true}).",
+  "Only add an entry when the evidence (reference URL, vendor advisory) is explicit;",
+  "say why in \"reason\"."
+ ],
+ "CVE-2021-24159": {
+  "slug": "contact-form-7-style",
+  "type": "plugin",
+  "reason": "NVD CPE is rocklobster:contact_form_7 (Contact Form 7 <=3.1.9) but the only references (WPScan 363182f1, Wordfence blog 'unpatched-vulnerability-50000-wp-sites-must-find-alternative-for-contact-form-7-style') describe the separate, closed 'Contact Form 7 Style' plugin."
+ }
+}
