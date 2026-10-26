@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "phpwarden"
-version = "2.0.0"
+version = "2.0.1"
 description = "PHP exposure and exploitation guard — assess any PHP host against an evolving CVE feed, and watch PHP-FPM for active exploitation"
 readme = "README.md"
 requires-python = ">=3.8"
