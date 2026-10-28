@@ -100,6 +100,11 @@ def convert(doc):
     refs = [r["url"] for r in (doc.get("references") or []) if r.get("url")][:3]
     score, severity = cvss.derive(doc.get("severity"),
                                   (doc.get("database_specific") or {}).get("severity"))
+    # Dates and weakness ids feed the public advisory pages (per-page lastmod,
+    # "related by CWE"); optional, so a missing field just leaves them out.
+    published = str(doc.get("published") or "")[:10]
+    modified = str(doc.get("modified") or "")[:10]
+    cwes = [str(c) for c in ((doc.get("database_specific") or {}).get("cwe_ids") or []) if str(c).startswith("CWE-")]
     out = []
     for entry in doc.get("affected", []) or []:
         pkg = (entry.get("package") or {})
@@ -125,6 +130,9 @@ def convert(doc):
             "known_exploited": False,
             "references": refs,
             "source": "osv.dev",
+            **({"published": published} if published else {}),
+            **({"modified": modified} if modified else {}),
+            **({"cwe": cwes[:4]} if cwes else {}),
         })
     return out
 

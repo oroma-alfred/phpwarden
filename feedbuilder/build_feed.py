@@ -111,6 +111,17 @@ def _merge_into(cur: dict, new: dict):
         if r not in refs and len(refs) < 5:
             refs.append(r)
     cur["references"] = refs
+    # dates: earliest publication, latest modification (ISO dates sort as text)
+    if new.get("published") and (not cur.get("published") or new["published"] < cur["published"]):
+        cur["published"] = new["published"]
+    if new.get("modified") and (not cur.get("modified") or new["modified"] > cur["modified"]):
+        cur["modified"] = new["modified"]
+    cwes = list(cur.get("cwe", []))
+    for c in new.get("cwe", []) or []:
+        if c not in cwes and len(cwes) < 4:
+            cwes.append(c)
+    if cwes:
+        cur["cwe"] = cwes
 
 
 def _finalise(adv: dict) -> bool:

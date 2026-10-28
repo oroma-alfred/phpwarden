@@ -1,8 +1,25 @@
+/build/
+/dist/
+*.egg-info/
+src/*.egg-info/
 __pycache__/
 *.pyc
+# daemon + server runtime state (never commit)
+data/php2shell-guard/
+server/*.db
+server/*.db-wal
+server/*.db-shm
+server/key-delivery.log
+# feed build intermediates (large; regenerate via feedbuilder)
+feedbuilder/output/
+# SaaS runtime state (never commit)
+saas/*.db
+saas/*.db-wal
+saas/*.db-shm
+saas/*.log
+saas/*.resets
+.claude/worktrees/
 .DS_Store
-dist/
-build/
-*.egg-info/
-.venv/
-venv/
+# ad render working files (large; final cuts live outside the repo)
+site/demos/ad*/
+site/demos/guard-dark.png

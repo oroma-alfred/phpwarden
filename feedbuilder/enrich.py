@@ -21,11 +21,11 @@ from pathlib import Path
 
 def load_kev(path):
     doc = json.loads(Path(path).read_text())
-    kev, ransom = set(), set()
+    kev, ransom = {}, set()
     for v in doc.get("vulnerabilities", []):
         cid = v.get("cveID")
         if cid:
-            kev.add(cid)
+            kev[cid] = str(v.get("dateAdded") or "")[:10]     # when CISA listed it
             if str(v.get("knownRansomwareCampaignUse", "")).lower() == "known":
                 ransom.add(cid)
     return kev, ransom
@@ -52,6 +52,8 @@ def _enrich_list(items, id_key, kev, ransom, epss):
             continue
         if cid in kev:
             it["known_exploited"] = True
+            if kev[cid]:
+                it["kev_added"] = kev[cid]
             n_kev += 1
             if cid in ransom:
                 it["ransomware"] = True

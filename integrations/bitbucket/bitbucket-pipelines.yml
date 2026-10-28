@@ -1,0 +1,36 @@
+# phpwarden — scan composer.lock for known-vulnerable packages in Bitbucket Pipelines.
+#
+# Drop this file in your repository root (or merge the `phpwarden` step into an
+# existing bitbucket-pipelines.yml). The step fails when phpwarden finds
+# something: CLI exit 1 "vulnerable" or 2 "possibly exposed". Exit 4 (bad
+# lockfile), 5 (report upload failed) and 64 (usage error) also fail the step,
+# since they mean the scan did not run as configured.
+
+image: python:3.12-slim
+
+definitions:
+  steps:
+    - step: &phpwarden
+        name: phpwarden
+        caches:
+          - pip
+        script:
+          - pip install --quiet --disable-pip-version-check "phpwarden>=2,<3"
+          - phpwarden --version
+          # Machine-readable copy first (kept as an artifact), then the human
+          # report, whose exit code decides the step.
+          - phpwarden deps composer.lock --json > phpwarden.json || true
+          # Optional dashboard upload: define PHPWARDEN_REPORT_TO and a *secured*
+          # repository variable PHPWARDEN_REPORT_TOKEN (Repository settings >
+          # Repository variables), then swap the line below for:
+          #   phpwarden deps composer.lock --report-to "$PHPWARDEN_REPORT_TO"
+          - phpwarden deps composer.lock
+        artifacts:
+          - phpwarden.json
+
+pipelines:
+  default:
+    - step: *phpwarden
+  pull-requests:
+    '**':
+      - step: *phpwarden

@@ -172,6 +172,14 @@ def convert(cve: dict, overrides: dict, stats: dict):
         return []
 
     cve_id = cve.get("id", "")
+    published = str(cve.get("published") or "")[:10]
+    modified = str(cve.get("lastModified") or "")[:10]
+    cwes = []
+    for w in cve.get("weaknesses", []) or []:
+        for d in w.get("description", []) or []:
+            v = str(d.get("value") or "")
+            if v.startswith("CWE-") and v not in cwes:
+                cwes.append(v)
     ov = overrides.get(cve_id)
     if ov and ov.get("drop"):
         stats["curated_dropped"] += 1
@@ -203,6 +211,12 @@ def convert(cve: dict, overrides: dict, stats: dict):
         }
         if slug_source != "cpe":
             adv["slug_source"] = slug_source
+        if published:
+            adv["published"] = published
+        if modified:
+            adv["modified"] = modified
+        if cwes:
+            adv["cwe"] = cwes[:4]
         stats[kind] += 1
         out.append(adv)
     return out

@@ -1,37 +1,22 @@
 # phpwarden GitHub Action
 
-Scan PHP/Composer/WordPress in CI, fail the build on exploited vulnerabilities,
-and report results to your phpwarden dashboard.
+The action moved to its own repository so it can be listed on the GitHub
+Marketplace and versioned independently of the CLI:
 
-## Quick use
-
-Add `.github/workflows/phpwarden.yml` to your repo:
+**https://github.com/primeagent001-bot/phpwarden-action**
 
 ```yaml
-name: phpwarden
-on: [push, pull_request]
-jobs:
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: localprime/phpwarden/integrations/github-action@v2
-        with:
-          composer-lock: composer.lock
-          report-url: https://app.phpwarden.io/v1/reports
-          report-token: ${{ secrets.PHPWARDEN_TOKEN }}
+steps:
+  - uses: actions/checkout@v4
+  - uses: primeagent001-bot/phpwarden-action@v1
+    with:
+      fail-on: exploited
 ```
 
-Store the project ingest token (from your dashboard) as the `PHPWARDEN_TOKEN`
-repo secret. The build fails if a vulnerable component is found; set
-`fail-on: never` to report without failing.
+It scans `composer.lock`, WordPress installs and a production PHP engine
+version; writes a job summary, `composer.lock` line annotations and SARIF;
+and can report to your phpwarden dashboard. See that repo's README for inputs
+and outputs.
 
-## What it does
-
-1. Installs the `phpwarden` CLI (zero dependencies).
-2. Runs `deps` on your `composer.lock` and, if set, `wordpress` on a path.
-3. Posts findings to your dashboard (history + alerts) when `report-url` is set.
-4. Fails the job when exposed, so a vulnerable dependency blocks the merge.
-
-Inputs: `composer-lock`, `wordpress-path`, `report-url`, `report-token`,
-`fail-on` (`exposed` | `never`).
+The `action.yml` that used to live here is gone — `uses: …/phpwarden/integrations/github-action`
+references must be updated to the new path.

@@ -1,0 +1,21 @@
+# pre-commit hook definitions for phpwarden (https://pre-commit.com).
+#
+#   repos:
+#     - repo: https://github.com/primeagent001-bot/phpwarden
+#       rev: main   # pin to a tag with `pre-commit autoupdate`
+#       hooks:
+#         - id: phpwarden-deps
+#           # args: ["--no-reachability"]   # faster: skip the "is it referenced in code?" pass
+#
+# The hook runs only when a composer.lock is staged and fails the commit on any
+# known-vulnerable package (CLI exit 1). Exit codes are shared with the CLI:
+# 0 clean, 1 vulnerable, 4 bad lockfile, 64 usage error. `phpwarden deps` takes one
+# lockfile per run, so in a monorepo with several composer.lock files add one
+# hook entry per lockfile with `files: ^apps/api/composer\.lock$`.
+- id: phpwarden-deps
+  name: phpwarden deps (composer.lock)
+  description: Scan composer.lock for known-vulnerable packages, ranked by real-world exploitation (CISA KEV + EPSS).
+  entry: phpwarden deps
+  language: python
+  files: composer\.lock$
+  pass_filenames: true

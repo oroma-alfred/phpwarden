@@ -40,6 +40,7 @@ the feed is the part a subscription keeps current. The engine and the base
 
 ```bash
 pipx install phpwarden                 # recommended — installs the `phpwarden` command on PATH
+composer require --dev phpwarden/phpwarden   # PHP projects: vendor/bin/phpwarden (wraps the same CLI)
 ./phpwarden.pyz scan                    # or no install at all, single file
 docker run --rm phpwarden:2.0.0 scan --version 8.3.10 --sapi fpm --os linux
 ```
@@ -84,6 +85,43 @@ unknown — ready for a CI gate:
 
 ```bash
 phpwarden scan || echo "PHP exposure found — see above"
+```
+
+## In CI (GitHub Actions)
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: primeagent001-bot/phpwarden-action@v1
+    with:
+      fail-on: exploited      # or critical | high | medium | exposed | never
+```
+
+The [phpwarden action](https://github.com/primeagent001-bot/phpwarden-action)
+scans `composer.lock`, WordPress and a production PHP version on every push,
+writes a job-summary table and `composer.lock` line annotations, can upload
+SARIF to the Security tab, and can report to your dashboard.
+
+Not on GitHub? Ready-made templates for
+[GitLab CI](integrations/gitlab-ci/phpwarden.gitlab-ci.yml) and
+[Bitbucket Pipelines](integrations/bitbucket/bitbucket-pipelines.yml) install the
+CLI, keep `phpwarden.json` as an artifact and fail the job only on exit 1
+(vulnerable) or 2 (possibly exposed). Laravel apps (10, 11, 12 and 13) can
+`composer require --dev phpwarden/laravel` and run `php artisan phpwarden:scan`
+instead; see the [phpwarden/laravel](https://packagist.org/packages/phpwarden/laravel)
+package.
+
+### Pre-commit hook
+
+Block a vulnerable `composer.lock` before it is committed:
+
+```yaml
+repos:
+  - repo: https://github.com/primeagent001-bot/phpwarden
+    rev: main        # pin to a tag with `pre-commit autoupdate`
+    hooks:
+      - id: phpwarden-deps
+        # args: ["--no-reachability"]   # faster: skip the reachability pass
 ```
 
 ## The subscription
