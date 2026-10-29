@@ -25,8 +25,8 @@ dependencies = []       # stdlib only
 
 [project.urls]
 Homepage = "https://phpwarden.io"
-Source = "https://github.com/primeagent001-bot/phpwarden"
-Issues = "https://github.com/primeagent001-bot/phpwarden/issues"
+Source = "https://github.com/oroma-alfred/phpwarden"
+Issues = "https://github.com/oroma-alfred/phpwarden/issues"
 
 [project.scripts]
 phpwarden = "phpwarden.cli:main"

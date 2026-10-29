@@ -3,7 +3,7 @@
 # Usage: copy this job into your .gitlab-ci.yml, or include it:
 #
 #   include:
-#     - remote: https://raw.githubusercontent.com/primeagent001-bot/phpwarden/main/integrations/gitlab-ci/phpwarden.gitlab-ci.yml
+#     - remote: https://raw.githubusercontent.com/oroma-alfred/phpwarden/main/integrations/gitlab-ci/phpwarden.gitlab-ci.yml
 #
 # The job fails only when phpwarden finds something (CLI exit 1 "vulnerable"
 # or 2 "possibly exposed"). Other exit codes — 4 bad lockfile, 5 report upload

@@ -92,12 +92,12 @@ phpwarden scan || echo "PHP exposure found — see above"
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - uses: primeagent001-bot/phpwarden-action@v1
+  - uses: oroma-alfred/phpwarden-action@v1
     with:
       fail-on: exploited      # or critical | high | medium | exposed | never
 ```
 
-The [phpwarden action](https://github.com/primeagent001-bot/phpwarden-action)
+The [phpwarden action](https://github.com/oroma-alfred/phpwarden-action)
 scans `composer.lock`, WordPress and a production PHP version on every push,
 writes a job-summary table and `composer.lock` line annotations, can upload
 SARIF to the Security tab, and can report to your dashboard.
@@ -117,7 +117,7 @@ Block a vulnerable `composer.lock` before it is committed:
 
 ```yaml
 repos:
-  - repo: https://github.com/primeagent001-bot/phpwarden
+  - repo: https://github.com/oroma-alfred/phpwarden
     rev: main        # pin to a tag with `pre-commit autoupdate`
     hooks:
       - id: phpwarden-deps

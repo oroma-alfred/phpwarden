@@ -3,12 +3,12 @@
 The action moved to its own repository so it can be listed on the GitHub
 Marketplace and versioned independently of the CLI:
 
-**https://github.com/primeagent001-bot/phpwarden-action**
+**https://github.com/oroma-alfred/phpwarden-action**
 
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - uses: primeagent001-bot/phpwarden-action@v1
+  - uses: oroma-alfred/phpwarden-action@v1
     with:
       fail-on: exploited
 ```

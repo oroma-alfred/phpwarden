@@ -1,7 +1,7 @@
 # pre-commit hook definitions for phpwarden (https://pre-commit.com).
 #
 #   repos:
-#     - repo: https://github.com/primeagent001-bot/phpwarden
+#     - repo: https://github.com/oroma-alfred/phpwarden
 #       rev: main   # pin to a tag with `pre-commit autoupdate`
 #       hooks:
 #         - id: phpwarden-deps
