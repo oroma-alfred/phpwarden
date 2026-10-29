@@ -23,3 +23,11 @@ saas/*.resets
 # ad render working files (large; final cuts live outside the repo)
 site/demos/ad*/
 site/demos/guard-dark.png
+# guard-demo: keep scripts + copy + thumbnail, ignore rendered media
+site/demos/guard-demo/*.mp4
+site/demos/guard-demo/build/*.mp4
+site/demos/guard-demo/build/*.wav
+site/demos/guard-demo/build/*.png
+site/demos/guard-demo/build/concat_*.txt
+site/demos/guard-demo/build/anim*/
+site/demos/guard-demo/build/vo/

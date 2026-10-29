@@ -39,8 +39,8 @@ the feed is the part a subscription keeps current. The engine and the base
 ## Install
 
 ```bash
-pipx install phpwarden                 # recommended — installs the `phpwarden` command on PATH
-composer require --dev phpwarden/phpwarden   # PHP projects: vendor/bin/phpwarden (wraps the same CLI)
+composer require --dev phpwarden/phpwarden   # recommended for PHP projects → vendor/bin/phpwarden
+pipx install phpwarden                       # or, on a Python-tooling box (needs pipx)
 ./phpwarden.pyz scan                    # or no install at all, single file
 docker run --rm phpwarden:2.0.0 scan --version 8.3.10 --sapi fpm --os linux
 ```
