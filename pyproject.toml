@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-authors = [{ name = "localprime" }]
+authors = [{ name = "oroma-alfred" }]
 keywords = ["php", "php-fpm", "security", "cve", "vulnerability", "exploitation", "detection", "rce"]
 classifiers = [
     "Development Status :: 4 - Beta",
