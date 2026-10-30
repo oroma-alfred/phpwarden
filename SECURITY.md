@@ -5,8 +5,9 @@ Thank you for helping keep it honest.
 
 ## Reporting a vulnerability
 
-**Email: security@phpwarden.io** — please do not open a public GitHub issue for anything that
-could be a vulnerability.
+**Email: security@phpwarden.io** (or **sales@phpwarden.io**, which reaches the same person and is
+always monitored) — please do not open a public GitHub issue for anything that could be a
+vulnerability.
 
 Include what you can: affected component and version, steps to reproduce, impact as you
 understand it, and whether you have a suggested fix. Plain text is fine; a PGP key will be
