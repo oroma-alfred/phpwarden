@@ -1,6 +1,12 @@
 # phpwarden GitHub Action
 
-The action moved to its own repository so it can be listed on the GitHub
+Scan `composer.lock`, a WordPress install and your production PHP version on
+every push, with findings ranked by real-world exploitation — CISA KEV first,
+then EPSS, then CVSS. Of the ~21,100 PHP advisories in the feed, 43 are
+actually being exploited (as of 2026-11-12); `fail-on: exploited` breaks the
+build on those and nothing else.
+
+The action lives in its own repository so it can be listed on the GitHub
 Marketplace and versioned independently of the CLI:
 
 **https://github.com/oroma-alfred/phpwarden-action**
@@ -10,13 +16,23 @@ steps:
   - uses: actions/checkout@v4
   - uses: oroma-alfred/phpwarden-action@v1
     with:
-      fail-on: exploited
+      fail-on: exploited      # or: critical | high | medium | exposed (default) | never
+      report-url: https://app.phpwarden.io/v1/reports
+      report-token: ${{ secrets.PHPWARDEN_TOKEN }}
 ```
 
-It scans `composer.lock`, WordPress installs and a production PHP engine
-version; writes a job summary, `composer.lock` line annotations and SARIF;
-and can report to your phpwarden dashboard. See that repo's README for inputs
-and outputs.
+It writes a job-summary table, annotates vulnerable lines in `composer.lock`,
+can upload SARIF to the Security tab (`upload-sarif: "true"`), and — when
+`report-url`/`report-token` are set — posts results to the
+[phpwarden dashboard](https://app.phpwarden.io) for history across repos and
+alerts when a finding you carry lands in KEV. See that repo's README for all
+inputs and outputs.
+
+Outside Actions, the same thing from a shell is:
+
+```bash
+phpwarden deps composer.lock --report-to https://app.phpwarden.io/v1/reports --report-token <token>
+```
 
 The `action.yml` that used to live here is gone — `uses: …/phpwarden/integrations/github-action`
 references must be updated to the new path.

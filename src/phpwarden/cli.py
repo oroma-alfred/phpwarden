@@ -280,7 +280,10 @@ def _risk(known, epss, pct, ransomware=False):
     if known:
         parts.append("KEV·ransomware" if ransomware else "KEV")
     if epss is not None:
-        parts.append(f"EPSS {epss * 100:.0f}% (p{pct * 100:.0f})")
+        tag = f"EPSS {epss * 100:.0f}%"
+        if pct is not None:          # percentile is optional in the feed
+            tag += f" (p{pct * 100:.0f})"
+        parts.append(tag)
     return "  [" + ", ".join(parts) + "]" if parts else ""
 
 

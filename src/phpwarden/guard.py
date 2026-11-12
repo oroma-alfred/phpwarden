@@ -649,6 +649,12 @@ def decide_and_act(ev, pool, pstat, breakers, workers, killed_this_tick,
     name = pstat["pool"]
     # PATCHED census => behavioral detectors never kill (invariant 7)
     if pstat["census"] == "PATCHED":
+        # Still ledgered: on a patched engine every behavioral trigger is, by
+        # definition, noise — this is the soak's false-positive counter.
+        append_audit(audit_path, {"ts": now_iso(), "action": "TRIGGER_ON_PATCHED",
+                                  "pool": name, "pid": pid, "event": ev,
+                                  "census": "PATCHED", "executed": False,
+                                  "suppressed_by": "census_patched"})
         return {"ledger": {"action": "noop", "detail": "census PATCHED; no kill",
                            "event": ev, "executed": False, "suppressed_by": "census_patched"}}
 
@@ -658,6 +664,13 @@ def decide_and_act(ev, pool, pstat, breakers, workers, killed_this_tick,
                            "executed": False, "suppressed_by": why}}
 
     if not pool_enforce:
+        # DRYRUN soak ledger: a kill the guard WOULD have made is the one number
+        # that decides promotion (false-positive rate on real traffic), so it is
+        # persisted, not just shown in status.json for one tick.
+        append_audit(audit_path, {"ts": now_iso(), "action": "WOULD_HAVE_KILL",
+                                  "pool": name, "pid": pid, "event": ev,
+                                  "census": pstat["census"], "executed": False,
+                                  "suppressed_by": "dryrun"})
         return {"ledger": {"action": "worker_kill", "pid": pid, "event": ev,
                            "executed": False, "suppressed_by": "dryrun"}}
 

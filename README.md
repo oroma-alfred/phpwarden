@@ -1,119 +1,140 @@
 # phpwarden
 
-**A unified PHP security platform.** One tool, one feed, covering the full PHP
-attack surface: engine and FPM CVE exposure, Composer dependency CVEs,
-exploitation detection in logs, WAF blocking rules, and continuous worker-level
-containment. Zero runtime dependencies (Python 3.8+).
+**PHP vulnerability scanner that ranks findings by real-world exploitation,
+not CVSS.** Of the ~21,100 PHP advisories in the feed, 43 are actually being
+exploited (CISA KEV, as of 2026-11-12). phpwarden puts those first, then sorts
+by EPSS probability, then CVSS — so a `composer.lock` with 30 findings tells
+you which one to fix today.
 
-phpwarden is the general successor to the single-CVE php2shell checker. Instead
-of one vulnerability, it tracks many PHP CVEs over time through a **feed** — and
-the feed is the part a subscription keeps current. The engine and the base
-(community) feed are free and open; the maintained channel is the paid product.
+It scans the PHP engine/FPM version, Composer dependencies and WordPress
+installs against one bundled, offline advisory feed. Zero runtime dependencies
+(Python 3.8+), Apache-2.0.
+
+```bash
+$ phpwarden deps composer.lock
+18 vulnerable package(s) in composer.lock; 0 actively exploited (KEV). Ranked by exploitation risk, then reachability:
+
+  symfony/http-kernel 5.4.0  CVE-2022-24894 medium (CVSS 5.9)  [EPSS 4% (p90)]
+      Symfony storing cookie headers in HttpCache
+      fixed in: 4.4.50, 5.4.20, 6.0.20, 6.1.12, 6.2.6
+
+  phpmailer/phpmailer 6.1.5  CVE-2020-13625 high (CVSS 7.5)  [EPSS 4% (p90)]
+      ...
+```
 
 ## Surfaces it covers
 
-| Surface | Command | Competes with |
-|---------|---------|---------------|
+| Surface | Command | Instead of |
+|---------|---------|------------|
 | PHP engine / FPM CVE exposure | `scan` | image & network scanners |
 | Composer dependency CVEs | `deps` | Snyk, `composer audit` |
 | WordPress core, plugin and theme CVEs | `wordpress` | Patchstack, Wordfence |
 | Exploitation signatures in logs | `detect` | SIEM content |
 | WAF blocking rules (PHP-specific) | `rules` | the gap a generic WAF leaves |
 | Fleet exposure dashboard | `report` | the CNAPP's PHP view |
-| Continuous worker containment | guard daemon | nothing — unique |
+| Continuous worker containment | `phpwarden-guard` daemon | — |
 
 ## Why it is different
 
+- **Exploitation first.** Every advisory with a CVE is joined to
+  [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog)
+  (exploited in the wild, used in ransomware) and
+  [FIRST EPSS](https://www.first.org/epss/) (probability of exploitation).
+  Findings are ordered KEV, then reachability (`deps`), then EPSS, then CVSS —
+  in the text output, the JSON and the dashboard alike.
 - **Version-accurate, per branch.** PHP backports fixes per branch, so a flat
   "you're on 8.3, upgrade" is wrong. phpwarden knows the fixed release for each
-  branch of each CVE and compares precisely.
-- **It never overclaims.** A CVE that needs a specific SAPI (FPM/CGI), OS, or
+  branch of each engine CVE and compares precisely.
+- **It never overclaims.** A CVE that needs a specific SAPI (FPM/CGI), OS or
   configuration is reported as *possibly* exposed with the exact condition to
   confirm — not flagged as a certain hit, and not silently dismissed.
-- **It covers exposure and exploitation.** `scan` tells you what you're exposed
-  to; `detect` scans logs for the signatures of attempts; the guard daemon
-  watches PHP-FPM for in-progress memory-corruption attacks.
-- **Honesty over noise.** Validated at zero false positives on 2000 benign
-  requests in the test suite.
+- **Offline by default.** The feed ships inside the package. Nothing leaves the
+  machine unless you opt in to `--report-to` or `feed update`.
 
 ## Install
 
 ```bash
-composer require --dev phpwarden/phpwarden   # recommended for PHP projects → vendor/bin/phpwarden
-pipx install phpwarden                       # or, on a Python-tooling box (needs pipx)
-./phpwarden.pyz scan                    # or no install at all, single file
-docker run --rm phpwarden:2.0.0 scan --version 8.3.10 --sapi fpm --os linux
+composer require --dev phpwarden/phpwarden   # PHP projects → vendor/bin/phpwarden
+pipx install phpwarden                       # Python-tooling box
+python3 phpwarden.pyz scan                   # single file, no install
+docker build -t phpwarden . && docker run --rm phpwarden scan --version 8.3.10 --sapi fpm --os linux
 ```
 
-`pipx` is the right tool because phpwarden is a command-line app: it installs
-into its own isolated environment and puts `phpwarden` (and `phpwarden-guard`)
-on your PATH. On modern macOS / Debian / Ubuntu, a plain `pip install phpwarden`
-into the system Python is blocked by [PEP 668](https://peps.python.org/pep-0668/)
-(`externally-managed-environment`) — use `pipx`, or a virtualenv:
+On modern macOS / Debian / Ubuntu a plain `pip install phpwarden` into the
+system Python is blocked by [PEP 668](https://peps.python.org/pep-0668/); use
+`pipx`, or a virtualenv:
 
 ```bash
-brew install pipx && pipx install phpwarden          # macOS (or: apt install pipx)
-# — or a venv —
 python3 -m venv ~/.venvs/phpwarden && ~/.venvs/phpwarden/bin/pip install phpwarden
 ```
 
-Selling it as a subscription: the licensed feed server, key issuance/validation
-and a Stripe webhook are in `server/` (see `server/README.md`).
+Docker usage (mounted projects, CI, dashboard reporting) is in
+[`docs/docker.md`](docs/docker.md).
 
 ## Use
 
 ```bash
 phpwarden scan                       # assess this host (auto-detects version/SAPI/OS)
 phpwarden scan --version 8.3.10 --sapi fpm --os linux
-phpwarden scan --json                # machine-readable, for CI / dashboards
-phpwarden feed status                # which feed is active, and is it licensed
-phpwarden feed update                # pull the latest feed (needs a license key)
-phpwarden detect /var/log/nginx/access.log   # scan a log for exploit signatures
-phpwarden deps composer.lock         # scan Composer dependencies for known CVEs
-phpwarden wordpress /var/www/html    # scan a WordPress install: core version, plugins, themes
-phpwarden rules --format modsecurity # emit PHP-specific WAF blocking rules
-phpwarden rules --format nginx --out php-block.conf
+phpwarden deps composer.lock         # Composer dependencies, KEV → reachability → EPSS → CVSS
+phpwarden wordpress /var/www/html    # WordPress core, plugins, themes
+phpwarden detect /var/log/nginx/access.log   # exploit signatures in a log
+phpwarden rules --format nginx --out php-block.conf   # PHP-specific WAF rules (or modsecurity)
 phpwarden report web01.json web02.json --out fleet.html   # aggregate a fleet view
+phpwarden feed status                # which feed is active, how many advisories
 ```
 
-Across a fleet, run `scan`, `deps` and `wordpress` with `--json` on each host,
-collect the files, and `report` renders a single HTML dashboard: severity
-tiles, exploited-in-wild count, and every finding by host and source.
+Every command takes `--json`. Exit codes are shared across subcommands and
+built for gating: `0` clean, `1` exposed / vulnerable / signature hits,
+`2` possibly exposed (`scan`), `3` PHP version unknown (`scan`), `4` input
+error, `5` `--report-to` upload failed on an otherwise clean run, `64` usage
+error. Full table: `phpwarden --help`.
 
-`scan` exit codes: `0` clear, `1` exposed, `2` possibly exposed, `3` version
-unknown — ready for a CI gate:
+## Send results to the dashboard
+
+Any `scan`, `deps`, `wordpress` or `detect` run can post its result to
+[app.phpwarden.io](https://app.phpwarden.io) for history across hosts and
+alerts when a finding you already carry lands in KEV:
 
 ```bash
-phpwarden scan || echo "PHP exposure found — see above"
+phpwarden scan --report-to https://app.phpwarden.io/v1/reports --report-token <token>
 ```
 
-## In CI (GitHub Actions)
+The token comes from the project page in the dashboard; it can also be set as
+`PHPWARDEN_REPORT_TOKEN` (and the URL as `PHPWARDEN_REPORT_URL`). Local output
+is always printed first, so an unreachable dashboard never hides a finding.
+
+## In CI
+
+**GitHub Actions** — the [phpwarden action](https://github.com/oroma-alfred/phpwarden-action)
+scans `composer.lock`, a WordPress path and your production PHP version, writes
+a job-summary table and `composer.lock` line annotations, can upload SARIF to
+the Security tab, and can report to the dashboard:
 
 ```yaml
 steps:
   - uses: actions/checkout@v4
   - uses: oroma-alfred/phpwarden-action@v1
     with:
-      fail-on: exploited      # or critical | high | medium | exposed | never
+      fail-on: exploited      # fail only on CISA-KEV findings; or critical | high | medium | exposed | never
+      report-url: https://app.phpwarden.io/v1/reports
+      report-token: ${{ secrets.PHPWARDEN_TOKEN }}
 ```
 
-The [phpwarden action](https://github.com/oroma-alfred/phpwarden-action)
-scans `composer.lock`, WordPress and a production PHP version on every push,
-writes a job-summary table and `composer.lock` line annotations, can upload
-SARIF to the Security tab, and can report to your dashboard.
+`fail-on` is an input of the action. The bare CLI exits `1` on any vulnerable
+package; see the templates below for how a job uses that.
 
-Not on GitHub? Ready-made templates for
-[GitLab CI](integrations/gitlab-ci/phpwarden.gitlab-ci.yml) and
-[Bitbucket Pipelines](integrations/bitbucket/bitbucket-pipelines.yml) install the
-CLI, keep `phpwarden.json` as an artifact and fail the job only on exit 1
-(vulnerable) or 2 (possibly exposed). Laravel apps (10, 11, 12 and 13) can
-`composer require --dev phpwarden/laravel` and run `php artisan phpwarden:scan`
-instead; see the [phpwarden/laravel](https://packagist.org/packages/phpwarden/laravel)
-package.
+**GitLab CI / Bitbucket Pipelines** — ready-made templates in
+[`integrations/gitlab-ci/`](integrations/gitlab-ci/phpwarden.gitlab-ci.yml) and
+[`integrations/bitbucket/`](integrations/bitbucket/bitbucket-pipelines.yml)
+install the CLI, keep `phpwarden.json` as an artifact, fail the job on exit
+`1` or `2`, and forward to the dashboard when a token variable is set.
 
-### Pre-commit hook
+**Laravel** — `composer require --dev phpwarden/laravel` adds
+`php artisan phpwarden:scan` (same exit codes, plus `--fail-on=exploited`);
+see [phpwarden/laravel](https://packagist.org/packages/phpwarden/laravel).
 
-Block a vulnerable `composer.lock` before it is committed:
+**pre-commit** — block a vulnerable `composer.lock` before it is committed:
 
 ```yaml
 repos:
@@ -124,53 +145,33 @@ repos:
         # args: ["--no-reachability"]   # faster: skip the reachability pass
 ```
 
-## The subscription
+**Hosts and cron** — WP-CLI, Laravel Forge / Ploi, plain cron and systemd
+timer recipes are in [`docs/recipes.md`](docs/recipes.md).
 
-The base feed ships inside the package and works forever, offline. A license key
-unlocks the maintained channel, which adds new PHP CVEs — version ranges,
-exposure conditions, and detection signatures — as they are triaged:
+## The feed
 
-```bash
-export PHPWARDEN_LICENSE=...          # from your subscription
-phpwarden feed update
-```
+The bundled community feed (currently 2026.10.31.2) works forever, offline:
 
-Without a key, `phpwarden` runs the free community feed and says so. Nothing
-phones home unless you run `feed update`.
-
-## Current coverage (feed 2026.10.26.2)
-
-- **20,900+ advisories bundled**, offline: ~8,600 Composer (from
-  [OSV.dev](https://osv.dev) + [FriendsOfPHP](https://github.com/FriendsOfPHP/security-advisories);
-  84% carry a CVSS-derived severity),
-  ~12,300 WordPress advisories (from [NVD](https://nvd.nist.gov): ~11,800 plugin
-  across 5,900 slugs, 345 WordPress core, 165 theme — theme classification is
-  description-based because NVD's CPE has no plugin/theme flag),
-  and the curated PHP engine/FPM CVEs. 19,400+ carry an EPSS exploitation score.
-  Every build passes `feedbuilder/check_feed.py` (no open-ended range with a
-  known fix, no "fixed" version inside its own affected range, no duplicate
-  (package|slug, cve), every slug backed by its CPE product or a wordpress.org
-  reference).
+- **~21,100 advisories**: ~8,600 Composer (from [OSV.dev](https://osv.dev) and
+  [FriendsOfPHP](https://github.com/FriendsOfPHP/security-advisories)),
+  ~12,300 WordPress (from [NVD](https://nvd.nist.gov): plugin, core and theme),
+  and 145 PHP engine/FPM CVEs, including hand-curated entries with per-branch
+  fixed versions, exposure conditions and detection signatures. 19,400+ carry an
+  EPSS score; 42 were in KEV when this feed was built.
 - **License-independent by construction.** Every source is open or
   public-domain (OSV, NVD, FriendsOfPHP, CISA KEV, FIRST EPSS). No commercial
-  vendor's licensed feed is used, so coverage can never be revoked or priced
-  away. `composer audit`-grade dependency coverage and Patchstack-scale
-  WordPress coverage, with no vendor key.
-- **8 hand-curated PHP engine/FPM CVEs** (2019–2026), each with per-branch fixed
-  versions, exposure conditions and detection signatures (table below), ranges
-  verified against vendor advisories.
-- **Curated WordPress plugin advisories**, extensible to Patchstack scale
-  through the maintained subscription channel.
-- **Real-world exploitation enrichment.** Every advisory with a CVE is joined to
-  [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog)
-  (is it actively exploited, and used in ransomware) and
-  [FIRST EPSS](https://www.first.org/epss/) (probability of exploitation).
-  Findings are ranked **exploitation-first**, not by CVSS alone — the
-  prioritisation commercial scanners charge for, here free and offline.
+  vendor's feed is used, so coverage cannot be revoked or priced away.
+- Every build passes `feedbuilder/check_feed.py` (no open-ended range with a
+  known fix, no fixed version inside its own affected range, no duplicate
+  (package|slug, cve)). The feed is assembled by `feedbuilder/` from a curated
+  base plus bulk imports and enrichment; curated entries always win.
 
-The feed is assembled by `feedbuilder/` from a curated base plus bulk imports
-and enrichment (`feedbuilder/README.md`); curated entries always win over
-imported ones.
+A [phpwarden.io](https://phpwarden.io) subscription unlocks the maintained
+channel — new advisories and KEV/EPSS refreshes as they are triaged — via
+`PHPWARDEN_LICENSE=... phpwarden feed update`. Without a key, phpwarden runs
+the community feed and says so.
+
+Curated engine CVEs with detection signatures:
 
 | CVE | What | Scope |
 |-----|------|-------|
@@ -183,24 +184,23 @@ imported ones.
 
 ## Continuous guard
 
-`phpwarden scan` and `detect` are point-in-time. For always-on containment of
+`scan` and `detect` are point-in-time. For always-on containment of
 in-progress php2shell-class attacks (OOM on a worker, then that worker reused),
-run the guard daemon, which boots in dry-run and never acts until you promote it
-after a burn-in. See the guard's own DESIGN document.
+run `phpwarden-guard`, which boots in dry-run and never acts until you promote
+it after a burn-in. See the guard's DESIGN document.
 
 ## Honest limits
 
-- The deterministic version census is the reliable backbone; behavioral
+- The deterministic version census is the reliable backbone; behavioural
   detection is best-effort and a clean exploit can leave little trace.
 - `scan` only knows what it can observe. Anything it cannot determine (SAPI, OS,
   app-level conditions) is reported as *possibly* exposed, not safe.
-- Field validation against production traffic requires a live PHP host; the
-  test suite validates against synthetic traffic.
+- The KEV count above is a dated snapshot; `phpwarden feed status` and the
+  bundled feed are the source of truth for the version you run.
 
 ## License
 
 Open-core. The **engine** (`src/phpwarden/`) and the **bundled community feed**
-are **Apache-2.0** — free to use, inspect, modify and redistribute (see
-[`LICENSE`](LICENSE)). The **hosted service** (`saas/`, `server/`) and the
-**maintained feed** are proprietary/commercial. Full scope in
+are **Apache-2.0** (see [`LICENSE`](LICENSE)). The **hosted service** (`saas/`,
+`server/`) and the **maintained feed** are proprietary. Full scope in
 [`LICENSING.md`](LICENSING.md).

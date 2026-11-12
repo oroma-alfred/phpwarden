@@ -1,4 +1,8 @@
-# phpwarden — scan composer.lock for known-vulnerable packages in GitLab CI.
+# phpwarden — scan composer.lock in GitLab CI, ranked by real-world exploitation.
+#
+# Findings are ordered CISA KEV (actually being exploited) first, then EPSS
+# probability, then CVSS — of the ~21,100 PHP advisories in the feed, 43 are
+# in KEV (as of 2026-11-12), and those are what this job surfaces at the top.
 #
 # Usage: copy this job into your .gitlab-ci.yml, or include it:
 #
@@ -9,6 +13,13 @@
 # or 2 "possibly exposed"). Other exit codes — 4 bad lockfile, 5 report upload
 # failed, 64 usage error — fail the job too, loudly, because they mean the scan
 # did not happen as configured. Full exit-code table: `phpwarden --help`.
+# (The CLI has no severity threshold: exit 1 means any known-vulnerable
+# package. For a KEV-only gate use the GitHub Action's `fail-on: exploited`, or
+# filter the `known_exploited` field of phpwarden.json in a follow-up step.)
+#
+# Dashboard: set PHPWARDEN_REPORT_TO and a masked PHPWARDEN_REPORT_TOKEN and
+# every run is also posted to app.phpwarden.io — the equivalent of
+#   phpwarden deps composer.lock --report-to https://app.phpwarden.io/v1/reports --report-token <token>
 
 phpwarden:
   stage: test
@@ -18,7 +29,7 @@ phpwarden:
     # Optional: forward results to your phpwarden dashboard. Set the token as a
     # masked CI/CD variable (Settings > CI/CD > Variables), never in this file.
     # PHPWARDEN_REPORT_TO: https://app.phpwarden.io/v1/reports
-    # PHPWARDEN_REPORT_TOKEN: $PHPWARDEN_TOKEN
+    # PHPWARDEN_REPORT_TOKEN: $PHPWARDEN_TOKEN    # the CLI reads this env var itself
   before_script:
     - pip install --quiet --disable-pip-version-check "phpwarden>=2,<3"
     - phpwarden --version

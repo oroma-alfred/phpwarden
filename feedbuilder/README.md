@@ -14,6 +14,7 @@ builds its own database from the same open upstreams those vendors draw from:
 |--------|------|---------|--------|
 | [OSV.dev](https://osv.dev) (Packagist dump) | aggregated open advisories | open / CC-BY | Composer |
 | [FriendsOfPHP](https://github.com/FriendsOfPHP/security-advisories) | `composer audit` dataset | open | Composer |
+| [php-src NEWS](https://github.com/php/php-src) | per-branch fixed versions | PHP licence (facts) | engine |
 | [NVD](https://nvd.nist.gov) CVE 2.0 | all CVEs incl. WP plugins | public domain | WordPress, engine |
 | [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) | actively-exploited flag | public domain | enrichment |
 | [FIRST EPSS](https://www.first.org/epss/) | exploitation probability | open | enrichment |
@@ -24,12 +25,40 @@ accelerator (`fetch_wordfence.py` + `import_wordfence.py`), never a dependency.
 ## Pipeline
 
 ```
-curated base ─┐
-OSV.dev ──────┤                              ┌─ KEV  ─┐
+php-src NEWS ─┬─ import_php_news.py ─> engine CVEs ─┐
+NVD mirror ───┘   (merge_engine_cves.py: curated wins) │
+curated base ─────────────────────────────────────────┤
+OSV.dev ──────────────────────────────────────────────┤                              ┌─ KEV  ─┐
 FriendsOfPHP ─┼─ build_feed.py ─> feed.json ─┤        ├─ enrich.py ─> shipped feed
 NVD (WP) ─────┘  (curated wins, ranges       └─ EPSS ─┘
                   unioned on CVE collision)
 ```
+
+## 0. PHP engine CVEs — php-src NEWS + NVD (independent, license-free)
+
+php-src keeps one `NEWS` file per release branch; every security fix is listed
+under the release that shipped it with a `(CVE-…)` marker. The first release on
+a branch mentioning a CVE is that branch's fixed version — the per-branch data
+the engine compares against. CVSS, severity, date and description come from the
+NVD JSON mirror on GitHub (`fkie-cad/nvd-json-data-feeds`); nothing else is
+contacted.
+
+```bash
+python3 -I import_php_news.py --out output/engine_news.json \
+    --news-dir output/news --nvd-dir output/nvd          # ~145 CVEs since 2016
+python3 -I merge_engine_cves.py --base base/php-cve-feed.base.json \
+    --imported output/engine_news.json \
+    [--kev-seen ../data/kev-seen.json] [--shipped ../src/phpwarden/data/php-cve-feed.json]
+```
+
+`merge_engine_cves.py` is additive: a CVE already in the curated base keeps
+every hand-written field (SAPI/OS gating, exposure checks, detectors,
+remediation text) and only gains branches it lacked. `eol_affected` is derived
+from php.net's support calendar: a branch still in security support when the
+fix shipped elsewhere, but which got no fix, is treated as *not affected* (the
+bug does not exist there) — the engine must never claim an exposure php.net
+did not. A fix listed under an unreleased version (`?? ??? ????`) is kept but
+marked `"released": false` and its remediation says so.
 
 ## 1. Composer — OSV.dev (primary, independent)
 
