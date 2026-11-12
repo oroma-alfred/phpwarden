@@ -17,6 +17,7 @@ Only hosts under github.com / raw.githubusercontent.com are contacted.
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
 import concurrent.futures as cf
 import json
 import re
@@ -70,11 +71,16 @@ def _vt(v: str):
     return tuple(int(x) for x in v.split("."))
 
 
-def _date(hdr: str):
+def _date(hdr: str, today: str = None):
+    """Release date of a NEWS version header, or None if it is not released yet.
+    Release managers fill in the planned date before tagging, so a header dated
+    in the future ("19 Nov 2026, PHP 8.5.13" read on 2026-11-12) is unreleased,
+    exactly like "?? ??? ????"."""
     m = re.match(r"(\d{1,2}) (\w{3}) (\d{4})", hdr)
     if not m:
         return None
-    return f"{m.group(3)}-{_MONTHS[m.group(2)]:02d}-{int(m.group(1)):02d}"
+    d = f"{m.group(3)}-{_MONTHS[m.group(2)]:02d}-{int(m.group(1)):02d}"
+    return None if d > (today or _dt.date.today().isoformat()) else d
 
 
 def parse_news(text: str):
@@ -317,6 +323,13 @@ def main():
     print(f"{len(cves)} CVEs ≥ {a.min_year}; fetching NVD …", file=sys.stderr)
     with cf.ThreadPoolExecutor(a.workers) as ex:
         nvd = dict(zip(cves, ex.map(lambda c: nvd_fields(fetch_nvd(c, a.nvd_dir, a.offline)), cves)))
+    # A CVE whose every fix is still unreleased has nothing to upgrade to, and is
+    # usually not public yet (NVD 404). Leave it out until the release ships;
+    # the next run picks it up with its real release date.
+    pending = [c for c in cves if set(found[c]["branches"]) <= found[c].get("unreleased", set())]
+    if pending:
+        print(f"skipping {len(pending)} CVE(s) fixed only in unreleased versions: {', '.join(pending)}", file=sys.stderr)
+    cves = [c for c in cves if c not in pending]
     entries = [build_entry(c, found[c], nvd[c], a.branches) for c in cves]
     entries.sort(key=lambda e: e["published"], reverse=True)
     Path(a.out).write_text(json.dumps({"cves": entries}, indent=1) + "\n")

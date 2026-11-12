@@ -1,0 +1,1 @@
+{"require":{"laravel/framework":"8.0.0","guzzlehttp/guzzle":"7.0.1"},"config":{"audit":{"block-insecure":false}}}

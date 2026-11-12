@@ -1,0 +1,1 @@
+{"require":{"guzzlehttp/guzzle":"6.5.0","phpmailer/phpmailer":"6.1.0","dompdf/dompdf":"0.8.3","phpseclib/phpseclib":"2.0.20","league/commonmark":"1.5.0","smarty/smarty":"3.1.33","tecnickcom/tcpdf":"6.3.2","firebase/php-jwt":"5.0.0"},"config":{"audit":{"block-insecure":false}}}

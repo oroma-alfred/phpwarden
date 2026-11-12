@@ -1,0 +1,1 @@
+{"require":{"drupal/core":"9.0.0"},"repositories":[{"type":"composer","url":"https://packages.drupal.org/8"}],"config":{"audit":{"block-insecure":false}}}

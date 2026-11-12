@@ -1,0 +1,9194 @@
+{
+ "laravel8": [
+  {
+   "pkg": "league/flysystem",
+   "ids": [
+    "CVE-2026-102601",
+    "GHSA-cxf4-7mrp-vvpr",
+    "PKSA-w9tt-7782-78jx"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/flysystem",
+    "installed": "1.1.10",
+    "cve": "CVE-2026-102601",
+    "severity": "low",
+    "cvss": 3.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00337,
+    "epss_percentile": 0.27462,
+    "title": "Flysystem: WhitespacePathNormalizer's control-character (CorruptedPathDetected) check is bypassed by malformed UTF-8 in the path, affecting every adapter",
+    "fixed": [
+     "3.35.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "BIT-laravel-2021-21263",
+    "CVE-2021-21263",
+    "GHSA-3p32-j457-pg5x",
+    "PKSA-985r-hryy-555b",
+    "laravel/framework/CVE-2021-21263.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "CVE-2021-21263",
+    "severity": "high",
+    "cvss": 7.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01625,
+    "epss_percentile": 0.76486,
+    "title": "Query Binding Exploitation",
+    "fixed": [
+     "8.22.1",
+     "6.20.11",
+     "7.30.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "GHSA-4mg9-vhxq-vm7j"
+   ],
+   "src": [
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "GHSA-4mg9-vhxq-vm7j",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "SQL Server LIMIT / OFFSET SQL Injection in laravel/framework and illuminate/database",
+    "fixed": [
+     "8.40.0",
+     "6.20.26"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "CVE-2026-48019",
+    "GHSA-5vg9-5847-vvmq",
+    "PKSA-3r5d-mb8f-1qw9"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "CVE-2026-48019",
+    "severity": "high",
+    "cvss": 8.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00511,
+    "epss_percentile": 0.44112,
+    "title": "Laravel Framework: CRLF injection in default email rule",
+    "fixed": [
+     "13.10.0",
+     "12.60.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "CVE-2021-43808",
+    "GHSA-66hf-2p6w-jqfw",
+    "PKSA-njrm-6dtg-m2pc",
+    "laravel/framework/CVE-2021-43808.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "CVE-2021-43808",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00825,
+    "epss_percentile": 0.57884,
+    "title": "Laravel Framework XSS in Blade templating engine",
+    "fixed": [
+     "6.20.42",
+     "7.30.6",
+     "8.75.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "BIT-laravel-2025-27515",
+    "CVE-2025-27515",
+    "GHSA-78fx-h6xr-vch4",
+    "PKSA-8qx3-n5y5-vvnd"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "CVE-2025-27515",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00749,
+    "epss_percentile": 0.55427,
+    "title": "Laravel has a File Validation Bypass",
+    "fixed": [
+     "12.1.1",
+     "11.44.1",
+     "10.48.29"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "GHSA-crmm-hgp2-wgrp",
+    "PKSA-m5cs-t1y6-qpcs"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "GHSA-crmm-hgp2-wgrp",
+    "severity": "medium",
+    "cvss": 4.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Laravel Framework: Temporary Signed URL Path Confusion",
+    "fixed": [
+     "13.12.0",
+     "12.61.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "CVE-2026-114509",
+    "GHSA-f9x3-7vq9-cph6",
+    "PKSA-b41t-wbzk-9q51"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "CVE-2026-114509",
+    "severity": "critical",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0184,
+    "epss_percentile": 0.79285,
+    "title": "Laravel TokenGuard authentication bypass through non-string API credentials",
+    "fixed": [
+     "13.27.0",
+     "12.68.0",
+     "11.56.1",
+     "10.50.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "BIT-laravel-2024-52301",
+    "CVE-2024-52301",
+    "GHSA-gv7v-rgg6-548h",
+    "PKSA-w7xr-vk7n-rstm",
+    "laravel/framework/CVE-2024-52301.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "CVE-2024-52301",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.44757,
+    "epss_percentile": 0.9879,
+    "title": "Laravel environment manipulation via query string",
+    "fixed": [
+     "6.20.45",
+     "7.30.7",
+     "8.83.28",
+     "9.52.17",
+     "10.48.23",
+     "11.31.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "CVE-2026-102279",
+    "GHSA-jh5r-qr3c-85q8",
+    "PKSA-d5tc-s1qs-h781"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "CVE-2026-102279",
+    "severity": "low",
+    "cvss": 3.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00264,
+    "epss_percentile": 0.18382,
+    "title": "Laravel: XSS in Debug Page Information",
+    "fixed": [
+     "12.69.0",
+     "13.30.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "GHSA-jwvj-pwww-3mj5"
+   ],
+   "src": [
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "GHSA-jwvj-pwww-3mj5",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "laravel framework Unexpected database bindings via requests",
+    "fixed": [
+     "6.20.14",
+     "7.30.4",
+     "8.24.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "GHSA-wq8p-mqvg-2p5h"
+   ],
+   "src": [
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "GHSA-wq8p-mqvg-2p5h",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "laravel framework SQL Injection via limit and offset functions",
+    "fixed": [
+     "6.20.26",
+     "7.30.5",
+     "8.40.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "GHSA-x7p5-p2c9-phvg"
+   ],
+   "src": [
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "GHSA-x7p5-p2c9-phvg",
+    "severity": "high",
+    "cvss": 7.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Unexpected database bindings",
+    "fixed": [
+     "6.20.14",
+     "7.30.4",
+     "8.24.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "CVE-2021-43617",
+    "PKSA-p3rx-dfwp-73ny",
+    "laravel/framework/CVE-2021-43617.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "CVE-2021-43617",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.19963,
+    "epss_percentile": 0.97471,
+    "title": "Image upload bypass",
+    "fixed": [
+     "8.71.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "2021-04-28",
+    "GHSA-7852-w36x-6mf6",
+    "PKSA-ckwp-rt7t-c46m",
+    "laravel/framework/2021-04-28.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "2021-04-28",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "SQL Server LIMIT / OFFSET SQL Injection",
+    "fixed": [
+     "6.20.26",
+     "8.40.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "laravel/framework",
+   "ids": [
+    "2021-01-21",
+    "GHSA-6jvx-8ch9-j2jr",
+    "PKSA-4npr-btr6-zhny",
+    "laravel/framework/2021-01-21.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "laravel/framework",
+    "installed": "8.0.0",
+    "cve": "2021-01-21",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Unexpected bindings in QueryBuilder",
+    "fixed": [
+     "6.20.14",
+     "7.30.4",
+     "8.24.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-71478",
+    "GHSA-29pj-957v-52mc",
+    "PKSA-scnn-p8mm-jbft"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "CVE-2026-71478",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00355,
+    "epss_percentile": 0.29642,
+    "title": "league/commonmark: AttributesExtension href/src unsafe-link filter bypass via embedded control bytes",
+    "fixed": [
+     "2.9.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-71488",
+    "GHSA-2q4p-g7hv-5rgv",
+    "PKSA-t21r-vtr5-3mdz"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "CVE-2026-71488",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0063,
+    "epss_percentile": 0.5068,
+    "title": "league/commonmark: Quadratic-time denial of service when parsing crafted Markdown",
+    "fixed": [
+     "2.9.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2025-46734",
+    "GHSA-3527-qv2q-pfvx",
+    "PKSA-rqc2-tcc6-nc79"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "CVE-2025-46734",
+    "severity": "medium",
+    "cvss": 6.4,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00384,
+    "epss_percentile": 0.32984,
+    "title": "league/commonmark contains a XSS vulnerability in Attributes extension",
+    "fixed": [
+     "2.7.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-86428",
+    "GHSA-8rr7-cvq3-gmfh",
+    "PKSA-zyf5-hrxv-hrd7"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "CVE-2026-86428",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00493,
+    "epss_percentile": 0.42868,
+    "title": "league/commonmark: Denial of service via distinctly-named attributes in the Attributes extension",
+    "fixed": [
+     "2.10.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-105829",
+    "GHSA-97jj-33gv-5xf9",
+    "PKSA-m2dq-1fhr-29b1"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "CVE-2026-105829",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0025,
+    "epss_percentile": 0.16493,
+    "title": "league/commonmark: DisallowedRawHtml bypassed when a disallowed tag name ends the raw-HTML literal",
+    "fixed": [
+     "2.10.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2024-58382",
+    "GHSA-c2pc-g5qf-rfrf",
+    "PKSA-fndg-qryc-dyc9"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "CVE-2024-58382",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00488,
+    "epss_percentile": 0.42504,
+    "title": "league/commonmark's quadratic complexity bugs may lead to a denial of service",
+    "fixed": [
+     "2.6.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "GHSA-g2gp-3wwq-f4ph",
+    "PKSA-mc58-w91n-f5gv"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "GHSA-g2gp-3wwq-f4ph",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "league/commonmark: Denial of service via adjacent inline attribute blocks",
+    "fixed": [
+     "2.9.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-86430",
+    "GHSA-j8pm-gj4c-rq4x",
+    "PKSA-9q1p-3s19-bp1q"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "CVE-2026-86430",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00493,
+    "epss_percentile": 0.4287,
+    "title": "league/commonmark: Denial of service via crafted code fences, reference links, and emphasis delimiters",
+    "fixed": [
+     "2.9.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "GHSA-jfm3-95jq-q3rf",
+    "PKSA-1q6p-sqkj-8mmj"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "GHSA-jfm3-95jq-q3rf",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "league/commonmark:  Denial of service via duplicate footnote definitions",
+    "fixed": [
+     "2.9.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-86429",
+    "GHSA-jjv6-8j6v-6j52",
+    "PKSA-nv44-1b4d-6gjg"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.6.7",
+    "cve": "CVE-2026-86429",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00515,
+    "epss_percentile": 0.44388,
+    "title": "league/commonmark: Denial of service in the SmartPunct and Attributes extensions",
+    "fixed": [
+     "2.9.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-48998",
+    "GHSA-34xg-wgjx-8xph",
+    "PKSA-jj5t-2zs1-dcfm",
+    "guzzlehttp/psr7/CVE-2026-48998.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-48998",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00198,
+    "epss_percentile": 0.09694,
+    "title": "guzzlehttp/psr7 has Host Confusion via Authority Reinterpretation",
+    "fixed": [
+     "2.10.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-59882",
+    "GHSA-c2w2-prh8-qm98",
+    "PKSA-vznr-tgp9-fd7d"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-59882",
+    "severity": "medium",
+    "cvss": 4.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00317,
+    "epss_percentile": 0.24999,
+    "title": "guzzlehttp/psr7: Host Confusion via Weak URI Host Validation",
+    "fixed": [
+     "2.12.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-49214",
+    "GHSA-hq7v-mx3g-29hw",
+    "PKSA-gm5x-j3mz-71n9",
+    "guzzlehttp/psr7/CVE-2026-49214.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-49214",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0019,
+    "epss_percentile": 0.08691,
+    "title": "guzzlehttp/psr7 has CRLF Injection via URI Host Component",
+    "fixed": [
+     "2.10.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-55766",
+    "GHSA-vm85-hxw5-5432",
+    "PKSA-7qs6-zvnz-h66r",
+    "guzzlehttp/psr7/CVE-2026-55766.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-55766",
+    "severity": "medium",
+    "cvss": 4.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00229,
+    "epss_percentile": 0.13865,
+    "title": "guzzlehttp/psr7: CRLF Injection in HTTP Start-Line Serialization",
+    "fixed": [
+     "2.12.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2022-31090",
+    "GHSA-25mq-v84q-4j7r",
+    "PKSA-k1b4-kshy-xgbh",
+    "guzzlehttp/guzzle/CVE-2022-31090.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2022-31090",
+    "severity": "high",
+    "cvss": 7.7,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01916,
+    "epss_percentile": 0.80155,
+    "title": "Authorization header leaked to a different origin on cross-origin redirect (curl handler)",
+    "fixed": [
+     "6.5.8",
+     "7.4.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67339",
+    "GHSA-94pj-82f3-465w",
+    "PKSA-pwsk-hy21-4gby"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2026-67339",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00372,
+    "epss_percentile": 0.31596,
+    "title": "Guzzle: Proxy-Authorization headers can be sent to origin servers",
+    "fixed": [
+     "7.14.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "BIT-drupal-2022-29248",
+    "CVE-2022-29248",
+    "DRUPAL-CORE-2022-010",
+    "GHSA-cwmx-hcrq-mhc3",
+    "PKSA-6d8m-6kgw-18zr",
+    "guzzlehttp/guzzle/CVE-2022-29248.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2022-29248",
+    "severity": "high",
+    "cvss": 8.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01351,
+    "epss_percentile": 0.71911,
+    "title": "Cross-domain cookie leakage in Guzzle",
+    "fixed": [
+     "6.5.6",
+     "7.4.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-55767",
+    "GHSA-cwxw-98qj-8qjx",
+    "PKSA-93qv-9n9h-6k6p",
+    "guzzlehttp/guzzle/CVE-2026-55767.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2026-55767",
+    "severity": "medium",
+    "cvss": 5.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00211,
+    "epss_percentile": 0.115,
+    "title": "guzzlehttp/guzzle: Dot-Only Cookie Domains Match All Hosts",
+    "fixed": [
+     "7.12.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67353",
+    "GHSA-f283-ghqc-fg79",
+    "PKSA-bbs6-q5q9-f3t4"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2026-67353",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00418,
+    "epss_percentile": 0.36594,
+    "title": "Guzzle: Unbounded response cookies risk denial of service",
+    "fixed": [
+     "7.15.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "BIT-drupal-2022-31042",
+    "BIT-drupal-2022-31043",
+    "CVE-2022-31042",
+    "CVE-2022-31043",
+    "DRUPAL-CORE-2022-011",
+    "GHSA-f2wf-25xc-69c9",
+    "GHSA-w248-ffj2-4v5q",
+    "PKSA-2z36-j4q9-rsfy",
+    "PKSA-fvw5-9t6n-nwvr",
+    "guzzlehttp/guzzle/CVE-2022-31042.yaml",
+    "guzzlehttp/guzzle/CVE-2022-31043.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2022-31043",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01992,
+    "epss_percentile": 0.80963,
+    "title": "Fix failure to strip Authorization header on HTTP downgrade",
+    "fixed": [
+     "7.4.4",
+     "6.5.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-69245",
+    "GHSA-f7vp-7xgx-4w4r",
+    "PKSA-cnw1-2ytm-cgr8"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2026-69245",
+    "severity": "medium",
+    "cvss": 6.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00199,
+    "epss_percentile": 0.09895,
+    "title": "Guzzle: Noncanonical cookie domain keeps subdomain scope",
+    "fixed": [
+     "7.15.2",
+     "8.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-59883",
+    "GHSA-g446-98w2-8p5w",
+    "PKSA-bcdd-5xc7-gwfb"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2026-59883",
+    "severity": "medium",
+    "cvss": 4.7,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00167,
+    "epss_percentile": 0.06067,
+    "title": "Guzzle: Cookie Disclosure and Injection via IP-Address Domains",
+    "fixed": [
+     "7.12.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67354",
+    "GHSA-h95v-h523-3mw8",
+    "PKSA-fy2t-3c5f-827y"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2026-67354",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00372,
+    "epss_percentile": 0.31618,
+    "title": "Guzzle: URI fragments disclosed in redirect Referer headers",
+    "fixed": [
+     "7.15.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2022-31091",
+    "GHSA-q559-8m2m-g699",
+    "PKSA-yfw5-9gnj-n2c7",
+    "guzzlehttp/guzzle/CVE-2022-31091.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2022-31091",
+    "severity": "high",
+    "cvss": 8.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01565,
+    "epss_percentile": 0.75657,
+    "title": "Change in port not treated as a change in origin; sensitive headers leaked on redirect",
+    "fixed": [
+     "6.5.8",
+     "7.4.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-69246",
+    "GHSA-v5mv-p594-2x33",
+    "PKSA-gcrk-3vtt-1r14"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2026-69246",
+    "severity": "high",
+    "cvss": 7.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0037,
+    "epss_percentile": 0.3136,
+    "title": "Guzzle: Noncanonical host can bypass host-based checks",
+    "fixed": [
+     "7.15.2",
+     "8.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67355",
+    "GHSA-wm3w-8rrp-j577",
+    "PKSA-qxvb-2bpp-dnk6"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2026-67355",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00366,
+    "epss_percentile": 0.30884,
+    "title": "Guzzle: Host-only cookie scope is not preserved",
+    "fixed": [
+     "7.15.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-55568",
+    "GHSA-wpwq-4j6v-78m3",
+    "PKSA-k22t-f949-t9g6",
+    "guzzlehttp/guzzle/CVE-2026-55568.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "7.0.1",
+    "cve": "CVE-2026-55568",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00148,
+    "epss_percentile": 0.04042,
+    "title": "guzzlehttp/guzzle: Silent HTTPS-Proxy Downgrade to Cleartext",
+    "fixed": [
+     "7.12.1"
+    ],
+    "reach": "unknown"
+   }
+  }
+ ],
+ "symfony44": [
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46628",
+    "GHSA-4j38-f5cw-54h7",
+    "PKSA-sjvz-tbbr-vwth",
+    "twig/twig/CVE-2026-46628.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-46628",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00295,
+    "epss_percentile": 0.22416,
+    "title": "Twig: The `spaceless` filter implicitly marks its output as safe",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-49981",
+    "GHSA-529h-vh3j-85hq",
+    "PKSA-8zx5-v2nz-58pb"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-49981",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00362,
+    "epss_percentile": 0.30399,
+    "title": "Twig: Sandbox filter, tag and function allow-list bypass when sandbox state changes between renders for a cached `Template`",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "BIT-drupal-2022-39261",
+    "CVE-2022-39261",
+    "DRUPAL-CORE-2022-016",
+    "GHSA-52m2-vc4m-jj33",
+    "PKSA-n7sg-8f52-pqtf",
+    "twig/twig/CVE-2022-39261.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2022-39261",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.03174,
+    "epss_percentile": 0.88223,
+    "title": "Twig may load a template outside a configured directory when using the filesystem loader",
+    "fixed": [
+     "1.44.7",
+     "2.15.3",
+     "3.4.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2022-23614",
+    "GHSA-5mv2-rx3q-4w2v",
+    "PKSA-8kk8-h2xr-h5nx",
+    "twig/twig/CVE-2022-23614.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2022-23614",
+    "severity": "high",
+    "cvss": 8.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.08209,
+    "epss_percentile": 0.94959,
+    "title": "Code injection in Twig",
+    "fixed": [
+     "2.14.11",
+     "3.3.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-48806",
+    "GHSA-5v5v-ww74-355v",
+    "PKSA-1tmc-rt7x-12w6",
+    "twig/twig/CVE-2026-48806.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-48806",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00418,
+    "epss_percentile": 0.36608,
+    "title": "Twig: Sandbox `__toString()` policy bypass via dynamic mapping keys",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2024-51754",
+    "GHSA-6377-hfv9-hqf6",
+    "PKSA-yhcn-xrg3-68b1",
+    "twig/twig/CVE-2024-51754.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2024-51754",
+    "severity": "low",
+    "cvss": 2.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00431,
+    "epss_percentile": 0.37842,
+    "title": "Twig has unguarded calls to `__toString()` when nesting an object into an array",
+    "fixed": [
+     "3.11.2",
+     "3.14.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2024-45411",
+    "GHSA-6j75-5wfj-gh66",
+    "PKSA-6319-ffpf-gx66",
+    "twig/twig/CVE-2024-45411.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2024-45411",
+    "severity": "high",
+    "cvss": 8.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00849,
+    "epss_percentile": 0.5863,
+    "title": "Twig has a possible sandbox bypass",
+    "fixed": [
+     "1.44.8",
+     "2.16.1",
+     "3.14.0",
+     "3.11.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46638",
+    "GHSA-7fxw-r6jv-74c8",
+    "PKSA-3mcc-k66d-pydb",
+    "twig/twig/CVE-2026-46638.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-46638",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00473,
+    "epss_percentile": 0.41361,
+    "title": "Twig: `{% sandbox %}{% include %}` skips checkSecurity() on cached templates (incomplete fix for CVE-2024-45411)",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46633",
+    "GHSA-7p85-w9px-jpjp",
+    "PKSA-h8hf-ytnd-5t9q",
+    "twig/twig/CVE-2026-46633.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-46633",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00774,
+    "epss_percentile": 0.56223,
+    "title": "Twig: PHP code injection via `{% use %}` template name",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-48807",
+    "GHSA-8x9c-rmqh-456c",
+    "PKSA-xx6c-6d96-db2w",
+    "twig/twig/CVE-2026-48807.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-48807",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00367,
+    "epss_percentile": 0.30974,
+    "title": "Twig: Sandbox `__toString()` policy bypass via `Traversable` in `join` and `replace` filters",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-48808",
+    "GHSA-h8vq-8gpg-mhcg",
+    "PKSA-fbvq-z33h-r2np",
+    "twig/twig/CVE-2026-48808.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-48808",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00407,
+    "epss_percentile": 0.35479,
+    "title": "Twig: Sandbox property allowlist bypass via the `column` filter under `SourcePolicyInterface`",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2024-51755",
+    "GHSA-jjxq-ff2g-95vh",
+    "PKSA-2wrf-1xmk-1pky",
+    "twig/twig/CVE-2024-51755.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2024-51755",
+    "severity": "low",
+    "cvss": 2.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00425,
+    "epss_percentile": 0.37302,
+    "title": "Twig has unguarded calls to `__isset()` and to array-accesses when the sandbox is enabled",
+    "fixed": [
+     "3.11.2",
+     "3.14.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-48805",
+    "GHSA-p42q-9prx-q5wq",
+    "PKSA-g9zw-qxh8-pq8w",
+    "twig/twig/CVE-2026-48805.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-48805",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00483,
+    "epss_percentile": 0.42134,
+    "title": "Twig: Sandbox state regression in deprecated internal wrappers in `src/Resources/core.php`",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-47732",
+    "GHSA-pr2w-4gpj-cpq4",
+    "PKSA-dpx1-78wg-1kqs",
+    "twig/twig/CVE-2026-47732.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-47732",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00402,
+    "epss_percentile": 0.34894,
+    "title": "Twig: Sandbox: multiple `__toString()` policy bypasses via unguarded string coercion points",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46635",
+    "GHSA-vcc8-phrv-43wj",
+    "PKSA-n14z-jjjg-g8vd",
+    "twig/twig/CVE-2026-46635.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-46635",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00331,
+    "epss_percentile": 0.26629,
+    "title": "Twig: Sandbox property allowlist bypass via the `column` filter (array_column on objects)",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46636",
+    "PKSA-yd6k-t2gh-1m43",
+    "twig/twig/CVE-2026-46636.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-46636",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0057,
+    "epss_percentile": 0.47669,
+    "title": "Sandbox filter, tag and function allow-list bypass when sandbox state changes between renders",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46627",
+    "PKSA-kvv6-36cr-fkzb",
+    "twig/twig/CVE-2026-46627.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.12.0",
+    "cve": "CVE-2026-46627",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00542,
+    "epss_percentile": 0.46066,
+    "title": "Sandbox does not protect against resource exhaustion",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-109413",
+    "GHSA-2v3c-qxhr-7vpv",
+    "PKSA-fyjn-dgwp-4tt3",
+    "symfony/symfony/CVE-2026-109413.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-109413",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00395,
+    "epss_percentile": 0.3424,
+    "title": "Symfony: Unbounded Recursion in the YAML Inline Lexer Lets a Single Document Crash the Process",
+    "fixed": [
+     "5.4.54",
+     "6.4.45",
+     "7.4.18",
+     "8.1.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "BIT-symfony-2021-41270",
+    "CVE-2021-41270",
+    "GHSA-2xhg-w2g5-w95x",
+    "PKSA-t1qj-5z4b-g31v",
+    "symfony/symfony/CVE-2021-41270.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2021-41270",
+    "severity": "medium",
+    "cvss": 6.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.014,
+    "epss_percentile": 0.7288,
+    "title": "CSV Injection in symfony/serializer",
+    "fixed": [
+     "4.4.35",
+     "5.3.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "BIT-symfony-2022-24895",
+    "CVE-2022-24895",
+    "GHSA-3gv2-29qc-v67m",
+    "PKSA-53qn-v9cx-yn6c",
+    "symfony/symfony/CVE-2022-24895.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2022-24895",
+    "severity": "medium",
+    "cvss": 6.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0079,
+    "epss_percentile": 0.56769,
+    "title": "Symfony vulnerable to Session Fixation of CSRF tokens",
+    "fixed": [
+     "4.4.50",
+     "5.4.20",
+     "6.0.20",
+     "6.1.12",
+     "6.2.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2025-64500",
+    "GHSA-3rg7-wf37-54rm",
+    "PKSA-nqwp-2kdm-491t",
+    "symfony/symfony/CVE-2025-64500.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2025-64500",
+    "severity": "high",
+    "cvss": 7.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01408,
+    "epss_percentile": 0.73011,
+    "title": "Symfony's incorrect parsing of PATH_INFO can lead to limited authorization bypass",
+    "fixed": [
+     "5.4.50",
+     "6.4.29",
+     "7.3.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45304",
+    "GHSA-4qpc-3hr4-r2p4",
+    "PKSA-2zh8-n335-x575",
+    "symfony/symfony/CVE-2026-45304.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45304",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00684,
+    "epss_percentile": 0.5306,
+    "title": "Symfony's YAML Parser Vulnerable to Exponential Memory Allocation via Recursive Collection-Alias Expansion (\"Billion Laughs\")",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "BIT-symfony-2021-21424",
+    "CVE-2021-21424",
+    "GHSA-5pv8-ppvj-4h68",
+    "PKSA-hq66-h9fz-xgjz",
+    "symfony/symfony/CVE-2021-21424.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2021-21424",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01644,
+    "epss_percentile": 0.76786,
+    "title": "Prevent user enumeration using Guard or the new Authenticator-based Security",
+    "fixed": [
+     "3.4.49",
+     "4.4.24",
+     "5.2.9"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-48489",
+    "GHSA-6h46-9jf5-q59x",
+    "PKSA-pjp2-q1z1-mmvn",
+    "symfony/symfony/CVE-2026-48489.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-48489",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00596,
+    "epss_percentile": 0.49008,
+    "title": "Symfony: Security Firewall Bypass via failure_forward Subrequest: Unauthenticated Access to access_control-Protected GET Routes",
+    "fixed": [
+     "5.4.53",
+     "6.4.41",
+     "7.4.13",
+     "8.0.13"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45073",
+    "GHSA-6qh9-h6wf-jgqc",
+    "PKSA-29h7-kzb3-pdfy",
+    "symfony/symfony/CVE-2026-45073.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45073",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00458,
+    "epss_percentile": 0.40152,
+    "title": "Symfony Vulnerable to SQL Injection in PdoAdapter::doClear() via Unsanitized $prefix",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45065",
+    "GHSA-72xp-p242-47p9",
+    "PKSA-3f27-q682-kfn9",
+    "symfony/symfony/CVE-2026-45065.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45065",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00348,
+    "epss_percentile": 0.28856,
+    "title": "Symfony has a UrlGenerator Route-Requirement Bypass via Unanchored Regex Alternation \u2192 Off-Site //host URL Injection",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "BIT-symfony-2020-15094",
+    "CVE-2020-15094",
+    "GHSA-754h-5r27-7x3r",
+    "PKSA-6pwr-137g-8814",
+    "symfony/symfony/CVE-2020-15094.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2020-15094",
+    "severity": "high",
+    "cvss": 8.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.03043,
+    "epss_percentile": 0.87716,
+    "title": "RCE in Symfony",
+    "fixed": [
+     "4.4.13",
+     "5.1.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2024-50342",
+    "GHSA-9c3x-r3wp-mgxm",
+    "PKSA-vxd1-4ssb-3qdw",
+    "symfony/symfony/CVE-2024-50342.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2024-50342",
+    "severity": "low",
+    "cvss": 3.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00477,
+    "epss_percentile": 0.41732,
+    "title": "Symfony allows internal address and port enumeration by NoPrivateNetworkHttpClient",
+    "fixed": [
+     "5.4.47",
+     "6.4.15",
+     "7.1.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45305",
+    "GHSA-9frc-8383-795m",
+    "PKSA-j6yc-z95h-xyjq",
+    "symfony/symfony/CVE-2026-45305.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45305",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00684,
+    "epss_percentile": 0.53057,
+    "title": "Symfony's YAML Parser has a ReDoS via Catastrophic Backtracking in Parser::cleanup() Regex",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45133",
+    "GHSA-c2p3-7m5p-cv8x",
+    "PKSA-wps4-zyhx-xws4",
+    "symfony/symfony/CVE-2026-45133.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45133",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0063,
+    "epss_percentile": 0.50693,
+    "title": "Symfony hardened the parser when handling untrusted input",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2024-50343",
+    "GHSA-g3rh-rrhp-jhh9",
+    "PKSA-19z7-hn1j-mtcg",
+    "symfony/symfony/CVE-2024-50343.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2024-50343",
+    "severity": "low",
+    "cvss": 3.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00455,
+    "epss_percentile": 0.39993,
+    "title": "Symfony has an incorrect response from Validator when input ends with `\\n`",
+    "fixed": [
+     "5.4.43",
+     "6.4.11",
+     "7.1.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "BIT-symfony-2020-5275",
+    "CVE-2020-5275",
+    "GHSA-g4m9-5hpf-hx72",
+    "PKSA-wq3f-5n85-pkzw",
+    "symfony/symfony/CVE-2020-5275.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2020-5275",
+    "severity": "high",
+    "cvss": 7.6,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01148,
+    "epss_percentile": 0.67249,
+    "title": "Firewall configured with unanimous strategy was not actually unanimous in Symfony",
+    "fixed": [
+     "4.4.7",
+     "5.0.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-48784",
+    "GHSA-h5x3-xfc9-m39h",
+    "PKSA-nshj-ydrr-y3c1",
+    "symfony/symfony/CVE-2026-48784.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-48784",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00348,
+    "epss_percentile": 0.28856,
+    "title": "Symfony: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` \u2192 Generated URL Collapses Off-Route Under RFC 3986 Normalization",
+    "fixed": [
+     "5.4.53",
+     "6.4.41",
+     "7.4.13",
+     "8.0.13"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "BIT-symfony-2022-24894",
+    "CVE-2022-24894",
+    "GHSA-h7vf-5wrv-9fhv",
+    "PKSA-x3kp-hpzz-4th3",
+    "symfony/symfony/CVE-2022-24894.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2022-24894",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.03998,
+    "epss_percentile": 0.90672,
+    "title": "Symfony storing cookie headers in HttpCache",
+    "fixed": [
+     "4.4.50",
+     "5.4.20",
+     "6.0.20",
+     "6.1.12",
+     "6.2.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45077",
+    "GHSA-m7v2-7gxm-vc2v",
+    "PKSA-13hy-qbkf-1ty7",
+    "symfony/symfony/CVE-2026-45077.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45077",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00666,
+    "epss_percentile": 0.52347,
+    "title": "Symfony has Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "BIT-symfony-2020-5274",
+    "CVE-2020-5274",
+    "GHSA-m884-279h-32v2",
+    "PKSA-jb88-5twc-8n28",
+    "symfony/symfony/CVE-2020-5274.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2020-5274",
+    "severity": "medium",
+    "cvss": 4.6,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01197,
+    "epss_percentile": 0.6854,
+    "title": "Exceptions displayed in non-debug configurations in Symfony",
+    "fixed": [
+     "4.4.4",
+     "5.0.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "BIT-symfony-2020-5255",
+    "CVE-2020-5255",
+    "GHSA-mcx4-f5f5-4859",
+    "PKSA-5vcz-b73r-4b7v",
+    "symfony/symfony/CVE-2020-5255.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2020-5255",
+    "severity": "low",
+    "cvss": 2.6,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01297,
+    "epss_percentile": 0.70797,
+    "title": "Prevent cache poisoning via a Response Content-Type header in Symfony",
+    "fixed": [
+     "4.4.7",
+     "5.0.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45063",
+    "GHSA-ph86-p8f6-f9r2",
+    "PKSA-wyg9-y12c-3kdv",
+    "symfony/symfony/CVE-2026-45063.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45063",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00343,
+    "epss_percentile": 0.28204,
+    "title": "Symfony Vulnerable to Identity Spoofing via Unanchored DN Regex in X509Authenticator",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "BIT-symfony-2023-46734",
+    "CVE-2023-46734",
+    "GHSA-q847-2q57-wmr3",
+    "PKSA-y38q-cfj7-gm5p",
+    "symfony/symfony/CVE-2023-46734.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2023-46734",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00812,
+    "epss_percentile": 0.5746,
+    "title": "Symfony potential Cross-site Scripting vulnerabilities in CodeExtension filters",
+    "fixed": [
+     "4.4.51",
+     "5.4.31",
+     "6.3.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45067",
+    "GHSA-qpmx-3rfj-7rhv",
+    "PKSA-z2fd-3m4y-rrss",
+    "symfony/symfony/CVE-2026-45067.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45067",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00598,
+    "epss_percentile": 0.49118,
+    "title": "Symfony has Email Header / SMTP Command Injection via CRLF in Symfony\\Component\\Mime\\Address",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2024-51736",
+    "GHSA-qq5c-677p-737q",
+    "PKSA-jdmc-h4p3-hds2",
+    "symfony/symfony/CVE-2024-51736.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2024-51736",
+    "severity": "high",
+    "cvss": 8.4,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00428,
+    "epss_percentile": 0.37527,
+    "title": "Symfony vulnerable to command execution hijack on Windows with Process class",
+    "fixed": [
+     "5.4.46",
+     "6.4.14",
+     "7.1.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-24739",
+    "GHSA-r39x-jcww-82v6",
+    "PKSA-2xjm-ff52-fzd5"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-24739",
+    "severity": "medium",
+    "cvss": 6.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00231,
+    "epss_percentile": 0.14079,
+    "title": "Symfony's incorrect argument escaping under MSYS2/Git Bash can lead to destructive file operations on Windows",
+    "fixed": [
+     "5.4.51",
+     "6.4.33",
+     "7.3.11",
+     "7.4.5",
+     "8.0.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-108082",
+    "GHSA-r925-mgvr-h9cc"
+   ],
+   "src": [
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-108082",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0048,
+    "epss_percentile": 0.41946,
+    "title": "Symfony: ReDoS in HeaderUtils::split() Reachable Through the Cache-Control Request Header",
+    "fixed": [
+     "6.4.46",
+     "7.4.19",
+     "8.1.7",
+     "5.4.54"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45070",
+    "GHSA-vqc8-7275-q272",
+    "PKSA-qgpb-b2wz-rty6",
+    "symfony/symfony/CVE-2026-45070.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45070",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0039,
+    "epss_percentile": 0.3366,
+    "title": "Symfony has Email Header Injection via Non-Token Characters in Mime Parameter Names",
+    "fixed": [
+     "5.4.55",
+     "6.4.49",
+     "7.4.22",
+     "8.1.10"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45071",
+    "GHSA-x6g4-fwcc-jj8w",
+    "PKSA-9ss4-yr44-h3bt",
+    "symfony/symfony/CVE-2026-45071.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45071",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00572,
+    "epss_percentile": 0.4778,
+    "title": "Symfony has XXE (Local File Disclosure) in DomCrawler::addXmlContent() via validateOnParse = true",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-45068",
+    "GHSA-xx3c-qf5g-hc39",
+    "PKSA-9sj3-tcvg-s7g4",
+    "symfony/symfony/CVE-2026-45068.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-45068",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00524,
+    "epss_percentile": 0.44969,
+    "title": "Symfony has an Argument Injection in SendmailTransport via Dash-Prefixed Recipient Address",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-123792",
+    "PKSA-wjdj-twpp-mc62",
+    "symfony/symfony/CVE-2026-123792.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-123792",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00504,
+    "epss_percentile": 0.43612,
+    "title": "Exponential and Quadratic Parse Times in the YAML Parser Let a Single Document Hold a Process",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-121623",
+    "PKSA-qsv5-t2f9-c4xk",
+    "symfony/symfony/CVE-2026-121623.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-121623",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00587,
+    "epss_percentile": 0.48583,
+    "title": "DataUriNormalizer Opens Data URIs With a Non-Lowercase Scheme as Local Files, Letting a Client Read Any Server File",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-118513",
+    "PKSA-8s76-qdyv-tvyf",
+    "symfony/symfony/CVE-2026-118513.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-118513",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0027,
+    "epss_percentile": 0.19496,
+    "title": "CVE-2026-118513: X509Authenticator and X509AuthenticationListener Read Escaped RFC 2253 Commas and Bare Slashes Inside a DN Value as RDN Boundaries: Incomplete Fix for CVE-2026-45063",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-118515",
+    "PKSA-fnqz-pbgw-j1pd",
+    "symfony/symfony/CVE-2026-118515.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-118515",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00581,
+    "epss_percentile": 0.48251,
+    "title": "CVE-2026-118515: The Serializer Builds UploadedFile Objects From Request Data, Letting a Client Point an Upload at Any Server File",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-118514",
+    "PKSA-7pdq-dz64-7s51",
+    "symfony/symfony/CVE-2026-118514.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-118514",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00613,
+    "epss_percentile": 0.49853,
+    "title": "CVE-2026-118514: HEAD Requests Bypass the methods Option of security.access_control Rules and Firewalls: Incomplete Fix for CVE-2026-45075",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-118516",
+    "PKSA-py6w-7ynw-bn9j",
+    "symfony/symfony/CVE-2026-118516.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-118516",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00446,
+    "epss_percentile": 0.39237,
+    "title": "CVE-2026-118516: Host Placeholders Can Match the Start of the Path in Compiled URL Matchers, Bypassing Path-Based Access Control",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-121971",
+    "PKSA-yk9m-qbjr-81kg",
+    "symfony/symfony/CVE-2026-121971.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-121971",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00249,
+    "epss_percentile": 0.16364,
+    "title": "ScopingHttpClient Sends the Credentials of Its Default Scope to Other Origins Through Network-Path References",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-123824",
+    "PKSA-j458-vmkj-zs4x",
+    "symfony/symfony/CVE-2026-123824.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-123824",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00272,
+    "epss_percentile": 0.19844,
+    "title": "XXE (Local File Read) in Config XmlUtils::parse() via validateOnParse = true",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-123339",
+    "PKSA-68d7-b14m-3bjc",
+    "symfony/symfony/CVE-2026-123339.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-123339",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00233,
+    "epss_percentile": 0.14309,
+    "title": "Inline Fragments Let Untrusted Forwarded Headers Set the Host, Scheme and Port of the URLs Generated for the Main Request",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-123125",
+    "PKSA-mk2k-pp4j-3cvq",
+    "symfony/symfony/CVE-2026-123125.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-123125",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00207,
+    "epss_percentile": 0.10938,
+    "title": "Ip Constraint public/private Modes Accept IPv4-Mapped and IPv4-Compatible IPv6 Addresses: SSRF Filter Bypass",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-123119",
+    "PKSA-gd5w-xsj1-63jv",
+    "symfony/symfony/CVE-2026-123119.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-123119",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00228,
+    "epss_percentile": 0.13712,
+    "title": "NoPrivateNetworkHttpClient Does Not Pin the Checked IP of Cached Hosts, Letting DNS Rebinding Enumerate Internal Ports: Incomplete Fix for CVE-2024-50342",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "2026-11-04-22",
+    "PKSA-d219-wydc-sszs",
+    "symfony/symfony/2026-11-04-22.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "2026-11-04-22",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Generated URLs Can Point to a Host Chosen by the Client",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2026-109449",
+    "PKSA-zxg3-vspd-sr38",
+    "symfony/symfony/CVE-2026-109449.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2026-109449",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00378,
+    "epss_percentile": 0.32199,
+    "title": "CVE-2026-109449: Unbounded Nesting in the Expression Parser Lets Untrusted Expressions Crash the Process",
+    "fixed": [
+     "5.4.54",
+     "6.4.48",
+     "7.4.21",
+     "8.1.9"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/symfony",
+   "ids": [
+    "CVE-2024-50345",
+    "GHSA-mrqx-rp3w-jpjp",
+    "PKSA-rb2q-qy38-2dj7",
+    "symfony/symfony/CVE-2024-50345.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/symfony",
+    "installed": "4.4.0",
+    "cve": "CVE-2024-50345",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00587,
+    "epss_percentile": 0.48539,
+    "title": "CVE-2024-50345: Open redirect via browser-sanitized URLs",
+    "fixed": [
+     "5.4.46",
+     "6.4.14",
+     "7.1.7"
+    ],
+    "reach": "unknown"
+   }
+  }
+ ],
+ "drupal9": [
+  {
+   "pkg": "symfony/http-kernel",
+   "ids": [
+    "CVE-2026-123339",
+    "PKSA-3gxv-7xhq-mgmz",
+    "symfony/http-kernel/CVE-2026-123339.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/http-kernel",
+    "installed": "4.4.51",
+    "cve": "CVE-2026-123339",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00233,
+    "epss_percentile": 0.14309,
+    "title": "Inline Fragments Let Untrusted Forwarded Headers Set the Host, Scheme and Port of the URLs Generated for the Main Request",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/routing",
+   "ids": [
+    "CVE-2026-45065",
+    "GHSA-72xp-p242-47p9",
+    "PKSA-yc7t-91v9-99xs",
+    "symfony/routing/CVE-2026-45065.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/routing",
+    "installed": "4.4.44",
+    "cve": "CVE-2026-45065",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00348,
+    "epss_percentile": 0.28856,
+    "title": "Symfony has a UrlGenerator Route-Requirement Bypass via Unanchored Regex Alternation \u2192 Off-Site //host URL Injection",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/routing",
+   "ids": [
+    "CVE-2026-48784",
+    "GHSA-h5x3-xfc9-m39h",
+    "PKSA-bf7t-jnpz-492k",
+    "symfony/routing/CVE-2026-48784.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/routing",
+    "installed": "4.4.44",
+    "cve": "CVE-2026-48784",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00348,
+    "epss_percentile": 0.28856,
+    "title": "Symfony: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` \u2192 Generated URL Collapses Off-Route Under RFC 3986 Normalization",
+    "fixed": [
+     "5.4.53",
+     "6.4.41",
+     "7.4.13",
+     "8.0.13"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/routing",
+   "ids": [
+    "CVE-2026-118516",
+    "PKSA-y8c5-1b7f-r1gj",
+    "symfony/routing/CVE-2026-118516.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/routing",
+    "installed": "4.4.44",
+    "cve": "CVE-2026-118516",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00446,
+    "epss_percentile": 0.39237,
+    "title": "CVE-2026-118516: Host Placeholders Can Match the Start of the Path in Compiled URL Matchers, Bypassing Path-Based Access Control",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/validator",
+   "ids": [
+    "CVE-2024-50343",
+    "GHSA-g3rh-rrhp-jhh9",
+    "PKSA-w2tw-kmfg-rt9s",
+    "symfony/validator/CVE-2024-50343.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/validator",
+    "installed": "4.4.48",
+    "cve": "CVE-2024-50343",
+    "severity": "low",
+    "cvss": 3.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00455,
+    "epss_percentile": 0.39993,
+    "title": "Symfony has an incorrect response from Validator when input ends with `\\n`",
+    "fixed": [
+     "5.4.43",
+     "6.4.11",
+     "7.1.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/validator",
+   "ids": [
+    "CVE-2026-123125",
+    "PKSA-68kf-8d6f-hdsy",
+    "symfony/validator/CVE-2026-123125.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/validator",
+    "installed": "4.4.48",
+    "cve": "CVE-2026-123125",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00207,
+    "epss_percentile": 0.10938,
+    "title": "Ip Constraint public/private Modes Accept IPv4-Mapped and IPv4-Compatible IPv6 Addresses: SSRF Filter Bypass",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67339",
+    "GHSA-94pj-82f3-465w",
+    "PKSA-pwsk-hy21-4gby"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.8",
+    "cve": "CVE-2026-67339",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00372,
+    "epss_percentile": 0.31596,
+    "title": "Guzzle: Proxy-Authorization headers can be sent to origin servers",
+    "fixed": [
+     "7.14.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-55767",
+    "GHSA-cwxw-98qj-8qjx",
+    "PKSA-93qv-9n9h-6k6p",
+    "guzzlehttp/guzzle/CVE-2026-55767.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.8",
+    "cve": "CVE-2026-55767",
+    "severity": "medium",
+    "cvss": 5.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00211,
+    "epss_percentile": 0.115,
+    "title": "guzzlehttp/guzzle: Dot-Only Cookie Domains Match All Hosts",
+    "fixed": [
+     "7.12.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67353",
+    "GHSA-f283-ghqc-fg79",
+    "PKSA-bbs6-q5q9-f3t4"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.8",
+    "cve": "CVE-2026-67353",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00418,
+    "epss_percentile": 0.36594,
+    "title": "Guzzle: Unbounded response cookies risk denial of service",
+    "fixed": [
+     "7.15.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-69245",
+    "GHSA-f7vp-7xgx-4w4r",
+    "PKSA-cnw1-2ytm-cgr8"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.8",
+    "cve": "CVE-2026-69245",
+    "severity": "medium",
+    "cvss": 6.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00199,
+    "epss_percentile": 0.09895,
+    "title": "Guzzle: Noncanonical cookie domain keeps subdomain scope",
+    "fixed": [
+     "7.15.2",
+     "8.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-59883",
+    "GHSA-g446-98w2-8p5w",
+    "PKSA-bcdd-5xc7-gwfb"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.8",
+    "cve": "CVE-2026-59883",
+    "severity": "medium",
+    "cvss": 4.7,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00167,
+    "epss_percentile": 0.06067,
+    "title": "Guzzle: Cookie Disclosure and Injection via IP-Address Domains",
+    "fixed": [
+     "7.12.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67354",
+    "GHSA-h95v-h523-3mw8",
+    "PKSA-fy2t-3c5f-827y"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.8",
+    "cve": "CVE-2026-67354",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00372,
+    "epss_percentile": 0.31618,
+    "title": "Guzzle: URI fragments disclosed in redirect Referer headers",
+    "fixed": [
+     "7.15.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-69246",
+    "GHSA-v5mv-p594-2x33",
+    "PKSA-gcrk-3vtt-1r14"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.8",
+    "cve": "CVE-2026-69246",
+    "severity": "high",
+    "cvss": 7.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0037,
+    "epss_percentile": 0.3136,
+    "title": "Guzzle: Noncanonical host can bypass host-based checks",
+    "fixed": [
+     "7.15.2",
+     "8.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67355",
+    "GHSA-wm3w-8rrp-j577",
+    "PKSA-qxvb-2bpp-dnk6"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.8",
+    "cve": "CVE-2026-67355",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00366,
+    "epss_percentile": 0.30884,
+    "title": "Guzzle: Host-only cookie scope is not preserved",
+    "fixed": [
+     "7.15.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-55568",
+    "GHSA-wpwq-4j6v-78m3",
+    "PKSA-k22t-f949-t9g6",
+    "guzzlehttp/guzzle/CVE-2026-55568.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.8",
+    "cve": "CVE-2026-55568",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00148,
+    "epss_percentile": 0.04042,
+    "title": "guzzlehttp/guzzle: Silent HTTPS-Proxy Downgrade to Cleartext",
+    "fixed": [
+     "7.12.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/http-foundation",
+   "ids": [
+    "CVE-2025-64500",
+    "GHSA-3rg7-wf37-54rm",
+    "PKSA-365x-2zjk-pt47",
+    "symfony/http-foundation/CVE-2025-64500.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/http-foundation",
+    "installed": "4.4.49",
+    "cve": "CVE-2025-64500",
+    "severity": "high",
+    "cvss": 7.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01408,
+    "epss_percentile": 0.73011,
+    "title": "Symfony's incorrect parsing of PATH_INFO can lead to limited authorization bypass",
+    "fixed": [
+     "5.4.50",
+     "6.4.29",
+     "7.3.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/http-foundation",
+   "ids": [
+    "CVE-2024-50345",
+    "GHSA-mrqx-rp3w-jpjp",
+    "PKSA-b35n-565h-rs4q",
+    "symfony/http-foundation/CVE-2024-50345.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/http-foundation",
+    "installed": "4.4.49",
+    "cve": "CVE-2024-50345",
+    "severity": "low",
+    "cvss": 3.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00587,
+    "epss_percentile": 0.48539,
+    "title": "Symfony vulnerable to open redirect via browser-sanitized URLs",
+    "fixed": [
+     "5.4.46",
+     "6.4.14",
+     "7.1.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/http-foundation",
+   "ids": [
+    "CVE-2026-108082",
+    "GHSA-r925-mgvr-h9cc"
+   ],
+   "src": [
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/http-foundation",
+    "installed": "4.4.49",
+    "cve": "CVE-2026-108082",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0048,
+    "epss_percentile": 0.41946,
+    "title": "Symfony: ReDoS in HeaderUtils::split() Reachable Through the Cache-Control Request Header",
+    "fixed": [
+     "6.4.46",
+     "7.4.19",
+     "8.1.7",
+     "5.4.54"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/http-foundation",
+   "ids": [
+    "CVE-2026-118514",
+    "PKSA-24ph-xkrh-y79j",
+    "symfony/http-foundation/CVE-2026-118514.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/http-foundation",
+    "installed": "4.4.49",
+    "cve": "CVE-2026-118514",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00613,
+    "epss_percentile": 0.49853,
+    "title": "CVE-2026-118514: HEAD Requests Bypass the methods Option of security.access_control Rules and Firewalls: Incomplete Fix for CVE-2026-45075",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/http-foundation",
+   "ids": [
+    "2026-11-04-22",
+    "PKSA-b2gg-vk1g-6d5q",
+    "symfony/http-foundation/2026-11-04-22.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/http-foundation",
+    "installed": "4.4.49",
+    "cve": "2026-11-04-22",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Generated URLs Can Point to a Host Chosen by the Client",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-48998",
+    "GHSA-34xg-wgjx-8xph",
+    "PKSA-jj5t-2zs1-dcfm",
+    "guzzlehttp/psr7/CVE-2026-48998.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-48998",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00198,
+    "epss_percentile": 0.09694,
+    "title": "guzzlehttp/psr7 has Host Confusion via Authority Reinterpretation",
+    "fixed": [
+     "2.10.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-59882",
+    "GHSA-c2w2-prh8-qm98",
+    "PKSA-vznr-tgp9-fd7d"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-59882",
+    "severity": "medium",
+    "cvss": 4.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00317,
+    "epss_percentile": 0.24999,
+    "title": "guzzlehttp/psr7: Host Confusion via Weak URI Host Validation",
+    "fixed": [
+     "2.12.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-49214",
+    "GHSA-hq7v-mx3g-29hw",
+    "PKSA-gm5x-j3mz-71n9",
+    "guzzlehttp/psr7/CVE-2026-49214.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-49214",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0019,
+    "epss_percentile": 0.08691,
+    "title": "guzzlehttp/psr7 has CRLF Injection via URI Host Component",
+    "fixed": [
+     "2.10.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-55766",
+    "GHSA-vm85-hxw5-5432",
+    "PKSA-7qs6-zvnz-h66r",
+    "guzzlehttp/psr7/CVE-2026-55766.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-55766",
+    "severity": "medium",
+    "cvss": 4.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00229,
+    "epss_percentile": 0.13865,
+    "title": "guzzlehttp/psr7: CRLF Injection in HTTP Start-Line Serialization",
+    "fixed": [
+     "2.12.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/mime",
+   "ids": [
+    "CVE-2026-45067",
+    "GHSA-qpmx-3rfj-7rhv",
+    "PKSA-2n2k-66v2-bwg3",
+    "symfony/mime/CVE-2026-45067.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/mime",
+    "installed": "5.4.13",
+    "cve": "CVE-2026-45067",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00598,
+    "epss_percentile": 0.49118,
+    "title": "Symfony has Email Header / SMTP Command Injection via CRLF in Symfony\\Component\\Mime\\Address",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/mime",
+   "ids": [
+    "CVE-2026-45070",
+    "GHSA-vqc8-7275-q272",
+    "PKSA-wtxr-p26d-nn42",
+    "symfony/mime/CVE-2026-45070.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/mime",
+    "installed": "5.4.13",
+    "cve": "CVE-2026-45070",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0039,
+    "epss_percentile": 0.3366,
+    "title": "Symfony has Email Header Injection via Non-Token Characters in Mime Parameter Names",
+    "fixed": [
+     "5.4.55",
+     "6.4.49",
+     "7.4.22",
+     "8.1.10"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/serializer",
+   "ids": [
+    "CVE-2026-121623",
+    "PKSA-nyd8-k74r-fsf2",
+    "symfony/serializer/CVE-2026-121623.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/serializer",
+    "installed": "4.4.47",
+    "cve": "CVE-2026-121623",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00587,
+    "epss_percentile": 0.48583,
+    "title": "DataUriNormalizer Opens Data URIs With a Non-Lowercase Scheme as Local Files, Letting a Client Read Any Server File",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/serializer",
+   "ids": [
+    "CVE-2026-118515",
+    "PKSA-grh8-hvfp-h9pf",
+    "symfony/serializer/CVE-2026-118515.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/serializer",
+    "installed": "4.4.47",
+    "cve": "CVE-2026-118515",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00581,
+    "epss_percentile": 0.48251,
+    "title": "CVE-2026-118515: The Serializer Builds UploadedFile Objects From Request Data, Letting a Client Point an Upload at Any Server File",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13663",
+    "CVE-2020-13663",
+    "DRUPAL-CORE-2020-004",
+    "GHSA-m648-hpf8-qcjw",
+    "PKSA-j215-hxck-vk25",
+    "SA-CORE-2020-004",
+    "drupal/core/CVE-2020-13663.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13663",
+    "severity": "high",
+    "cvss": 8.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00695,
+    "epss_percentile": 0.53478,
+    "title": "The Drupal core Form API does not properly handle certain form input from cross-site requests, which can lead to other v",
+    "fixed": [
+     "8.8.8",
+     "8.9.1",
+     "9.0.1",
+     "7.72"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13664",
+    "CVE-2020-13664",
+    "DRUPAL-CORE-2020-005",
+    "GHSA-x72f-ggjw-v5xh",
+    "PKSA-jkzg-rr1r-vmvy",
+    "SA-CORE-2020-005",
+    "drupal/core/CVE-2020-13664.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13664",
+    "severity": "high",
+    "cvss": 8.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.02978,
+    "epss_percentile": 0.87461,
+    "title": "Drupal 8 and 9 have a remote code execution vulnerability under certain circumstances.\n\nAn attacker could trick an admin",
+    "fixed": [
+     "8.8.8",
+     "8.9.1",
+     "9.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "CVE-2020-13665 ",
+    "DRUPAL-CORE-2020-006"
+   ],
+   "src": [
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13665 ",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "JSON:API PATCH requests may bypass validation for certain fields.\n\nBy default, JSON:API works in a read-only mode which",
+    "fixed": [
+     "8.8.8",
+     "8.9.1",
+     "9.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13666",
+    "CVE-2020-13666",
+    "DRUPAL-CORE-2020-007",
+    "GHSA-8jj2-x2gc-ggm7",
+    "PKSA-c6qk-kgrx-8q42",
+    "SA-CORE-2020-007",
+    "drupal/core/CVE-2020-13666.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13666",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.02925,
+    "epss_percentile": 0.87253,
+    "title": "The Drupal AJAX API does not disable JSONP by default, which can lead to cross-site scripting.",
+    "fixed": [
+     "8.8.10",
+     "8.9.6",
+     "9.0.6",
+     "7.73"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13667",
+    "CVE-2020-13667",
+    "DRUPAL-CORE-2020-008",
+    "GHSA-x2q9-r8gm-f657",
+    "PKSA-jknr-sjbw-zn24",
+    "SA-CORE-2020-008",
+    "drupal/core/CVE-2020-13667.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13667",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00928,
+    "epss_percentile": 0.61031,
+    "title": "The experimental Workspaces module allows you to create multiple workspaces on your site in which draft content can be e",
+    "fixed": [
+     "8.8.10",
+     "8.9.6",
+     "9.0.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13688",
+    "CVE-2020-13688",
+    "DRUPAL-CORE-2020-009",
+    "GHSA-qf2g-mrrx-rr5p",
+    "PKSA-cp8p-f15s-htbt",
+    "SA-CORE-2020-009"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13688",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00662,
+    "epss_percentile": 0.52149,
+    "title": "Drupal 8 and 9 have a reflected cross-site scripting (XSS) vulnerability under certain circumstances.\n\nAn attacker could",
+    "fixed": [
+     "8.8.10",
+     "8.9.6",
+     "9.0.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13669",
+    "CVE-2020-13669",
+    "DRUPAL-CORE-2020-010",
+    "GHSA-c533-c843-67h8",
+    "PKSA-69gr-9b59-5f99",
+    "SA-CORE-2020-010",
+    "drupal/core/CVE-2020-13669.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13669",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00743,
+    "epss_percentile": 0.55211,
+    "title": "Drupal core's built-in CKEditor image caption functionality is vulnerable to XSS.",
+    "fixed": [
+     "8.8.10",
+     "8.9.6",
+     "9.0.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13670",
+    "CVE-2020-13670",
+    "DRUPAL-CORE-2020-011",
+    "GHSA-mmjr-5q74-p3m4",
+    "PKSA-ggc3-34xd-zmzd",
+    "SA-CORE-2020-011",
+    "drupal/core/CVE-2020-13670.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13670",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01106,
+    "epss_percentile": 0.66275,
+    "title": "A vulnerability exists in the File module which allows an attacker to gain access to the file metadata of a permanent pr",
+    "fixed": [
+     "8.8.10",
+     "8.9.6",
+     "9.0.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13671",
+    "CVE-2020-13671",
+    "DRUPAL-CORE-2020-012",
+    "GHSA-68jc-v27h-vhmw",
+    "PKSA-77t6-rxnw-bfjm",
+    "SA-CORE-2020-012",
+    "drupal/core/CVE-2020-13671.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13671",
+    "severity": "high",
+    "cvss": 8.8,
+    "known_exploited": true,
+    "ransomware": false,
+    "epss": 0.30945,
+    "epss_percentile": 0.98284,
+    "title": "*Update November 18: Documented longer list of dangerous file extensions*\n\nDrupal core does not properly sanitize certai",
+    "fixed": [
+     "8.8.11",
+     "8.9.9",
+     "9.0.8",
+     "7.74"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-28948",
+    "BIT-drupal-2020-28949",
+    "CVE-2020-28948",
+    "CVE-2020-28949",
+    "DRUPAL-CORE-2020-013",
+    "GHSA-75c5-f4gw-38r9",
+    "GHSA-jh5x-hfhg-78jq",
+    "SA-CORE-2020-013"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-28948",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.47493,
+    "epss_percentile": 0.98861,
+    "title": "The Drupal project uses the PEAR Archive\\_Tar library. The PEAR Archive\\_Tar library has released a security update that",
+    "fixed": [
+     "8.8.12",
+     "8.9.10",
+     "9.0.9"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "DRUPAL-CORE-2021-001"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "DRUPAL-CORE-2021-001",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "The Drupal project uses the pear Archive\\_Tar library, which has released a security update that impacts Drupal. For mor",
+    "fixed": [
+     "8.9.13",
+     "9.0.11",
+     "9.1.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13672",
+    "CVE-2020-13672",
+    "DRUPAL-CORE-2021-002",
+    "GHSA-3m36-mjwj-352c",
+    "PKSA-7zvx-63nf-7nkj",
+    "SA-CORE-2021-002",
+    "drupal/core/CVE-2020-13672.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13672",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00677,
+    "epss_percentile": 0.52774,
+    "title": "Drupal core's sanitization API fails to properly filter cross-site scripting under certain circumstances.\n\nNot all sites",
+    "fixed": [
+     "8.9.14",
+     "9.0.12",
+     "9.1.7",
+     "7.80"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2021-33829",
+    "CVE-2021-33829",
+    "DRUPAL-CORE-2021-003",
+    "GHSA-rgx6-rjj4-c388",
+    "PKSA-bc4x-jnrh-4k6w",
+    "SA-CORE-2021-003",
+    "drupal/core/CVE-2021-33829.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2021-33829",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.03189,
+    "epss_percentile": 0.88269,
+    "title": "**Update: 2021-06-11: Added CVE-2021-33829 identifier**\n\nDrupal core uses the third-party CKEditor library. This library",
+    "fixed": [
+     "8.9.16",
+     "9.0.14",
+     "9.1.9",
+     "7.80"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "DRUPAL-CORE-2022-001"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "DRUPAL-CORE-2022-001",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "jQuery UI is a third-party library used by Drupal. This library was previously thought to be end-of-life.\n\nLate in 2021,",
+    "fixed": [
+     "9.2.11",
+     "9.3.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-25271",
+    "CVE-2022-25271",
+    "DRUPAL-CORE-2022-003",
+    "GHSA-fmfv-x8mp-5767",
+    "PKSA-72rg-qbp7-873g",
+    "SA-CORE-2022-003"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-25271",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01272,
+    "epss_percentile": 0.70279,
+    "title": "Drupal core's form API has a vulnerability where certain contributed or custom modules' forms may be vulnerable to impro",
+    "fixed": [
+     "9.2.13",
+     "9.3.6",
+     "7.88"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-25270",
+    "CVE-2022-25270",
+    "DRUPAL-CORE-2022-004",
+    "GHSA-73q4-j324-2qcc",
+    "PKSA-2tvs-gcpz-cmm6",
+    "SA-CORE-2022-004"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-25270",
+    "severity": "medium",
+    "cvss": 6.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00769,
+    "epss_percentile": 0.56089,
+    "title": "The Quick Edit module does not properly check entity access in some circumstances. This could result in users with the \"",
+    "fixed": [
+     "9.2.13",
+     "9.3.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-24728",
+    "BIT-drupal-2022-24729",
+    "CVE-2022-24728",
+    "CVE-2022-24729",
+    "DRUPAL-CORE-2022-005",
+    "GHSA-4fc4-4p5g-6w89",
+    "GHSA-f6rf-9m92-x2hh",
+    "SA-CORE-2022-005"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-24728",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01203,
+    "epss_percentile": 0.68676,
+    "title": "The Drupal project uses the [CKEditor](https://github.com/ckeditor/ckeditor4) library for WYSIWYG editing. CKEditor has",
+    "fixed": [
+     "9.2.15",
+     "9.3.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-24775",
+    "CVE-2022-24775",
+    "DRUPAL-CORE-2022-006",
+    "GHSA-q7rv-6hp3-vh96",
+    "SA-CORE-2022-006"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-24775",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0248,
+    "epss_percentile": 0.84811,
+    "title": "Drupal uses the third-party Guzzle library for handling HTTP requests and responses to external services. [Guzzle has re",
+    "fixed": [
+     "9.2.16",
+     "9.3.9"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-25273",
+    "CVE-2022-25273",
+    "DRUPAL-CORE-2022-008",
+    "GHSA-g36h-4jr6-qmm9",
+    "PKSA-fpcy-trdp-tpy2",
+    "SA-CORE-2022-008"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-25273",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00568,
+    "epss_percentile": 0.47584,
+    "title": "Drupal core's form API has a vulnerability where certain contributed or custom modules' forms may be vulnerable to impro",
+    "fixed": [
+     "9.2.18",
+     "9.3.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-29248",
+    "CVE-2022-29248",
+    "DRUPAL-CORE-2022-010",
+    "GHSA-cwmx-hcrq-mhc3",
+    "SA-CORE-2022-010"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-29248",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01351,
+    "epss_percentile": 0.71911,
+    "title": "Drupal uses the third-party Guzzle library for handling HTTP requests and responses to external services. [Guzzle has re",
+    "fixed": [
+     "9.2.20",
+     "9.3.14"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-31042",
+    "BIT-drupal-2022-31043",
+    "CVE-2022-31042",
+    "CVE-2022-31043",
+    "DRUPAL-CORE-2022-011",
+    "GHSA-f2wf-25xc-69c9",
+    "GHSA-w248-ffj2-4v5q",
+    "SA-CORE-2022-011"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-31042",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01992,
+    "epss_percentile": 0.80963,
+    "title": "*Updated 22:00 UTC 2022-06-10: Added steps to update without `drupal/core-recommended`.*\n\nDrupal uses the third-party Gu",
+    "fixed": [
+     "9.2.21",
+     "9.3.16"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-25275",
+    "CVE-2022-25275",
+    "DRUPAL-CORE-2022-012",
+    "GHSA-xh3v-6f9j-wxw3",
+    "PKSA-hy6y-p19f-b5kf",
+    "SA-CORE-2022-012",
+    "drupal/core/CVE-2022-25275.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-25275",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00667,
+    "epss_percentile": 0.52364,
+    "title": "In some situations, the Image module does not correctly check access to image files not stored in the standard public fi",
+    "fixed": [
+     "9.3.19",
+     "9.4.3",
+     "7.91",
+     "7.91.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-25278",
+    "CVE-2022-25278",
+    "DRUPAL-CORE-2022-013",
+    "GHSA-cfh2-7f6h-3m85",
+    "PKSA-gkkw-qh7h-5181",
+    "SA-CORE-2022-013",
+    "drupal/core/CVE-2022-25278.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-25278",
+    "severity": "medium",
+    "cvss": 6.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0059,
+    "epss_percentile": 0.48726,
+    "title": "Under certain circumstances, the Drupal core form API evaluates form element access incorrectly. This may lead to a user",
+    "fixed": [
+     "9.3.19",
+     "9.4.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-25277",
+    "CVE-2022-25277",
+    "DRUPAL-CORE-2022-014",
+    "GHSA-6955-67hm-vjjq",
+    "PKSA-7q72-qds7-4xyv",
+    "SA-CORE-2022-014",
+    "drupal/core/CVE-2022-25277.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-25277",
+    "severity": "high",
+    "cvss": 7.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01422,
+    "epss_percentile": 0.73237,
+    "title": "*Updated 2022-07-20 19:45 UTC to indicate that this only affects Apache web servers.*\n\nDrupal core sanitizes filenames w",
+    "fixed": [
+     "9.3.19",
+     "9.4.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-25276",
+    "CVE-2022-25276",
+    "DRUPAL-CORE-2022-015",
+    "GHSA-4wfq-jc9h-vpcx",
+    "PKSA-4j5n-cxxv-ptjc",
+    "SA-CORE-2022-015"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-25276",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00526,
+    "epss_percentile": 0.45052,
+    "title": "The Media oEmbed iframe route does not properly validate the iframe domain setting, which allows embeds to be displayed",
+    "fixed": [
+     "9.3.19",
+     "9.4.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2022-39261",
+    "CVE-2022-39261",
+    "DRUPAL-CORE-2022-016",
+    "GHSA-52m2-vc4m-jj33",
+    "SA-CORE-2022-016"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2022-39261",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.03174,
+    "epss_percentile": 0.88223,
+    "title": "Drupal uses the [Twig](https://twig.symfony.com/) third-party library for content templating and sanitization. [Twig has",
+    "fixed": [
+     "9.3.22",
+     "9.4.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "DRUPAL-CORE-2023-001"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "DRUPAL-CORE-2023-001",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "The Media Library module does not properly check entity access in some circumstances. This may result in users with acce",
+    "fixed": [
+     "9.4.10",
+     "9.5.2",
+     "10.0.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "DRUPAL-CORE-2023-002"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "DRUPAL-CORE-2023-002",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "The Media module does not properly check entity access in some circumstances. This may result in users seeing thumbnails",
+    "fixed": [
+     "9.4.12",
+     "9.5.5",
+     "10.0.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "DRUPAL-CORE-2023-003"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "DRUPAL-CORE-2023-003",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "The language module provides a Language switcher block which can be placed to provide links to quickly switch between di",
+    "fixed": [
+     "9.4.12",
+     "9.5.5",
+     "10.0.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "DRUPAL-CORE-2023-004"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "DRUPAL-CORE-2023-004",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Drupal core provides a page that outputs the markup from `phpinfo()` to assist with diagnosing PHP configuration.\n\nIf an",
+    "fixed": [
+     "9.4.12",
+     "9.5.5",
+     "10.0.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2023-31250",
+    "CVE-2023-31250",
+    "DRUPAL-CORE-2023-005",
+    "GHSA-8849-cv9f-vccm",
+    "PKSA-h7d4-5mdz-2965",
+    "SA-CORE-2023-005"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2023-31250",
+    "severity": "critical",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0054,
+    "epss_percentile": 0.45902,
+    "title": "The file download facility doesn't sufficiently sanitize file paths in certain situations. This may result in users gain",
+    "fixed": [
+     "9.4.14",
+     "9.5.8",
+     "10.0.8",
+     "7.96"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2023-5256",
+    "CVE-2023-5256",
+    "DRUPAL-CORE-2023-006",
+    "GHSA-rjqg-3h9m-fx5x",
+    "PKSA-my7h-svxh-5q3g",
+    "SA-CORE-2023-006"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2023-5256",
+    "severity": "critical",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00851,
+    "epss_percentile": 0.58697,
+    "title": "In certain scenarios, Drupal's JSON:API module will output error backtraces. With some configurations, this may cause se",
+    "fixed": [
+     "9.5.11",
+     "10.0.11",
+     "10.1.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2024-11941",
+    "CVE-2024-11941",
+    "DRUPAL-CORE-2024-001",
+    "GHSA-xq54-x54m-vcpx",
+    "SA-CORE-2024-001"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2024-11941",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00476,
+    "epss_percentile": 0.41638,
+    "title": "The Comment module allows users to reply to comments. In certain cases, an attacker could make comment reply requests th",
+    "fixed": [
+     "10.1.8",
+     "10.2.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2024-12393",
+    "CVE-2024-12393",
+    "DRUPAL-CORE-2024-003",
+    "GHSA-8mvq-8h2v-j9vf",
+    "PKSA-yjvc-rnsz-8n3c",
+    "SA-CORE-2024-003"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2024-12393",
+    "severity": "medium",
+    "cvss": 5.4,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00336,
+    "epss_percentile": 0.27383,
+    "title": "Drupal uses JavaScript to render status messages in some cases and configurations. In certain situations, the status mes",
+    "fixed": [
+     "10.2.11",
+     "10.3.9",
+     "11.0.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2024-55634",
+    "CVE-2024-55634",
+    "DRUPAL-CORE-2024-004",
+    "GHSA-7cwc-fjqm-8vh8",
+    "PKSA-ts55-c66h-g96n",
+    "SA-CORE-2024-004"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2024-55634",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00414,
+    "epss_percentile": 0.36221,
+    "title": "Drupal's uniqueness checking for certain user fields is inconsistent depending on the database engine and its collation.",
+    "fixed": [
+     "10.2.11",
+     "10.3.9",
+     "11.0.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2024-55636",
+    "CVE-2024-55636",
+    "DRUPAL-CORE-2024-006",
+    "GHSA-938f-5r4f-h65v",
+    "PKSA-jthw-vxjy-kxnx",
+    "SA-CORE-2024-006"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2024-55636",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0093,
+    "epss_percentile": 0.61088,
+    "title": "Drupal core contains a potential PHP Object Injection vulnerability that (if combined with another exploit) could lead t",
+    "fixed": [
+     "10.2.11",
+     "10.3.9",
+     "11.0.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2024-55637",
+    "CVE-2024-55637",
+    "DRUPAL-CORE-2024-007",
+    "GHSA-w6rx-9g2x-mg5g",
+    "PKSA-g51h-n1x3-mszr",
+    "SA-CORE-2024-007"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2024-55637",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00826,
+    "epss_percentile": 0.57925,
+    "title": "Drupal core contains a potential PHP Object Injection vulnerability that (if combined with another exploit) could lead t",
+    "fixed": [
+     "10.2.11",
+     "10.3.9",
+     "11.0.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2024-55638",
+    "CVE-2024-55638",
+    "DRUPAL-CORE-2024-008",
+    "GHSA-gvf2-2f4g-jqf4",
+    "PKSA-xd2s-f2mt-7tf3",
+    "SA-CORE-2024-008"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2024-55638",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00983,
+    "epss_percentile": 0.62802,
+    "title": "Drupal core contains a potential PHP Object Injection vulnerability that (if combined with another exploit) could lead t",
+    "fixed": [
+     "10.2.11",
+     "10.3.9",
+     "7.102"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2025-3057",
+    "CVE-2025-3057",
+    "DRUPAL-CORE-2025-001",
+    "GHSA-39g6-x4x8-5jcm",
+    "PKSA-s1zc-gcfk-ddw5",
+    "SA-CORE-2025-001"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2025-3057",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00311,
+    "epss_percentile": 0.24246,
+    "title": "Drupal core doesn't sufficiently filter error messages under certain circumstances, leading to a reflected Cross Site Sc",
+    "fixed": [
+     "10.3.13",
+     "10.4.3",
+     "11.0.12",
+     "11.1.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2025-31673",
+    "CVE-2025-31673",
+    "DRUPAL-CORE-2025-002",
+    "GHSA-wpp8-fjgf-pwc7",
+    "PKSA-s6zc-mws4-ngh4",
+    "SA-CORE-2025-002"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2025-31673",
+    "severity": "medium",
+    "cvss": 4.6,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00317,
+    "epss_percentile": 0.24954,
+    "title": "Bulk operations allow authorized users to modify several nodes at once from the Content page (`/admin/content`). A site",
+    "fixed": [
+     "10.3.13",
+     "10.4.3",
+     "11.0.12",
+     "11.1.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2025-31674",
+    "CVE-2025-31674",
+    "DRUPAL-CORE-2025-003",
+    "GHSA-2qph-q8xw-gv7q",
+    "PKSA-ctyc-dmct-npkz",
+    "SA-CORE-2025-003"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2025-31674",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00595,
+    "epss_percentile": 0.4897,
+    "title": "Drupal core contains a potential PHP Object Injection vulnerability that (if combined with another exploit) could lead t",
+    "fixed": [
+     "10.3.13",
+     "10.4.3",
+     "11.0.12",
+     "11.1.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2025-31675",
+    "CVE-2025-31675",
+    "DRUPAL-CORE-2025-004",
+    "GHSA-m4wj-hhwj-47qp",
+    "PKSA-42zc-x5ss-z64p",
+    "SA-CORE-2025-004"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2025-31675",
+    "severity": "medium",
+    "cvss": 5.4,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00502,
+    "epss_percentile": 0.4346,
+    "title": "Drupal core Link field attributes are not sufficiently sanitized, which can lead to a Cross Site Scripting vulnerability",
+    "fixed": [
+     "10.3.14",
+     "10.4.5",
+     "11.0.13",
+     "11.1.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2025-13080",
+    "CVE-2025-13080",
+    "DRUPAL-CORE-2025-005",
+    "GHSA-83v7-c2cf-p9c2",
+    "PKSA-bn52-vyzy-rmnm",
+    "SA-CORE-2025-005"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2025-13080",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00347,
+    "epss_percentile": 0.28675,
+    "title": "Drupal Core has a rarely used feature, provided by an underlying library, which allows certain attributes of incoming HT",
+    "fixed": [
+     "10.4.9",
+     "10.5.6",
+     "11.1.9",
+     "11.2.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2025-13081",
+    "CVE-2025-13081",
+    "DRUPAL-CORE-2025-006",
+    "GHSA-m6vv-vcj8-w8m7",
+    "PKSA-xj83-g6g8-41vf",
+    "SA-CORE-2025-006"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2025-13081",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0028,
+    "epss_percentile": 0.20728,
+    "title": "Drupal core contains a chain of methods that is exploitable when an insecure deserialization vulnerability exists on the",
+    "fixed": [
+     "10.4.9",
+     "10.5.6",
+     "11.1.9",
+     "11.2.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2025-13082",
+    "CVE-2025-13082",
+    "DRUPAL-CORE-2025-007",
+    "GHSA-h89p-5896-f4q8",
+    "PKSA-dh1f-zjm5-qg8y",
+    "SA-CORE-2025-007"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2025-13082",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00243,
+    "epss_percentile": 0.15661,
+    "title": "By generating and tricking a user into visiting a malicious URL, an attacker can perform site defacement.\n\nThe defacemen",
+    "fixed": [
+     "10.4.9",
+     "10.5.6",
+     "11.1.9",
+     "11.2.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2025-13083",
+    "CVE-2025-13083",
+    "DRUPAL-CORE-2025-008",
+    "GHSA-mhpg-hpj5-73r2",
+    "PKSA-d8tb-wwz2-ctxk",
+    "SA-CORE-2025-008"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2025-13083",
+    "severity": "low",
+    "cvss": 3.7,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00278,
+    "epss_percentile": 0.20535,
+    "title": "The core `system` module handles downloads of private and temporary files. Contrib modules can define additional kinds o",
+    "fixed": [
+     "10.4.9",
+     "10.5.6",
+     "11.1.9",
+     "11.2.8",
+     "7.103"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2026-6365",
+    "CVE-2026-6365",
+    "DRUPAL-CORE-2026-001",
+    "GHSA-f3cj-mjqm-fhvj",
+    "PKSA-7kyj-yy4m-jzhv",
+    "SA-CORE-2026-001"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-6365",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00219,
+    "epss_percentile": 0.12533,
+    "title": "Drupal core's jQuery integration for AJAX modal dialog boxes does not sufficiently sanitize certain options, which can l",
+    "fixed": [
+     "10.5.9",
+     "10.6.7",
+     "11.2.11",
+     "11.3.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2026-6366",
+    "CVE-2026-6366",
+    "DRUPAL-CORE-2026-002",
+    "GHSA-xmjc-63pr-2mpg",
+    "PKSA-j351-xv4b-pryh",
+    "SA-CORE-2026-002"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-6366",
+    "severity": "medium",
+    "cvss": 6.6,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00399,
+    "epss_percentile": 0.34652,
+    "title": "Drupal core contains a chain of methods that could be exploitable when an insecure deserialization vulnerability exists",
+    "fixed": [
+     "10.5.9",
+     "10.6.7",
+     "11.2.11",
+     "11.3.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2026-9082",
+    "CVE-2026-9082",
+    "DRUPAL-CORE-2026-004",
+    "GHSA-ghwc-95x2-682j",
+    "PKSA-h76q-q9b2-4kdc",
+    "SA-CORE-2026-004"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-9082",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": true,
+    "ransomware": false,
+    "epss": 0.89381,
+    "epss_percentile": 0.99788,
+    "title": "Drupal core includes a database abstraction API to ensure that queries executed against the database are sanitized to pr",
+    "fixed": [
+     "10.4.10",
+     "10.5.10",
+     "10.6.9",
+     "11.1.10",
+     "11.2.12",
+     "11.3.10"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2026-55803",
+    "CVE-2026-55803",
+    "DRUPAL-CORE-2026-005",
+    "SA-CORE-2026-005"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-55803",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00353,
+    "epss_percentile": 0.29356,
+    "title": "[SA-CORE-2019-003](https://www.drupal.org/sa-core-2019-003) added protection for fields that store serialized data to di",
+    "fixed": [
+     "10.5.12",
+     "10.6.11",
+     "11.2.14",
+     "11.3.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2026-55804",
+    "CVE-2026-55804",
+    "DRUPAL-CORE-2026-006",
+    "SA-CORE-2026-006"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-55804",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00353,
+    "epss_percentile": 0.29356,
+    "title": "Drupal core contains a chain of methods that could be exploitable when an insecure deserialization vulnerability exists",
+    "fixed": [
+     "10.5.12",
+     "10.6.11",
+     "11.2.14",
+     "11.3.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2026-55806",
+    "CVE-2026-55806",
+    "DRUPAL-CORE-2026-007",
+    "SA-CORE-2026-007"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-55806",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00339,
+    "epss_percentile": 0.27713,
+    "title": "Drupal core ships a `rebuild.php` front controller that can be used to rebuild Drupal (clearing the caches and rebuildin",
+    "fixed": [
+     "10.5.12",
+     "10.6.11",
+     "11.2.14",
+     "11.3.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2026-55807",
+    "CVE-2026-55807",
+    "DRUPAL-CORE-2026-008",
+    "SA-CORE-2026-008"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-55807",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00221,
+    "epss_percentile": 0.12752,
+    "title": "The Media module comes with support for oEmbed. The oEmbed specification contains two discovery mechanisms, via `provide",
+    "fixed": [
+     "10.5.12",
+     "10.6.11",
+     "11.2.14",
+     "11.3.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2026-55808",
+    "CVE-2026-55808",
+    "DRUPAL-CORE-2026-009",
+    "SA-CORE-2026-009"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-55808",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00273,
+    "epss_percentile": 0.19965,
+    "title": "The JSON:API and REST modules allow you to upload image files to image fields.\n\nThe validation rules check the file exte",
+    "fixed": [
+     "10.5.12",
+     "10.6.11",
+     "11.2.14",
+     "11.3.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "CVE-2026-15916",
+    "DRUPAL-CORE-2026-010",
+    "SA-CORE-2026-010"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-15916",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00196,
+    "epss_percentile": 0.09365,
+    "title": "The Image module allows you to define and configure image fields.\n\nThe module doesn't sufficiently check access to image",
+    "fixed": [
+     "10.6.13",
+     "11.3.14",
+     "11.4.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "CVE-2026-55805",
+    "DRUPAL-CORE-2026-012",
+    "SA-CORE-2026-012"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-55805",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00226,
+    "epss_percentile": 0.13423,
+    "title": "The Layout Builder module doesn't sufficiently sanitize block labels in certain scenarios, which can lead to a cross-sit",
+    "fixed": [
+     "10.6.13",
+     "11.3.14",
+     "11.4.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "CVE-2026-108097",
+    "DRUPAL-CORE-2026-014",
+    "SA-CORE-2026-014"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-108097",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00572,
+    "epss_percentile": 0.47814,
+    "title": "A remote code execution vulnerability exists within the Field UI module in Drupal core.\n\nThe vulnerability is not direct",
+    "fixed": [
+     "10.6.19",
+     "11.3.19",
+     "11.4.10",
+     "12.0.0-beta2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "CVE-2026-108515",
+    "DRUPAL-CORE-2026-015",
+    "SA-CORE-2026-015"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2026-108515",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00212,
+    "epss_percentile": 0.11578,
+    "title": "The Drupal core Link module provides a field type that can be used for internal and external URLs.\n\nThe module does not",
+    "fixed": [
+     "10.6.19",
+     "11.3.19",
+     "11.4.10",
+     "12.0.0-beta2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "GHSA-6ccv-8fgf-cjpw"
+   ],
+   "src": [
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "GHSA-6ccv-8fgf-cjpw",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Drupal core Denial of Service vulnerability",
+    "fixed": [
+     "10.1.8",
+     "10.2.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "GHSA-gxxj-g9v8-w28p"
+   ],
+   "src": [
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "GHSA-gxxj-g9v8-w28p",
+    "severity": "high",
+    "cvss": 7.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Drupal core Arbitrary PHP code execution",
+    "fixed": [
+     "7.75",
+     "8.8.12",
+     "8.9.10",
+     "9.0.9"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13668",
+    "CVE-2020-13668",
+    "GHSA-m6q5-wv4x-fv6h",
+    "PKSA-1k26-dn58-yzpc",
+    "drupal/core/CVE-2020-13668.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13668",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00787,
+    "epss_percentile": 0.56635,
+    "title": "Cross-site Scripting in Drupal Core",
+    "fixed": [
+     "8.8.10",
+     "8.9.6",
+     "9.0.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "CVE-2024-45440",
+    "GHSA-mg8j-w93w-xjgc",
+    "PKSA-styk-3knc-d1bt"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2024-45440",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.09269,
+    "epss_percentile": 0.9543,
+    "title": "Drupal Full Path Disclosure",
+    "fixed": [
+     "10.3.6",
+     "11.0.5",
+     "10.2.9"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "BIT-drupal-2020-13665",
+    "CVE-2020-13665",
+    "GHSA-wxqp-jwc9-g39x",
+    "PKSA-5wmm-s575-4sjg",
+    "SA-CORE-2020-006",
+    "drupal/core/CVE-2020-13665.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "CVE-2020-13665",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01275,
+    "epss_percentile": 0.70328,
+    "title": "Drupal Core Access bypass vulnerability",
+    "fixed": [
+     "8.8.8",
+     "8.9.1",
+     "9.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "2024-01-17",
+    "GHSA-f84q-mgj9-8jfc",
+    "PKSA-2gfj-5sh8-j3c5",
+    "drupal/core/2024-01-17.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "2024-01-17",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Drupal core - Moderately critical - Denial of Service",
+    "fixed": [
+     "10.1.8",
+     "10.2.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "2021-05-26",
+    "GHSA-7f4f-p7mq-p4fv",
+    "PKSA-6dxs-yv9z-8twp",
+    "drupal/core/2021-05-26.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "2021-05-26",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Drupal core - Moderately critical - Third-party libraries - SA-CORE-2021-005",
+    "fixed": [
+     "8.9.16",
+     "9.1.12",
+     "9.2.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "drupal/core",
+   "ids": [
+    "2020-11-25",
+    "GHSA-gfvf-2f25-f34r",
+    "PKSA-kjgx-r4v3-961f",
+    "drupal/core/2020-11-25.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "drupal/core",
+    "installed": "9.0.0",
+    "cve": "2020-11-25",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Drupal core - Critical - Arbitrary PHP code execution - SA-CORE-2020-013",
+    "fixed": [
+     "7.74",
+     "8.8.11",
+     "8.9.9",
+     "9.0.8"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-24425",
+    "GHSA-2q52-x2ff-qgfr",
+    "PKSA-gw7n-z4yx-7xjt",
+    "twig/twig/CVE-2026-24425.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-24425",
+    "severity": "high",
+    "cvss": 8.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00758,
+    "epss_percentile": 0.55707,
+    "title": "Twig: Possible sandbox bypass when using a source policy",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46628",
+    "GHSA-4j38-f5cw-54h7",
+    "PKSA-sjvz-tbbr-vwth",
+    "twig/twig/CVE-2026-46628.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-46628",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00295,
+    "epss_percentile": 0.22416,
+    "title": "Twig: The `spaceless` filter implicitly marks its output as safe",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-49981",
+    "GHSA-529h-vh3j-85hq",
+    "PKSA-8zx5-v2nz-58pb"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-49981",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00362,
+    "epss_percentile": 0.30399,
+    "title": "Twig: Sandbox filter, tag and function allow-list bypass when sandbox state changes between renders for a cached `Template`",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-48806",
+    "GHSA-5v5v-ww74-355v",
+    "PKSA-1tmc-rt7x-12w6",
+    "twig/twig/CVE-2026-48806.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-48806",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00418,
+    "epss_percentile": 0.36608,
+    "title": "Twig: Sandbox `__toString()` policy bypass via dynamic mapping keys",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2024-51754",
+    "GHSA-6377-hfv9-hqf6",
+    "PKSA-yhcn-xrg3-68b1",
+    "twig/twig/CVE-2024-51754.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2024-51754",
+    "severity": "low",
+    "cvss": 2.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00431,
+    "epss_percentile": 0.37842,
+    "title": "Twig has unguarded calls to `__toString()` when nesting an object into an array",
+    "fixed": [
+     "3.11.2",
+     "3.14.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46638",
+    "GHSA-7fxw-r6jv-74c8",
+    "PKSA-3mcc-k66d-pydb",
+    "twig/twig/CVE-2026-46638.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-46638",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00473,
+    "epss_percentile": 0.41361,
+    "title": "Twig: `{% sandbox %}{% include %}` skips checkSecurity() on cached templates (incomplete fix for CVE-2024-45411)",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46633",
+    "GHSA-7p85-w9px-jpjp",
+    "PKSA-h8hf-ytnd-5t9q",
+    "twig/twig/CVE-2026-46633.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-46633",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00774,
+    "epss_percentile": 0.56223,
+    "title": "Twig: PHP code injection via `{% use %}` template name",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-48807",
+    "GHSA-8x9c-rmqh-456c",
+    "PKSA-xx6c-6d96-db2w",
+    "twig/twig/CVE-2026-48807.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-48807",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00367,
+    "epss_percentile": 0.30974,
+    "title": "Twig: Sandbox `__toString()` policy bypass via `Traversable` in `join` and `replace` filters",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-48808",
+    "GHSA-h8vq-8gpg-mhcg",
+    "PKSA-fbvq-z33h-r2np",
+    "twig/twig/CVE-2026-48808.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-48808",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00407,
+    "epss_percentile": 0.35479,
+    "title": "Twig: Sandbox property allowlist bypass via the `column` filter under `SourcePolicyInterface`",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2024-51755",
+    "GHSA-jjxq-ff2g-95vh",
+    "PKSA-2wrf-1xmk-1pky",
+    "twig/twig/CVE-2024-51755.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2024-51755",
+    "severity": "low",
+    "cvss": 2.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00425,
+    "epss_percentile": 0.37302,
+    "title": "Twig has unguarded calls to `__isset()` and to array-accesses when the sandbox is enabled",
+    "fixed": [
+     "3.11.2",
+     "3.14.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-48805",
+    "GHSA-p42q-9prx-q5wq",
+    "PKSA-g9zw-qxh8-pq8w",
+    "twig/twig/CVE-2026-48805.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-48805",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00483,
+    "epss_percentile": 0.42134,
+    "title": "Twig: Sandbox state regression in deprecated internal wrappers in `src/Resources/core.php`",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-47732",
+    "GHSA-pr2w-4gpj-cpq4",
+    "PKSA-dpx1-78wg-1kqs",
+    "twig/twig/CVE-2026-47732.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-47732",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00402,
+    "epss_percentile": 0.34894,
+    "title": "Twig: Sandbox: multiple `__toString()` policy bypasses via unguarded string coercion points",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46635",
+    "GHSA-vcc8-phrv-43wj",
+    "PKSA-n14z-jjjg-g8vd",
+    "twig/twig/CVE-2026-46635.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-46635",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00331,
+    "epss_percentile": 0.26629,
+    "title": "Twig: Sandbox property allowlist bypass via the `column` filter (array_column on objects)",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46636",
+    "PKSA-yd6k-t2gh-1m43",
+    "twig/twig/CVE-2026-46636.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-46636",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0057,
+    "epss_percentile": 0.47669,
+    "title": "Sandbox filter, tag and function allow-list bypass when sandbox state changes between renders",
+    "fixed": [
+     "3.27.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "twig/twig",
+   "ids": [
+    "CVE-2026-46627",
+    "PKSA-kvv6-36cr-fkzb",
+    "twig/twig/CVE-2026-46627.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "twig/twig",
+    "installed": "2.16.1",
+    "cve": "CVE-2026-46627",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00542,
+    "epss_percentile": 0.46066,
+    "title": "Sandbox does not protect against resource exhaustion",
+    "fixed": [
+     "3.26.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/yaml",
+   "ids": [
+    "CVE-2026-109413",
+    "GHSA-2v3c-qxhr-7vpv",
+    "PKSA-xz3r-9gp4-4m1z",
+    "symfony/yaml/CVE-2026-109413.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/yaml",
+    "installed": "4.4.45",
+    "cve": "CVE-2026-109413",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00395,
+    "epss_percentile": 0.3424,
+    "title": "Symfony: Unbounded Recursion in the YAML Inline Lexer Lets a Single Document Crash the Process",
+    "fixed": [
+     "5.4.54",
+     "6.4.45",
+     "7.4.18",
+     "8.1.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/yaml",
+   "ids": [
+    "CVE-2026-45304",
+    "GHSA-4qpc-3hr4-r2p4",
+    "PKSA-v5yj-8nmz-sk2q",
+    "symfony/yaml/CVE-2026-45304.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/yaml",
+    "installed": "4.4.45",
+    "cve": "CVE-2026-45304",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00684,
+    "epss_percentile": 0.5306,
+    "title": "Symfony's YAML Parser Vulnerable to Exponential Memory Allocation via Recursive Collection-Alias Expansion (\"Billion Laughs\")",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/yaml",
+   "ids": [
+    "CVE-2026-45305",
+    "GHSA-9frc-8383-795m",
+    "PKSA-ft77-7h5f-p3r6",
+    "symfony/yaml/CVE-2026-45305.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/yaml",
+    "installed": "4.4.45",
+    "cve": "CVE-2026-45305",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00684,
+    "epss_percentile": 0.53057,
+    "title": "Symfony's YAML Parser has a ReDoS via Catastrophic Backtracking in Parser::cleanup() Regex",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/yaml",
+   "ids": [
+    "CVE-2026-45133",
+    "GHSA-c2p3-7m5p-cv8x",
+    "PKSA-b14r-zh1d-vdrc",
+    "symfony/yaml/CVE-2026-45133.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/yaml",
+    "installed": "4.4.45",
+    "cve": "CVE-2026-45133",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0063,
+    "epss_percentile": 0.50693,
+    "title": "Symfony hardened the parser when handling untrusted input",
+    "fixed": [
+     "5.4.52",
+     "6.4.40",
+     "7.4.12",
+     "8.0.12"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/yaml",
+   "ids": [
+    "CVE-2026-123792",
+    "PKSA-nktx-f1n1-b4yd",
+    "symfony/yaml/CVE-2026-123792.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/yaml",
+    "installed": "4.4.45",
+    "cve": "CVE-2026-123792",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00504,
+    "epss_percentile": 0.43612,
+    "title": "Exponential and Quadratic Parse Times in the YAML Parser Let a Single Document Hold a Process",
+    "fixed": [
+     "5.4.56",
+     "6.4.50",
+     "7.4.23",
+     "8.1.11"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/process",
+   "ids": [
+    "CVE-2024-51736",
+    "GHSA-qq5c-677p-737q",
+    "PKSA-wws7-mr54-jsny",
+    "symfony/process/CVE-2024-51736.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/process",
+    "installed": "4.4.44",
+    "cve": "CVE-2024-51736",
+    "severity": "high",
+    "cvss": 8.4,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00428,
+    "epss_percentile": 0.37527,
+    "title": "Symfony vulnerable to command execution hijack on Windows with Process class",
+    "fixed": [
+     "5.4.46",
+     "6.4.14",
+     "7.1.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "symfony/process",
+   "ids": [
+    "CVE-2026-24739",
+    "GHSA-r39x-jcww-82v6",
+    "PKSA-rkkf-636k-qjb3"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "symfony/process",
+    "installed": "4.4.44",
+    "cve": "CVE-2026-24739",
+    "severity": "medium",
+    "cvss": 6.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00231,
+    "epss_percentile": 0.14079,
+    "title": "Symfony's incorrect argument escaping under MSYS2/Git Bash can lead to destructive file operations on Windows",
+    "fixed": [
+     "5.4.51",
+     "6.4.33",
+     "7.3.11",
+     "7.4.5",
+     "8.0.5"
+    ],
+    "reach": "unknown"
+   }
+  }
+ ],
+ "libs": [
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2023-23924",
+    "GHSA-3cw5-7cxw-v5qg",
+    "PKSA-4jrs-y99s-q8j6",
+    "dompdf/dompdf/CVE-2023-23924.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2023-23924",
+    "severity": "critical",
+    "cvss": 10.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.03725,
+    "epss_percentile": 0.89958,
+    "title": "Dompdf vulnerable to URI validation failure on SVG parsing",
+    "fixed": [
+     "2.0.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2023-50262",
+    "GHSA-3qx2-6f78-w2j2",
+    "PKSA-7ztm-rpt3-qqzk",
+    "dompdf/dompdf/CVE-2023-50262.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2023-50262",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01463,
+    "epss_percentile": 0.73993,
+    "title": "Denial of service caused by infinite recursion when parsing SVG images",
+    "fixed": [
+     "2.0.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2021-3902",
+    "GHSA-3vjh-xrhf-v9xh",
+    "PKSA-qstp-ffwg-8hp6"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2021-3902",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00951,
+    "epss_percentile": 0.61768,
+    "title": "Improper Restriction of XML External Entity Reference in dompdf/dompdf",
+    "fixed": [
+     "2.0.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2021-3838",
+    "GHSA-577p-7j7h-2jgf",
+    "PKSA-5vz3-q51h-7mg4"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2021-3838",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01432,
+    "epss_percentile": 0.73434,
+    "title": "Deserialization of Untrusted Data in dompdf/dompdf",
+    "fixed": [
+     "2.0.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2022-2400",
+    "GHSA-5qj8-6xxj-hp9h",
+    "PKSA-kj9c-tr41-t8mj"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2022-2400",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01209,
+    "epss_percentile": 0.68837,
+    "title": "Dompdf before v2.0.0 vulnerable to chroot check bypass",
+    "fixed": [
+     "2.0.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2022-41343",
+    "GHSA-6x28-7h8c-chx4",
+    "PKSA-hbk6-2vfz-8f8n",
+    "dompdf/dompdf/CVE-2022-41343.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2022-41343",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.05984,
+    "epss_percentile": 0.93409,
+    "title": "Dompdf allows remote file inclusion because URI validation failure does not halt font registration",
+    "fixed": [
+     "2.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2026-55555",
+    "GHSA-7x2p-4jvh-6384",
+    "PKSA-hp6n-n4kz-21wk"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2026-55555",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00508,
+    "epss_percentile": 0.43908,
+    "title": "Dompdf: File existence oracle via font-face stylesheet declaration",
+    "fixed": [
+     "3.1.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2026-59941",
+    "GHSA-8hg6-c449-896m",
+    "PKSA-gh7h-hhy4-byg7"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2026-59941",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00644,
+    "epss_percentile": 0.51378,
+    "title": "Dompdf: Uncontrolled resource consumption based on declared BMP dimensions",
+    "fixed": [
+     "3.1.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2026-56722",
+    "GHSA-cx96-42px-69fm",
+    "PKSA-mwt3-h9tv-kx78"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2026-56722",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00448,
+    "epss_percentile": 0.39413,
+    "title": "Dompdf: Local file read due to improper file path validation in SVG images encoded as data-URI",
+    "fixed": [
+     "3.1.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2026-59942",
+    "GHSA-f5gf-2cj8-52g2",
+    "PKSA-6r8f-nxsb-67bq"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2026-59942",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.009,
+    "epss_percentile": 0.60143,
+    "title": "Dompdf: Denial of Service (DoS) via Resource Exhaustion using Oversized Image Bitmaps",
+    "fixed": [
+     "3.1.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2026-59943",
+    "GHSA-j8qw-6jw8-r297",
+    "PKSA-cv56-2228-pzr6"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2026-59943",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00423,
+    "epss_percentile": 0.3714,
+    "title": "Dompdf: Embedded SVG images can leak existence of files and directories within the filesystem",
+    "fixed": [
+     "3.1.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2022-0085",
+    "GHSA-pf6p-25r2-fx45",
+    "PKSA-872h-8556-2chm",
+    "dompdf/dompdf/CVE-2022-0085.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2022-0085",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00999,
+    "epss_percentile": 0.63235,
+    "title": "Server-Side Request Forgery in dompdf/dompdf",
+    "fixed": [
+     "2.0.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2026-55554",
+    "GHSA-wvh6-f5jh-8gw4",
+    "PKSA-mckv-s5hg-868k"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2026-55554",
+    "severity": "low",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00451,
+    "epss_percentile": 0.39671,
+    "title": "Dompdf: Chroot Validation Bypass",
+    "fixed": [
+     "3.1.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "dompdf/dompdf",
+   "ids": [
+    "CVE-2022-28368",
+    "GHSA-x752-qjv4-c4hc",
+    "PKSA-99tj-gg5v-4g74",
+    "dompdf/dompdf/CVE-2022-28368.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "dompdf/dompdf",
+    "installed": "0.8.3",
+    "cve": "CVE-2022-28368",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.83942,
+    "epss_percentile": 0.99698,
+    "title": "Remote code injection in dompdf/dompdf",
+    "fixed": [
+     "1.2.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "CVE-2024-27354",
+    "GHSA-2528-jw5q-ww88",
+    "PKSA-t5xz-td8w-f35v",
+    "phpseclib/phpseclib/CVE-2024-27354.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "CVE-2024-27354",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00601,
+    "epss_percentile": 0.49274,
+    "title": "phpseclib: guardrails needed on isPrime and randomPrime",
+    "fixed": [
+     "1.0.23",
+     "2.0.47",
+     "3.0.36"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "CVE-2026-44167",
+    "GHSA-3qpq-r242-jqj7",
+    "PKSA-smrh-yx37-92ws"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "CVE-2026-44167",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00201,
+    "epss_percentile": 0.10048,
+    "title": "phpseclib has a CVE-2024-27355 mitigation bypass \u2014 OID amplification DoS in ASN1::decodeOID()",
+    "fixed": [
+     "1.0.29",
+     "2.0.54",
+     "3.0.52"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "CVE-2026-32935",
+    "GHSA-94g3-g5v7-q4jg",
+    "PKSA-km2b-zc3b-mjm3"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "CVE-2026-32935",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00398,
+    "epss_percentile": 0.34483,
+    "title": "phpseclib's AES-CBC unpadding susceptible to padding oracle timing attack",
+    "fixed": [
+     "3.0.50",
+     "2.0.52",
+     "1.0.27"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "CVE-2024-27355",
+    "GHSA-f2qx-66wf-wvvx",
+    "PKSA-jsh4-f6tg-bwyq",
+    "phpseclib/phpseclib/CVE-2024-27355.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "CVE-2024-27355",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00569,
+    "epss_percentile": 0.47603,
+    "title": "phpseclib guardrails needed on OID length",
+    "fixed": [
+     "2.0.47",
+     "3.0.36",
+     "1.0.23"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "CVE-2023-52892",
+    "GHSA-ff7q-6vwh-v9m4",
+    "PKSA-4p7m-np8m-fq35"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "CVE-2023-52892",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00376,
+    "epss_percentile": 0.32013,
+    "title": "Name confusion in x509 Subject Alternative Name fields",
+    "fixed": [
+     "1.0.22",
+     "2.0.46",
+     "3.0.33"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "CVE-2026-55599",
+    "GHSA-m557-wrgg-6rp4",
+    "PKSA-432p-hv1d-chf7"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "CVE-2026-55599",
+    "severity": "medium",
+    "cvss": 5.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00213,
+    "epss_percentile": 0.11696,
+    "title": "phpseclib: X.509 certificate validation sends attacker-controlled outbound requests (server-side request forgery) via Authority Information Access",
+    "fixed": [
+     "1.0.30",
+     "2.0.55",
+     "3.0.54"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "CVE-2026-84308",
+    "GHSA-q97c-8qh3-fpc6",
+    "PKSA-12sz-bcny-pk4m"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "CVE-2026-84308",
+    "severity": "medium",
+    "cvss": 6.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00327,
+    "epss_percentile": 0.26137,
+    "title": "phpseclib \u2014 non-constant-time X25519 scalar multiplication permits full private-key recovery",
+    "fixed": [
+     "3.0.57",
+     "4.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "CVE-2026-40194",
+    "GHSA-r854-jrxh-36qx",
+    "PKSA-zh4j-by9m-7mz8"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "CVE-2026-40194",
+    "severity": "low",
+    "cvss": 3.7,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00368,
+    "epss_percentile": 0.31077,
+    "title": "phpseclib has a variable-time HMAC comparison in SSH2::get_binary_packet() using != instead of hash_equals()",
+    "fixed": [
+     "1.0.28",
+     "2.0.53",
+     "3.0.51"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "CVE-2021-30130",
+    "GHSA-vf4w-fg7r-5v94",
+    "PKSA-mnsd-qtjt-pgcq",
+    "phpseclib/phpseclib/CVE-2021-30130.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "CVE-2021-30130",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01055,
+    "epss_percentile": 0.64878,
+    "title": "Improper Certificate Validation in phpseclib",
+    "fixed": [
+     "3.0.7",
+     "2.0.31"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpseclib/phpseclib",
+   "ids": [
+    "2026-11-02-1",
+    "PKSA-h7cz-q7zq-mdkt",
+    "phpseclib/phpseclib/2026-11-02-1.yaml"
+   ],
+   "src": [
+    "audit",
+    "pw"
+   ],
+   "f": {
+    "package": "phpseclib/phpseclib",
+    "installed": "2.0.20",
+    "cve": "2026-11-02-1",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "phpseclib unbounded PBKDF iteration count in encrypted key/PFX/CMS parsing enables CPU-exhaustion DoS",
+    "fixed": [
+     "4.0.3",
+     "3.0.58",
+     "2.0.56",
+     "1.0.31"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-48998",
+    "GHSA-34xg-wgjx-8xph",
+    "PKSA-jj5t-2zs1-dcfm",
+    "guzzlehttp/psr7/CVE-2026-48998.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-48998",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00198,
+    "epss_percentile": 0.09694,
+    "title": "guzzlehttp/psr7 has Host Confusion via Authority Reinterpretation",
+    "fixed": [
+     "2.10.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-59882",
+    "GHSA-c2w2-prh8-qm98",
+    "PKSA-vznr-tgp9-fd7d"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-59882",
+    "severity": "medium",
+    "cvss": 4.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00317,
+    "epss_percentile": 0.24999,
+    "title": "guzzlehttp/psr7: Host Confusion via Weak URI Host Validation",
+    "fixed": [
+     "2.12.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-49214",
+    "GHSA-hq7v-mx3g-29hw",
+    "PKSA-gm5x-j3mz-71n9",
+    "guzzlehttp/psr7/CVE-2026-49214.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-49214",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0019,
+    "epss_percentile": 0.08691,
+    "title": "guzzlehttp/psr7 has CRLF Injection via URI Host Component",
+    "fixed": [
+     "2.10.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/psr7",
+   "ids": [
+    "CVE-2026-55766",
+    "GHSA-vm85-hxw5-5432",
+    "PKSA-7qs6-zvnz-h66r",
+    "guzzlehttp/psr7/CVE-2026-55766.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/psr7",
+    "installed": "1.9.1",
+    "cve": "CVE-2026-55766",
+    "severity": "medium",
+    "cvss": 4.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00229,
+    "epss_percentile": 0.13865,
+    "title": "guzzlehttp/psr7: CRLF Injection in HTTP Start-Line Serialization",
+    "fixed": [
+     "2.12.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "tecnickcom/tcpdf",
+   "ids": [
+    "CVE-2024-56519",
+    "GHSA-4p8j-vhjm-6pvw",
+    "PKSA-tdkc-7xrw-d14c"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "tecnickcom/tcpdf",
+    "installed": "6.3.2",
+    "cve": "CVE-2024-56519",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00623,
+    "epss_percentile": 0.50406,
+    "title": "TCPDF lacks SVG sanitization",
+    "fixed": [
+     "6.8.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "tecnickcom/tcpdf",
+   "ids": [
+    "CVE-2024-56521",
+    "GHSA-9mgx-552f-59p6",
+    "PKSA-98jj-zbnk-dgwp"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "tecnickcom/tcpdf",
+    "installed": "6.3.2",
+    "cve": "CVE-2024-56521",
+    "severity": "high",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00785,
+    "epss_percentile": 0.56567,
+    "title": "TCPDF missing certificate validation",
+    "fixed": [
+     "6.8.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "tecnickcom/tcpdf",
+   "ids": [
+    "CVE-2024-32489",
+    "GHSA-g9wg-98c2-qv3v",
+    "PKSA-d3g2-dzgm-n74r"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "tecnickcom/tcpdf",
+    "installed": "6.3.2",
+    "cve": "CVE-2024-32489",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00582,
+    "epss_percentile": 0.48319,
+    "title": "TCPDF Cross-site Scripting vulnerability",
+    "fixed": [
+     "6.7.4"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "tecnickcom/tcpdf",
+   "ids": [
+    "CVE-2024-22640",
+    "GHSA-mx3p-fhpw-x6rv",
+    "PKSA-jwjn-w3mx-tq38"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "tecnickcom/tcpdf",
+    "installed": "6.3.2",
+    "cve": "CVE-2024-22640",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01325,
+    "epss_percentile": 0.71372,
+    "title": "TCPDF vulnerable to Regular Expression Denial of Service",
+    "fixed": [
+     "6.7.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "tecnickcom/tcpdf",
+   "ids": [
+    "CVE-2024-56527",
+    "GHSA-qx95-cwh6-9mvq",
+    "PKSA-ys59-hzk7-wxt5"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "tecnickcom/tcpdf",
+    "installed": "6.3.2",
+    "cve": "CVE-2024-56527",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00762,
+    "epss_percentile": 0.5584,
+    "title": "TCPDF missing character escape on error messages",
+    "fixed": [
+     "6.8.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "tecnickcom/tcpdf",
+   "ids": [
+    "CVE-2024-51058",
+    "GHSA-rmv2-8jjc-23xw",
+    "PKSA-62dz-rc7r-pb8r"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "tecnickcom/tcpdf",
+    "installed": "6.3.2",
+    "cve": "CVE-2024-51058",
+    "severity": "medium",
+    "cvss": 6.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00812,
+    "epss_percentile": 0.57448,
+    "title": "TCPDF Local File Inclusion vulnerability",
+    "fixed": [
+     "6.7.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "tecnickcom/tcpdf",
+   "ids": [
+    "CVE-2024-56522",
+    "GHSA-w95c-7994-ghpr",
+    "PKSA-wb9y-hg45-chz4"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "tecnickcom/tcpdf",
+    "installed": "6.3.2",
+    "cve": "CVE-2024-56522",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00614,
+    "epss_percentile": 0.49905,
+    "title": "TCPDF has incorrect comparison",
+    "fixed": [
+     "6.8.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2021-29454",
+    "GHSA-29gp-2c3m-3j6m",
+    "PKSA-98zc-53yc-qt81",
+    "smarty/smarty/CVE-2021-29454.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2021-29454",
+    "severity": "high",
+    "cvss": 8.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01861,
+    "epss_percentile": 0.79547,
+    "title": "Sandbox Escape by math function in smarty",
+    "fixed": [
+     "3.1.42",
+     "4.0.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2021-26120",
+    "GHSA-3rpf-5rqv-689q",
+    "PKSA-t4kv-1sv2-1mzx",
+    "smarty/smarty/CVE-2021-26120.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2021-26120",
+    "severity": "critical",
+    "cvss": 9.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.82316,
+    "epss_percentile": 0.99666,
+    "title": "PHP Code Injection by malicious function name in smarty",
+    "fixed": [
+     "3.1.39"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2021-21408",
+    "GHSA-4h9c-v5vg-5m6m",
+    "PKSA-31hv-m6rg-8ryk",
+    "smarty/smarty/CVE-2021-21408.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2021-21408",
+    "severity": "high",
+    "cvss": 8.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.02143,
+    "epss_percentile": 0.82336,
+    "title": "Access to restricted PHP code by dynamic static class access in smarty",
+    "fixed": [
+     "3.1.43",
+     "4.0.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2024-35226",
+    "GHSA-4rmg-292m-wg3w",
+    "PKSA-5rsx-p2fk-h2gr"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2024-35226",
+    "severity": "high",
+    "cvss": 7.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00507,
+    "epss_percentile": 0.43805,
+    "title": "Smarty vulnerable to PHP Code Injection by malicious attribute in extends-tag",
+    "fixed": [
+     "5.1.1",
+     "4.5.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2022-29221",
+    "GHSA-634x-pc3q-cf4c",
+    "PKSA-6y8p-nrf4-ysf5",
+    "smarty/smarty/CVE-2022-29221.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2022-29221",
+    "severity": "high",
+    "cvss": 8.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.04914,
+    "epss_percentile": 0.92232,
+    "title": "PHP Code Injection by malicious block or filename in Smarty",
+    "fixed": [
+     "3.1.45",
+     "4.1.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2023-28447",
+    "GHSA-7j98-h7fp-4vwj",
+    "PKSA-2q9d-8kh9-49wx",
+    "smarty/smarty/CVE-2023-28447.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2023-28447",
+    "severity": "high",
+    "cvss": 7.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01016,
+    "epss_percentile": 0.63767,
+    "title": "smarty Cross-site Scripting vulnerability in Javascript escaping",
+    "fixed": [
+     "4.3.1",
+     "3.1.48"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2026-62993",
+    "GHSA-cq55-c7wv-pxmq",
+    "PKSA-mz8k-7h5s-m8kh"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2026-62993",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00574,
+    "epss_percentile": 0.47868,
+    "title": "Smarty: SSRF via redirect bypass of trusted_uri using {fetch}",
+    "fixed": [
+     "5.8.2",
+     "4.5.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2026-62992",
+    "GHSA-f6wf-28g6-769x",
+    "PKSA-zw1q-6h4d-mf1m"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2026-62992",
+    "severity": "medium",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00533,
+    "epss_percentile": 0.45523,
+    "title": "Smarty: Symlink path traversal out of trusted directories",
+    "fixed": [
+     "5.8.2",
+     "4.5.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2018-25047",
+    "GHSA-hwq7-5vv9-c6cf",
+    "PKSA-pght-23ww-rrdy",
+    "smarty/smarty/CVE-2018-25047.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2018-25047",
+    "severity": "medium",
+    "cvss": 5.4,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01174,
+    "epss_percentile": 0.67946,
+    "title": "Smarty Cross-site Scripting vulnerability in pages that use smarty_function_mailto",
+    "fixed": [
+     "3.1.47",
+     "4.2.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "smarty/smarty",
+   "ids": [
+    "CVE-2021-26119",
+    "GHSA-w5hr-jm4j-9jvq",
+    "PKSA-wc9h-gs49-76tm",
+    "smarty/smarty/CVE-2021-26119.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "smarty/smarty",
+    "installed": "3.1.33",
+    "cve": "CVE-2021-26119",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.08494,
+    "epss_percentile": 0.95111,
+    "title": "Sandbox escape through template_object in smarty",
+    "fixed": [
+     "3.1.39"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phenx/php-svg-lib",
+   "ids": [
+    "GHSA-97m3-52wr-xvv2",
+    "PKSA-qsyb-3psh-f1t3"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phenx/php-svg-lib",
+    "installed": "0.3.4",
+    "cve": "GHSA-97m3-52wr-xvv2",
+    "severity": "critical",
+    "cvss": 10.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "Dompdf's usage of vulnerable version of phenx/php-svg-lib leads to restriction bypass and potential RCE",
+    "fixed": [
+     "0.5.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phenx/php-svg-lib",
+   "ids": [
+    "CVE-2024-25117",
+    "GHSA-f3qr-qr4x-j273",
+    "PKSA-3dsp-r6t7-8xmz"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phenx/php-svg-lib",
+    "installed": "0.3.4",
+    "cve": "CVE-2024-25117",
+    "severity": "medium",
+    "cvss": 6.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00932,
+    "epss_percentile": 0.6116,
+    "title": "php-svg-lib lacks path validation on font through SVG inline styles",
+    "fixed": [
+     "0.5.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phenx/php-svg-lib",
+   "ids": [
+    "CVE-2023-50251",
+    "GHSA-ff5x-7qg5-vwf2",
+    "PKSA-cwpj-dtf9-6fg1"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phenx/php-svg-lib",
+    "installed": "0.3.4",
+    "cve": "CVE-2023-50251",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00878,
+    "epss_percentile": 0.5952,
+    "title": "Denial of service caused by infinite recursion when parsing SVG document",
+    "fixed": [
+     "0.5.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "firebase/php-jwt",
+   "ids": [
+    "CVE-2025-45769",
+    "GHSA-2x45-7fc3-mxwq",
+    "PKSA-y2cr-5h3j-g3ys"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "firebase/php-jwt",
+    "installed": "5.0.0",
+    "cve": "CVE-2025-45769",
+    "severity": "medium",
+    "cvss": 6.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00148,
+    "epss_percentile": 0.04059,
+    "title": "php-jwt contains weak encryption",
+    "fixed": [
+     "7.0.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "firebase/php-jwt",
+   "ids": [
+    "CVE-2021-46743",
+    "GHSA-8xf4-w7qw-pjjw",
+    "PKSA-2kqm-ps5x-s4f5",
+    "firebase/php-jwt/CVE-2021-46743.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "firebase/php-jwt",
+    "installed": "5.0.0",
+    "cve": "CVE-2021-46743",
+    "severity": "critical",
+    "cvss": 9.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00916,
+    "epss_percentile": 0.60666,
+    "title": "Firebase PHP-JWT key/algorithm type confusion",
+    "fixed": [
+     "6.0.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpmailer/phpmailer",
+   "ids": [
+    "BIT-phpmailer-2021-3603",
+    "CVE-2021-3603",
+    "GHSA-77mr-wc79-m8j3",
+    "PKSA-m8by-bb7v-7qt5",
+    "phpmailer/phpmailer/CVE-2021-3603.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpmailer/phpmailer",
+    "installed": "6.1.0",
+    "cve": "CVE-2021-3603",
+    "severity": "high",
+    "cvss": 8.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0226,
+    "epss_percentile": 0.83232,
+    "title": "PHPMailer untrusted code may be run from an overridden address validator",
+    "fixed": [
+     "6.5.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpmailer/phpmailer",
+   "ids": [
+    "BIT-phpmailer-2021-34551",
+    "CVE-2021-34551",
+    "GHSA-7q44-r25x-wm4q",
+    "PKSA-35kn-2ddp-d3p4",
+    "phpmailer/phpmailer/CVE-2021-34551.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpmailer/phpmailer",
+    "installed": "6.1.0",
+    "cve": "CVE-2021-34551",
+    "severity": "high",
+    "cvss": 8.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.02803,
+    "epss_percentile": 0.86679,
+    "title": "Remote Code Execution vulnerability in PHPMailer 6.4.1 running on Windows",
+    "fixed": [
+     "6.5.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "phpmailer/phpmailer",
+   "ids": [
+    "BIT-phpmailer-2020-13625",
+    "CVE-2020-13625",
+    "GHSA-f7hx-fqxw-rvvj",
+    "PKSA-8sw7-9x88-c8bx"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "phpmailer/phpmailer",
+    "installed": "6.1.0",
+    "cve": "CVE-2020-13625",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0378,
+    "epss_percentile": 0.90105,
+    "title": "Insufficient output escaping of attachment names in PHPMailer",
+    "fixed": [
+     "6.1.6"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-71478",
+    "GHSA-29pj-957v-52mc",
+    "PKSA-scnn-p8mm-jbft"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "CVE-2026-71478",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00355,
+    "epss_percentile": 0.29642,
+    "title": "league/commonmark: AttributesExtension href/src unsafe-link filter bypass via embedded control bytes",
+    "fixed": [
+     "2.9.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-71488",
+    "GHSA-2q4p-g7hv-5rgv",
+    "PKSA-t21r-vtr5-3mdz"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "CVE-2026-71488",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0063,
+    "epss_percentile": 0.5068,
+    "title": "league/commonmark: Quadratic-time denial of service when parsing crafted Markdown",
+    "fixed": [
+     "2.9.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2025-46734",
+    "GHSA-3527-qv2q-pfvx",
+    "PKSA-rqc2-tcc6-nc79"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "CVE-2025-46734",
+    "severity": "medium",
+    "cvss": 6.4,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00384,
+    "epss_percentile": 0.32984,
+    "title": "league/commonmark contains a XSS vulnerability in Attributes extension",
+    "fixed": [
+     "2.7.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-86428",
+    "GHSA-8rr7-cvq3-gmfh",
+    "PKSA-zyf5-hrxv-hrd7"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "CVE-2026-86428",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00493,
+    "epss_percentile": 0.42868,
+    "title": "league/commonmark: Denial of service via distinctly-named attributes in the Attributes extension",
+    "fixed": [
+     "2.10.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-105829",
+    "GHSA-97jj-33gv-5xf9",
+    "PKSA-m2dq-1fhr-29b1"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "CVE-2026-105829",
+    "severity": "medium",
+    "cvss": 6.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0025,
+    "epss_percentile": 0.16493,
+    "title": "league/commonmark: DisallowedRawHtml bypassed when a disallowed tag name ends the raw-HTML literal",
+    "fixed": [
+     "2.10.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2024-58382",
+    "GHSA-c2pc-g5qf-rfrf",
+    "PKSA-fndg-qryc-dyc9"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "CVE-2024-58382",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00488,
+    "epss_percentile": 0.42504,
+    "title": "league/commonmark's quadratic complexity bugs may lead to a denial of service",
+    "fixed": [
+     "2.6.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "GHSA-g2gp-3wwq-f4ph",
+    "PKSA-mc58-w91n-f5gv"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "GHSA-g2gp-3wwq-f4ph",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "league/commonmark: Denial of service via adjacent inline attribute blocks",
+    "fixed": [
+     "2.9.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-86430",
+    "GHSA-j8pm-gj4c-rq4x",
+    "PKSA-9q1p-3s19-bp1q"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "CVE-2026-86430",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00493,
+    "epss_percentile": 0.4287,
+    "title": "league/commonmark: Denial of service via crafted code fences, reference links, and emphasis delimiters",
+    "fixed": [
+     "2.9.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "GHSA-jfm3-95jq-q3rf",
+    "PKSA-1q6p-sqkj-8mmj"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "GHSA-jfm3-95jq-q3rf",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": null,
+    "epss_percentile": null,
+    "title": "league/commonmark:  Denial of service via duplicate footnote definitions",
+    "fixed": [
+     "2.9.0"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "league/commonmark",
+   "ids": [
+    "CVE-2026-86429",
+    "GHSA-jjv6-8j6v-6j52",
+    "PKSA-nv44-1b4d-6gjg"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "league/commonmark",
+    "installed": "1.5.0",
+    "cve": "CVE-2026-86429",
+    "severity": "high",
+    "cvss": 7.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00515,
+    "epss_percentile": 0.44388,
+    "title": "league/commonmark: Denial of service in the SmartPunct and Attributes extensions",
+    "fixed": [
+     "2.9.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2022-31090",
+    "GHSA-25mq-v84q-4j7r",
+    "PKSA-k1b4-kshy-xgbh",
+    "guzzlehttp/guzzle/CVE-2022-31090.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2022-31090",
+    "severity": "high",
+    "cvss": 7.7,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01916,
+    "epss_percentile": 0.80155,
+    "title": "Authorization header leaked to a different origin on cross-origin redirect (curl handler)",
+    "fixed": [
+     "6.5.8",
+     "7.4.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67339",
+    "GHSA-94pj-82f3-465w",
+    "PKSA-pwsk-hy21-4gby"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2026-67339",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00372,
+    "epss_percentile": 0.31596,
+    "title": "Guzzle: Proxy-Authorization headers can be sent to origin servers",
+    "fixed": [
+     "7.14.2"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "BIT-drupal-2022-29248",
+    "CVE-2022-29248",
+    "DRUPAL-CORE-2022-010",
+    "GHSA-cwmx-hcrq-mhc3",
+    "PKSA-6d8m-6kgw-18zr",
+    "guzzlehttp/guzzle/CVE-2022-29248.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2022-29248",
+    "severity": "high",
+    "cvss": 8.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01351,
+    "epss_percentile": 0.71911,
+    "title": "Cross-domain cookie leakage in Guzzle",
+    "fixed": [
+     "6.5.6",
+     "7.4.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-55767",
+    "GHSA-cwxw-98qj-8qjx",
+    "PKSA-93qv-9n9h-6k6p",
+    "guzzlehttp/guzzle/CVE-2026-55767.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2026-55767",
+    "severity": "medium",
+    "cvss": 5.8,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00211,
+    "epss_percentile": 0.115,
+    "title": "guzzlehttp/guzzle: Dot-Only Cookie Domains Match All Hosts",
+    "fixed": [
+     "7.12.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67353",
+    "GHSA-f283-ghqc-fg79",
+    "PKSA-bbs6-q5q9-f3t4"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2026-67353",
+    "severity": "medium",
+    "cvss": 5.3,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00418,
+    "epss_percentile": 0.36594,
+    "title": "Guzzle: Unbounded response cookies risk denial of service",
+    "fixed": [
+     "7.15.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "BIT-drupal-2022-31042",
+    "BIT-drupal-2022-31043",
+    "CVE-2022-31042",
+    "CVE-2022-31043",
+    "DRUPAL-CORE-2022-011",
+    "GHSA-f2wf-25xc-69c9",
+    "GHSA-w248-ffj2-4v5q",
+    "PKSA-2z36-j4q9-rsfy",
+    "PKSA-fvw5-9t6n-nwvr",
+    "guzzlehttp/guzzle/CVE-2022-31042.yaml",
+    "guzzlehttp/guzzle/CVE-2022-31043.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2022-31043",
+    "severity": "unknown",
+    "cvss": 0.0,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01992,
+    "epss_percentile": 0.80963,
+    "title": "Fix failure to strip Authorization header on HTTP downgrade",
+    "fixed": [
+     "7.4.4",
+     "6.5.7"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-69245",
+    "GHSA-f7vp-7xgx-4w4r",
+    "PKSA-cnw1-2ytm-cgr8"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2026-69245",
+    "severity": "medium",
+    "cvss": 6.5,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00199,
+    "epss_percentile": 0.09895,
+    "title": "Guzzle: Noncanonical cookie domain keeps subdomain scope",
+    "fixed": [
+     "7.15.2",
+     "8.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-59883",
+    "GHSA-g446-98w2-8p5w",
+    "PKSA-bcdd-5xc7-gwfb"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2026-59883",
+    "severity": "medium",
+    "cvss": 4.7,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00167,
+    "epss_percentile": 0.06067,
+    "title": "Guzzle: Cookie Disclosure and Injection via IP-Address Domains",
+    "fixed": [
+     "7.12.3"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67354",
+    "GHSA-h95v-h523-3mw8",
+    "PKSA-fy2t-3c5f-827y"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2026-67354",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00372,
+    "epss_percentile": 0.31618,
+    "title": "Guzzle: URI fragments disclosed in redirect Referer headers",
+    "fixed": [
+     "7.15.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2022-31091",
+    "GHSA-q559-8m2m-g699",
+    "PKSA-yfw5-9gnj-n2c7",
+    "guzzlehttp/guzzle/CVE-2022-31091.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2022-31091",
+    "severity": "high",
+    "cvss": 8.1,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.01565,
+    "epss_percentile": 0.75657,
+    "title": "Change in port not treated as a change in origin; sensitive headers leaked on redirect",
+    "fixed": [
+     "6.5.8",
+     "7.4.5"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-69246",
+    "GHSA-v5mv-p594-2x33",
+    "PKSA-gcrk-3vtt-1r14"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2026-69246",
+    "severity": "high",
+    "cvss": 7.2,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.0037,
+    "epss_percentile": 0.3136,
+    "title": "Guzzle: Noncanonical host can bypass host-based checks",
+    "fixed": [
+     "7.15.2",
+     "8.0.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-67355",
+    "GHSA-wm3w-8rrp-j577",
+    "PKSA-qxvb-2bpp-dnk6"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2026-67355",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00366,
+    "epss_percentile": 0.30884,
+    "title": "Guzzle: Host-only cookie scope is not preserved",
+    "fixed": [
+     "7.15.1"
+    ],
+    "reach": "unknown"
+   }
+  },
+  {
+   "pkg": "guzzlehttp/guzzle",
+   "ids": [
+    "CVE-2026-55568",
+    "GHSA-wpwq-4j6v-78m3",
+    "PKSA-k22t-f949-t9g6",
+    "guzzlehttp/guzzle/CVE-2026-55568.yaml"
+   ],
+   "src": [
+    "audit",
+    "osv",
+    "pw"
+   ],
+   "f": {
+    "package": "guzzlehttp/guzzle",
+    "installed": "6.5.0",
+    "cve": "CVE-2026-55568",
+    "severity": "medium",
+    "cvss": 5.9,
+    "known_exploited": false,
+    "ransomware": false,
+    "epss": 0.00148,
+    "epss_percentile": 0.04042,
+    "title": "guzzlehttp/guzzle: Silent HTTPS-Proxy Downgrade to Cleartext",
+    "fixed": [
+     "7.12.1"
+    ],
+    "reach": "unknown"
+   }
+  }
+ ]
+}
