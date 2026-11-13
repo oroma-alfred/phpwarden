@@ -78,6 +78,7 @@ phpwarden scan                       # assess this host (auto-detects version/SA
 phpwarden scan --version 8.3.10 --sapi fpm --os linux
 phpwarden deps composer.lock         # Composer dependencies, KEV → reachability → EPSS → CVSS
 phpwarden wordpress /var/www/html    # WordPress core, plugins, themes
+phpwarden integrity /var/www/html    # tampered or injected files (vs wordpress.org checksums)
 phpwarden detect /var/log/nginx/access.log   # exploit signatures in a log
 phpwarden rules --format nginx --out php-block.conf   # PHP-specific WAF rules (or modsecurity)
 phpwarden report web01.json web02.json --out fleet.html   # aggregate a fleet view

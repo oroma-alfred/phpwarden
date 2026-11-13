@@ -372,6 +372,39 @@ def _wordpress(args):
     return _combine(1 if findings else 0, _maybe_report(args, doc))
 
 
+def _integrity(args):
+    from phpwarden import integrity as integ
+    res = integ.check(args.path, locale=args.locale, plugins=not args.no_plugins)
+    doc = integ.to_doc(res)
+    if args.json:
+        print(json.dumps(doc, indent=2))
+        return 1 if res.tampered else 0
+    if not res.core_version:
+        print(f"{args.path}: no WordPress install detected at that path")
+        return 2
+    labels = {"php-in-uploads": "PHP file in uploads", "unexpected": "does not belong",
+              "modified": "modified", "missing": "missing"}
+    bad = [i for i in res.issues if i.kind != "missing"]
+    print(f"WordPress {res.core_version} at {args.path}: {res.files_checked} files compared with wordpress.org, "
+          f"{len(bad)} problem{'s' if len(bad) != 1 else ''}.")
+    for i in res.issues:
+        flag = "  SUSPICIOUS" if i.suspicious else ""
+        print(f"\n  {labels.get(i.kind, i.kind):20} {i.path}  ({i.component}){flag}")
+        for pid in i.suspicious:
+            print(f"      matches: {integ.describe(pid)}")
+    if res.verified:
+        print(f"\n  verified against official checksums: {len(res.verified)} component(s)")
+    if res.unverified:
+        print(f"  could not be verified: {len(res.unverified)} component(s)")
+        for u in res.unverified[:40]:
+            print(f"      {u['component']}: {u['reason']}")
+    if not res.issues:
+        print("\n  No modified or unexpected files in the components that could be verified.")
+    print("\n  This compares files with wordpress.org checksums and looks for common backdoor code.\n"
+          "  It is not a signature-based malware scanner.")
+    return 1 if res.tampered else 0
+
+
 def _report(args):
     rows = reportgen.load_rows(args.files)
     feed = FeedManager().current()
@@ -437,6 +470,14 @@ def main(argv=None):
     wpc.add_argument("--json", action="store_true")
     _report_args(wpc)
     wpc.set_defaults(func=_wordpress)
+
+    ig = sub.add_parser("integrity", help="check WordPress core and plugin files against wordpress.org "
+                                          "checksums; flag injected files and backdoor code")
+    ig.add_argument("path", help="path to the WordPress root")
+    ig.add_argument("--locale", default="en_US", help="WordPress locale of the install (default en_US)")
+    ig.add_argument("--no-plugins", action="store_true", help="check core and uploads only")
+    ig.add_argument("--json", action="store_true")
+    ig.set_defaults(func=_integrity)
 
     rp = sub.add_parser("report", help="aggregate JSON results into an HTML fleet dashboard")
     rp.add_argument("files", nargs="+", help="JSON files from scan/deps/wordpress --json")
