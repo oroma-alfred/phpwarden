@@ -1,7 +1,7 @@
 # phpwarden
 
 **PHP vulnerability scanner that ranks findings by real-world exploitation,
-not CVSS.** Of the ~21,100 PHP advisories in the feed, 43 are actually being
+not CVSS.** Of about 19,500 PHP vulnerabilities in the feed, 36 are known to be
 exploited (CISA KEV, as of 2026-11-12). phpwarden puts those first, then sorts
 by EPSS probability, then CVSS — so a `composer.lock` with 30 findings tells
 you which one to fix today.
@@ -9,6 +9,13 @@ you which one to fix today.
 It scans the PHP engine/FPM version, Composer dependencies and WordPress
 installs against one bundled, offline advisory feed. Zero runtime dependencies
 (Python 3.8+), Apache-2.0.
+
+**Reproducible benchmark:** on four real PHP stacks, phpwarden found 295 of 295
+known vulnerabilities, `composer audit` 286 and OSV.dev 262. Of 297 findings,
+100 were rated critical or high and 4 were actually exploited or likely to be;
+phpwarden ranked each of those first or second in its project. Method, numbers
+and a script to rerun it:
+[the benchmark write-up](https://phpwarden.io/blog/phpwarden-vs-composer-audit-osv-2026-11).
 
 ```bash
 $ phpwarden deps composer.lock
@@ -29,6 +36,7 @@ $ phpwarden deps composer.lock
 | PHP engine / FPM CVE exposure | `scan` | image & network scanners |
 | Composer dependency CVEs | `deps` | Snyk, `composer audit` |
 | WordPress core, plugin and theme CVEs | `wordpress` | Patchstack, Wordfence |
+| WordPress file integrity (wordpress.org checksums, injected files) | `integrity` | Wordfence CLI malware-scan (partly) |
 | Exploitation signatures in logs | `detect` | SIEM content |
 | WAF blocking rules (PHP-specific) | `rules` | the gap a generic WAF leaves |
 | Fleet exposure dashboard | `report` | the CNAPP's PHP view |
