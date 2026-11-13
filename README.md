@@ -56,6 +56,7 @@ $ phpwarden deps composer.lock
 ```bash
 composer require --dev phpwarden/phpwarden   # PHP projects → vendor/bin/phpwarden
 pipx install phpwarden                       # Python-tooling box
+brew install oroma-alfred/tap/phpwarden      # macOS / Linux with Homebrew
 python3 phpwarden.pyz scan                   # single file, no install
 docker build -t phpwarden . && docker run --rm phpwarden scan --version 8.3.10 --sapi fpm --os linux
 ```
