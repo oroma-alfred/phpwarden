@@ -71,7 +71,8 @@ check("litespeed-cache 6.2 flagged (CVE-2024-28000)",
       ("litespeed-cache", "CVE-2024-28000") in ids)
 check("patched contact-form-7 5.4.0 NOT flagged",
       not any(f.component.slug == "contact-form-7" for f in findings))
-check("2 wp findings total (base feed)", len(findings) == 2)
+check("core 6.4.2 flagged for KEV CVE-2026-87902 (fixed 6.4.12)", ("wordpress", "CVE-2026-87902") in ids)
+check("3 wp findings total (base feed)", len(findings) == 3)
 
 # --- scale: the full shipped feed carries thousands of WP advisories --------
 full = FeedManager().current()

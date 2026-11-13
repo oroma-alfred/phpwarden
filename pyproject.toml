@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "phpwarden"
-version = "2.1.0"
+version = "2.1.1"
 description = "PHP vulnerability scanner for Composer, WordPress and the PHP engine — findings ranked by real-world exploitation (CISA KEV, then EPSS), not CVSS. Offline, zero deps."
 readme = "README.md"
 requires-python = ">=3.8"
