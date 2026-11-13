@@ -19,6 +19,34 @@ import json
 from pathlib import Path
 
 
+# KEV vendor/product words that mean "this should be in a PHP feed". Used only
+# to warn about gaps (a KEV CVE we never marked because no upstream mapped it to
+# a package); the fix is a curated entry in base/php-cve-feed.base.json.
+_PHP_HINTS = ("php", "magento", "adobe commerce", "wordpress", "drupal", "joomla",
+              "laravel", "symfony", "craft cms", "typo3", "prestashop", "moodle",
+              "phpmailer", "roundcube", "vbulletin", "woocommerce", "opencart")
+
+
+def kev_gaps(doc, feed_ids, days=None, today=None):
+    """KEV entries that look PHP-related but aren't in the feed."""
+    import datetime as _dt
+    today = today or _dt.date.today()
+    out = []
+    for v in doc.get("vulnerabilities", []):
+        cid = v.get("cveID") or ""
+        text = f"{v.get('vendorProject','')} {v.get('product','')}".lower()
+        if cid in feed_ids or not any(h in text for h in _PHP_HINTS):
+            continue
+        if days is not None:
+            try:
+                if (today - _dt.date.fromisoformat(str(v.get("dateAdded"))[:10])).days > days:
+                    continue
+            except ValueError:
+                pass
+        out.append((cid, v.get("vendorProject", ""), v.get("product", ""), str(v.get("dateAdded", ""))[:10]))
+    return out
+
+
 def load_kev(path):
     doc = json.loads(Path(path).read_text())
     kev, ransom = {}, set()
@@ -82,6 +110,11 @@ def main():
         totals["kev"] += k
         totals["epss"] += e
 
+    ids = {it.get(k) for sec, k in (("cves", "id"), ("composer_advisories", "cve"),
+                                    ("wp_advisories", "cve")) for it in feed.get(sec, [])}
+    gaps = kev_gaps(json.loads(Path(a.kev).read_text()), ids, days=365)
+    for cid, vendor, product, added in gaps:
+        print(f"  KEV GAP: {cid} ({vendor} {product}, KEV {added}) is not in the feed")
     feed["feed_version"] = a.feed_version
     feed["enriched"] = {"kev_source": "CISA KEV", "epss_source": "FIRST EPSS"}
     Path(a.out).write_text(json.dumps(feed, indent=1))

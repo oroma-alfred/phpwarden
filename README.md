@@ -1,8 +1,8 @@
 # phpwarden
 
 **PHP vulnerability scanner that ranks findings by real-world exploitation,
-not CVSS.** Of about 19,500 PHP vulnerabilities in the feed, 36 are known to be
-exploited (CISA KEV, as of 2026-11-12). phpwarden puts those first, then sorts
+not CVSS.** Of about 19,500 PHP vulnerabilities in the feed, 41 are known to be
+exploited (CISA KEV, as of 2026-11-13). phpwarden puts those first, then sorts
 by EPSS probability, then CVSS — so a `composer.lock` with 30 findings tells
 you which one to fix today.
 
@@ -177,7 +177,7 @@ timer recipes are in [`docs/recipes.md`](docs/recipes.md).
 
 The bundled community feed (currently 2026.10.31.2) works forever, offline:
 
-- **~21,100 advisories**: ~8,600 Composer (from [OSV.dev](https://osv.dev) and
+- **~21,300 advisories**: ~8,800 Composer (from [OSV.dev](https://osv.dev) and
   [FriendsOfPHP](https://github.com/FriendsOfPHP/security-advisories)),
   ~12,300 WordPress (from [NVD](https://nvd.nist.gov): plugin, core and theme),
   and 145 PHP engine/FPM CVEs, including hand-curated entries with per-branch

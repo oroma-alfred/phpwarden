@@ -10,8 +10,8 @@ phpwarden scan --report-to https://app.phpwarden.io/v1/reports --report-token <t
 ```
 
 What you get back is ranked by real-world exploitation — CISA KEV first, then
-EPSS, then CVSS. Of about 19,500 PHP vulnerabilities in the feed, 36 are known to be
-exploited (as of 2026-11-12); those are the lines at the top.
+EPSS, then CVSS. Of about 19,500 PHP vulnerabilities in the feed, 41 are known to be
+exploited (as of 2026-11-13); those are the lines at the top.
 
 Assumptions throughout:
 
