@@ -122,6 +122,47 @@ class PHPWarden_Inventory {
 	 * @param bool $remote_updates Whether the owner enabled remote updates.
 	 * @return array Payload for POST /v1/inventory.
 	 */
+	/**
+	 * Whether WordPress's cached update list can be trusted as-is.
+	 *
+	 * WordPress deletes the `update_plugins` / `update_themes` transient whenever a
+	 * plugin or theme is installed, updated or removed, which is exactly when this
+	 * agent reports. An empty or old list would tell the dashboard that nothing
+	 * has an update waiting.
+	 *
+	 * @param mixed $transient Site transient value.
+	 * @param int   $now       Current unix time.
+	 * @return bool
+	 */
+	public static function updates_are_fresh( $transient, $now ) {
+		return is_object( $transient )
+			&& ! empty( $transient->last_checked )
+			&& ( $now - (int) $transient->last_checked ) < 12 * 3600
+			&& isset( $transient->checked ) && is_array( $transient->checked );
+	}
+
+	/**
+	 * The update list, refreshed from wordpress.org first when it is missing or stale.
+	 *
+	 * @param string $name `update_plugins` or `update_themes`.
+	 * @return mixed
+	 */
+	public static function fresh_updates( $name ) {
+		$transient = get_site_transient( $name );
+		if ( self::updates_are_fresh( $transient, time() ) ) {
+			return $transient;
+		}
+		if ( ! function_exists( 'wp_update_plugins' ) ) {
+			require_once ABSPATH . WPINC . '/update.php';
+		}
+		if ( 'update_plugins' === $name ) {
+			wp_update_plugins();
+		} else {
+			wp_update_themes();
+		}
+		return get_site_transient( $name );
+	}
+
 	public static function collect( $remote_updates ) {
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -140,12 +181,12 @@ class PHPWarden_Inventory {
 				'plugins' => self::build_plugins(
 					get_plugins(),
 					array( __CLASS__, 'is_plugin_active' ),
-					get_site_transient( 'update_plugins' )
+					self::fresh_updates( 'update_plugins' )
 				),
 				'themes'  => self::build_themes(
 					wp_get_themes(),
 					$active_themes,
-					get_site_transient( 'update_themes' )
+					self::fresh_updates( 'update_themes' )
 				),
 			),
 			'remote_updates' => (bool) $remote_updates,

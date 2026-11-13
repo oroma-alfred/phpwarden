@@ -22,7 +22,7 @@ class PHPWarden_CLI {
 	 * <token>
 	 * : The project ingest token from your phpwarden dashboard.
 	 *
-	 * [--remote-updates]
+	 * [--[no-]remote-updates]
 	 * : Also allow the phpwarden dashboard to update plugins and themes on this site.
 	 *
 	 * ## EXAMPLES
@@ -42,11 +42,13 @@ class PHPWarden_CLI {
 			WP_CLI::error( 'That does not look like a valid token.' );
 		}
 
-		if ( ! empty( $assoc_args['remote-updates'] ) ) {
+		// --remote-updates turns them on, --no-remote-updates turns them off;
+		// with neither flag the current setting is left alone.
+		if ( array_key_exists( 'remote-updates', $assoc_args ) ) {
 			if ( PHPWarden_Settings::remote_is_constant() ) {
-				WP_CLI::warning( 'PHPWARDEN_REMOTE_UPDATES is defined in wp-config.php; --remote-updates was ignored.' );
+				WP_CLI::warning( 'PHPWARDEN_REMOTE_UPDATES is defined in wp-config.php; the flag was ignored.' );
 			} else {
-				PHPWarden_Settings::set_remote_updates( true );
+				PHPWarden_Settings::set_remote_updates( ! empty( $assoc_args['remote-updates'] ) );
 			}
 		}
 

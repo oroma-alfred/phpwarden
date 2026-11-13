@@ -47,6 +47,8 @@ function get_plugins() {
 function wp_get_themes() {
 	return $GLOBALS['t_themes'];
 }
+function wp_update_plugins() { $GLOBALS['phpwarden_test_refreshed'][] = 'plugins'; }
+function wp_update_themes() { $GLOBALS['phpwarden_test_refreshed'][] = 'themes'; }
 function get_site_transient( $name ) {
 	return isset( $GLOBALS['t_transients'][ $name ] ) ? $GLOBALS['t_transients'][ $name ] : false;
 }
@@ -201,6 +203,11 @@ same(
 same( 'themes: active stylesheet', true, $t[1]['active'] );
 same( 'themes: inactive with update from array transient', array( false, '2.1' ), array( $t[2]['active'], $t[2]['update'] ) );
 
+$fresh = (object) array( 'last_checked' => 1000, 'checked' => array( 'a/a.php' => '1.0' ) );
+check( 'updates: a recent, complete list is trusted', PHPWarden_Inventory::updates_are_fresh( $fresh, 1000 + 3600 ) );
+check( 'updates: a list older than 12 hours is refreshed', ! PHPWarden_Inventory::updates_are_fresh( $fresh, 1000 + 13 * 3600 ) );
+check( 'updates: a deleted transient (after a plugin install) is refreshed', ! PHPWarden_Inventory::updates_are_fresh( false, 2000 ) );
+check( 'updates: a half-built transient is refreshed', ! PHPWarden_Inventory::updates_are_fresh( (object) array( 'last_checked' => 1000 ), 1500 ) );
 same( 'update: missing transient gives null', null, PHPWarden_Inventory::update_version( false, 'akismet/akismet.php', '5.3' ) );
 
 $json = PHPWarden_Inventory::encode( $inv );

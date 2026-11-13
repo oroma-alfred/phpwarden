@@ -91,6 +91,21 @@ built for gating: `0` clean, `1` exposed / vulnerable / signature hits,
 error, `5` `--report-to` upload failed on an otherwise clean run, `64` usage
 error. Full table: `phpwarden --help`.
 
+
+## Replacing Wordfence CLI
+
+Wordfence closed new licences for its CLI in October 2026; Free licences stopped working on 2026-10-14 and Premium
+licences are not renewed. phpwarden runs the same way (on the server, no plugin in the site) and covers:
+
+| Wordfence CLI | phpwarden | Notes |
+|---|---|---|
+| `wordfence vuln-scan /path` | `phpwarden wordpress /path` | Same job, ranked by real-world exploitation; JSON/SARIF and CI exit codes. Also scans Composer and the PHP engine. |
+| `wordfence malware-scan /path` | `phpwarden integrity /path` | Compares core and wordpress.org plugin files with official checksums; flags injected files, PHP in uploads and common backdoor code. **Not a signature scanner**: premium plugins and themes cannot be verified and are listed as such. |
+| `wordfence remediate` | – | Reinstall the flagged component with WP-CLI. |
+| `wordfence db-scan` | – | Not covered. |
+
+Full guide: https://phpwarden.io/compare/phpwarden-vs-wordfence-cli#replace
+
 ## Send results to the dashboard
 
 Any `scan`, `deps`, `wordpress` or `detect` run can post its result to

@@ -16,6 +16,13 @@ class PHPWarden_Plugin {
 
 	const CRON_HOOK   = 'phpwarden_sync';
 	const SINGLE_HOOK = 'phpwarden_sync_soon';
+
+	/**
+	 * True while this plugin is being deactivated.
+	 *
+	 * @var bool
+	 */
+	private static $deactivating = false;
 	const DEBOUNCE    = 60;
 
 	/**
@@ -69,7 +76,10 @@ class PHPWarden_Plugin {
 	 * Deactivation: clear cron events.
 	 */
 	public static function deactivate() {
-		$switched = false;
+		// WordPress fires `deactivated_plugin` right after this; without the flag
+		// that hook would schedule one more report for a plugin that is now off.
+		self::$deactivating = true;
+		$switched           = false;
 		if ( is_multisite() && ! is_main_site() ) {
 			switch_to_blog( get_main_site_id() );
 			$switched = true;
@@ -86,7 +96,7 @@ class PHPWarden_Plugin {
 	 * Debounced report after a plugin/theme change.
 	 */
 	public static function schedule_soon() {
-		if ( ! self::should_run() || '' === PHPWarden_Settings::get_token() ) {
+		if ( self::$deactivating || ! self::should_run() || '' === PHPWarden_Settings::get_token() ) {
 			return;
 		}
 		if ( ! wp_next_scheduled( self::SINGLE_HOOK ) ) {
