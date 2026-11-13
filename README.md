@@ -58,7 +58,7 @@ composer require --dev phpwarden/phpwarden   # PHP projects → vendor/bin/phpwa
 pipx install phpwarden                       # Python-tooling box
 brew install oroma-alfred/tap/phpwarden      # macOS / Linux with Homebrew
 python3 phpwarden.pyz scan                   # single file, no install
-docker build -t phpwarden . && docker run --rm phpwarden scan --version 8.3.10 --sapi fpm --os linux
+docker run --rm phpwarden/phpwarden scan --version 8.3.10 --sapi fpm --os linux   # Docker Hub, amd64 + arm64
 ```
 
 On modern macOS / Debian / Ubuntu a plain `pip install phpwarden` into the
@@ -69,8 +69,8 @@ system Python is blocked by [PEP 668](https://peps.python.org/pep-0668/); use
 python3 -m venv ~/.venvs/phpwarden && ~/.venvs/phpwarden/bin/pip install phpwarden
 ```
 
-Docker usage (mounted projects, CI, dashboard reporting) is in
-[`docs/docker.md`](docs/docker.md).
+Docker usage (mounted projects, exit codes, CI, dashboard reporting) is on the
+image's [Docker Hub page](https://hub.docker.com/r/phpwarden/phpwarden).
 
 ## Use
 
