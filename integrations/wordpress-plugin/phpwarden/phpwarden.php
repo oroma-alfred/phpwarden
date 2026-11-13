@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name:       phpwarden agent
- * Plugin URI:        https://phpwarden.io/
+ * Plugin Name:       phpwarden
+ * Plugin URI:        https://phpwarden.io/docs#wp-plugin
  * Description:       Reports the installed WordPress core, plugins, themes and PHP version to your phpwarden dashboard, which ranks vulnerabilities by real-world exploitation (CISA KEV, then EPSS). Optional, off-by-default remote updates.
  * Version:           1.0.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            phpwarden
- * Author URI:        https://phpwarden.io/
+ * Author URI:        https://phpwarden.io/about
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       phpwarden

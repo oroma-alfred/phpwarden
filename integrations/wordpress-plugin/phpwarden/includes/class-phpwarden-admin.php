@@ -86,6 +86,7 @@ class PHPWarden_Admin {
 	 */
 	public static function handle_save() {
 		self::guard( 'phpwarden_save' );
+		check_admin_referer( 'phpwarden_save' );
 
 		if ( ! PHPWarden_Settings::token_is_constant() ) {
 			// The token is opaque: it is reduced to bearer-token characters by sanitize_token().
@@ -118,6 +119,7 @@ class PHPWarden_Admin {
 	 */
 	public static function handle_sync() {
 		self::guard( 'phpwarden_sync' );
+		check_admin_referer( 'phpwarden_sync' );
 		$status = PHPWarden_Client::sync( 'manual' );
 		wp_safe_redirect( self::page_url( $status['ok'] ? 'synced' : 'sync_failed' ) );
 		exit;

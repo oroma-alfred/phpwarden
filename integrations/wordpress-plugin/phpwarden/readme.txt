@@ -1,4 +1,4 @@
-=== phpwarden agent ===
+=== phpwarden ===
 Contributors: phpwarden
 Tags: security, vulnerabilities, updates, monitoring, inventory
 Requires at least: 5.8
@@ -8,11 +8,11 @@ Stable tag: 1.0.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Reports your installed plugins, themes, WordPress and PHP versions to your phpwarden dashboard, which ranks vulnerabilities by real-world exploitation.
+Reports installed plugins, themes, WordPress and PHP versions to phpwarden, which ranks vulnerabilities by real-world exploitation.
 
 == Description ==
 
-phpwarden agent connects a WordPress site to a [phpwarden](https://phpwarden.io/) project.
+phpwarden connects a WordPress site to a [phpwarden](https://phpwarden.io/) project.
 
 The plugin reports which components are installed. Your phpwarden dashboard matches them against known vulnerabilities and ranks the results by real-world exploitation: first whether a vulnerability is in the CISA Known Exploited Vulnerabilities (KEV) catalog, then by its EPSS score. You see what to patch first instead of a flat list of CVEs.
 
@@ -24,7 +24,7 @@ The plugin reports which components are installed. Your phpwarden dashboard matc
 
 = What it is not =
 
-phpwarden agent is **not a firewall and not a malware scanner**. It does not block requests, scan files or clean infections. It runs alongside security plugins such as Wordfence or Patchstack and does not replace them.
+This plugin is **not a firewall and not a malware scanner**. It does not block requests, scan files or clean infections. It runs alongside security plugins such as Wordfence or Patchstack and does not replace them.
 
 = Data sent =
 
@@ -93,7 +93,7 @@ Yes. The plugin only collects the inventory; matching and ranking happen in your
 
 = Does this replace Wordfence or Patchstack? =
 
-No. phpwarden agent is not a firewall or malware scanner. It tells you which installed components have vulnerabilities that are being exploited in the wild, so you know what to update first. Keep your firewall or scanner.
+No. This plugin is not a firewall or malware scanner. It tells you which installed components have vulnerabilities that are being exploited in the wild, so you know what to update first. Keep your firewall or scanner.
 
 = Can phpwarden change my site? =
 
