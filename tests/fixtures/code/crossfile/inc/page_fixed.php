@@ -1,0 +1,2 @@
+<?php
+$page = 'home.php';

@@ -318,8 +318,8 @@ check("... defined after the call, and through $this", "cmd-system" in snippet(
     '<?php class A { function go() { system("x " . $this->arg()); } function arg() { return $_POST["a"]; } }'))
 check("function returning a cast value stays quiet", snippet(
     '<?php function param($k) { return (int) $_GET[$k]; } echo "<p>" . param("q") . "</p>";') == [])
-check("only one level: a wrapper of a wrapper is not followed", snippet(
-    '<?php function a($x) { b($x); } function b($y) { system($y); } a($_GET["c"]);') == [])
+check("a wrapper of a wrapper in the same file is followed", "cmd-system" in snippet(
+    '<?php function a($x) { b($x); } function b($y) { system($y); } a($_GET["c"]);'))
 check("parameter markers never fire on their own", snippet(
     '<?php function f($a, $b) { $$a = 1; echo $b; system($a); include $b; }') == [])
 
@@ -413,6 +413,78 @@ try:
     check("perf: synthetic safe code has no findings", perf["findings"] == [])
 finally:
     shutil.rmtree(d)
+
+# --- cross-file (project-wide) taint -------------------------------------------
+XF = code.scan_project(str(FIX / "crossfile"))
+xf = {}
+for f in XF["findings"]:
+    xf.setdefault(f["file"], []).append(f)
+def xrules(path):
+    return {f["rule"] for f in xf.get(path, [])}
+check("cross-file: helper class two levels deep (Repo -> Db -> query) reported at the call site",
+      "sql-db-query" in xrules("pages/vuln_sql.php"))
+check("cross-file: message names the function and its file",
+      any("via findbyname() in lib/Repo.php:4" in f["message"] for f in xf.get("pages/vuln_sql.php", [])))
+check("cross-file: same helper called with intval() or a literal stays quiet", xrules("pages/safe_sql.php") == set())
+check("cross-file: function returning $_GET in one file used in system() in another",
+      "cmd-system" in xrules("pages/vuln_cmd.php"))
+check("cross-file: escapeshellarg() around that function's result stays quiet", xrules("pages/safe_cmd.php") == set())
+check("include: a variable set from the request in an included file controls a later include",
+      "include-tainted" in xrules("pages/vuln_incl.php"))
+check("include: the same pattern with a fixed value stays quiet", xrules("pages/safe_incl.php") == set())
+check("property: set from $_POST in one method, used in SQL in another", "sql-mysqli-query" in xrules("classes/Search.php"))
+check("property: an (int) cast before storing stays quiet", xrules("classes/SafeSearch.php") == set())
+check("same function name with different behaviour in two files is skipped", xrules("pages/ambiguous.php") == set())
+check("a four-level chain across four files does not crash or loop", isinstance(XF["files_scanned"], int)
+      and XF["files_scanned"] == len(list((FIX / "crossfile").rglob("*.php"))))
+check("library files themselves report nothing", not any(p.startswith("lib/") for p in xf))
+
+def project(files, **kw):
+    d = tempfile.mkdtemp()
+    try:
+        for name, php in files.items():
+            os.makedirs(os.path.dirname(os.path.join(d, name)), exist_ok=True)
+            with open(os.path.join(d, name), "w") as fh:
+                fh.write(php)
+        return {(f["file"], f["rule"]) for f in code.scan_project(d, **kw)["findings"]}
+    finally:
+        shutil.rmtree(d)
+
+check("cross-file wrapper of a wrapper (2 levels across 3 files)", ("p.php", "cmd-exec") in project({
+    "a.php": '<?php function outer_run($c) { return inner_run($c); }',
+    "b.php": '<?php function inner_run($c) { exec($c); }',
+    "p.php": '<?php outer_run("ls " . $_GET["d"]);'}))
+check("cross-file return pass-through: helper that trims its argument keeps the taint", ("p.php", "xss-echo") in project({
+    "h.php": '<?php function clean_it($s) { return trim($s); }',
+    "p.php": '<?php echo clean_it($_GET["q"]);'}))
+check("cross-file return pass-through: helper that escapes its argument clears XSS", project({
+    "h.php": '<?php function safe_out($s) { return htmlspecialchars($s, ENT_QUOTES); }',
+    "p.php": '<?php echo safe_out($_GET["q"]);'}) == set())
+check("cross-file: a helper returning $_SERVER['REQUEST_URI'] is not exported as request data", project({
+    "h.php": '<?php function here_url() { return $_SERVER["REQUEST_URI"]; }',
+    "p.php": '<?php system("x " . here_url());'}) == set())
+check("cross-file: a helper that returns request data on only one path is not exported", project({
+    "h.php": '<?php function maybe_param($k) { if (DEBUG) { return $_GET[$k]; } return "x"; }',
+    "p.php": '<?php system("x " . maybe_param("a"));'}) == set())
+check("method resolved by a unique name on any receiver", ("p.php", "sql-mysqli-query") in project({
+    "m.php": '<?php class Store { function saveRaw($v) { mysqli_query($this->c, "INSERT INTO t VALUES (\'" . $v . "\')"); } }',
+    "p.php": '<?php $s = new Store(); $s->saveRaw($_POST["v"]);'}))
+check("method name defined in two classes is not resolved on an unknown receiver", project({
+    "m1.php": '<?php class A1 { function store($v) { mysqli_query($this->c, "X" . $v); } }',
+    "m2.php": '<?php class A2 { function store($v) { return 1; } }',
+    "p.php": '<?php $s->store($_POST["v"]);'}) == set())
+check("sanitiser behind an unrelated flag: the variable may still be tainted after the block",
+      "sql-mysqli-query" in snippet('<?php $n = $_GET["n"]; if ($strict) { $n = intval($n); } mysqli_query($c, "SELECT $n");'))
+check("... but inside that block it is clean", snippet(
+    '<?php $n = $_GET["n"]; if ($strict) { $n = intval($n); mysqli_query($c, "SELECT $n"); }') == [])
+check("for-loop initialiser resets the variable", snippet(
+    '<?php $i = $_GET["i"]; for ($i = 0; $i < 3; $i++) { echo $i; }') == [])
+check("validate_file() !== 0 with an early return guards a path", snippet(
+    '<?php $f = $_GET["f"]; if (0 !== validate_file($f)) { return; } readfile($f);') == [])
+check("a nonce bound to the exact value authenticates it", snippet(
+    '<?php $p = $_REQUEST["plugin"]; check_admin_referer("activate-plugin_" . $p); include WP_PLUGIN_DIR . "/" . $p;') == [])
+check("$file['tmp_name'] of an upload is not client-controlled", snippet(
+    '<?php $file = $_FILES["up"]; readfile($file["tmp_name"]);') == [])
 
 print("RESULT: ALL PASS" if ok else "RESULT: FAILURES")
 sys.exit(0 if ok else 1)

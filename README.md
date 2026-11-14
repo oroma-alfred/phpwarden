@@ -130,8 +130,9 @@ error. Full table: `phpwarden --help`.
   how). Without that it reads the homepage and stops.
 - **`phpwarden code PATH`**: 75 rules (74 on by default) for your own PHP code, following request
   data to `eval`, shell commands, SQL, `unserialize`, includes and redirects.
-  It follows data through one level of same-file helper, not across files, and
-  does not replace PHPStan or Psalm. `phpwarden code --list-rules` lists every rule.
+  It follows data across files (helper functions and classes elsewhere in the
+  project, fixed includes, class properties); it is not a type checker like
+  PHPStan or Psalm. `phpwarden code --list-rules` lists every rule.
 - **`phpwarden assess`**: one ranked list from every view of a site: installed
   versions, your code, the live site from outside, and the access log, with the
   reason for each item ("exploited, reachable, visible from outside, already

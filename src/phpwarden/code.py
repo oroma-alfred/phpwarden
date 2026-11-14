@@ -12,6 +12,7 @@ Public API: scan_project, to_text, to_sarif, exit_code, list_rules.
 import bisect
 import json
 import os
+import posixpath
 import re
 
 from phpwarden.code_rules import GADGET_PACKAGES, RULES, RULES_BY_ID, SEVERITIES, TAINT_SINKS
@@ -112,6 +113,10 @@ NONE = frozenset()
 #   sqlq    a value that went through an SQL string escaper: safe inside quotes only
 #   upname  derived from a client-supplied upload file name ($_FILES[..]['name'])
 ALLX = ALL | {"sqlq", "upname"}
+# Direct request input ($_GET/$_POST/$_REQUEST/$_COOKIE/$_FILES, request objects,
+# php://input) carries the extra marker "src". $_SERVER keys do not: a function that
+# returns the current URI is not exported to other files as "returns request data".
+STRONG = ALL | {"src"}
 SQL_ESCAPERS = {"mysqli_real_escape_string", "mysql_real_escape_string", "mysql_escape_string",
                 "pg_escape_string", "sqlite_escape_string", "addslashes", "esc_sql"}
 SQL_ESCAPE_METHODS = {"escape_string", "real_escape_string", "escape"}
@@ -119,6 +124,14 @@ GUARD_FNS = {"is_numeric", "ctype_digit", "ctype_alnum", "ctype_alpha", "ctype_x
              "is_integer", "is_float"}
 EXIT_KW = {"die", "exit", "return", "throw", "continue", "break", "wp_die", "wp_send_json_error",
            "wp_send_json", "abort"}
+# WordPress path validators: they return 0 (falsy) for a safe path and an error
+# code or WP_Error (truthy) otherwise. validate_file_to_edit() dies on a bad file.
+VALIDATORS = {"validate_file", "validate_plugin", "validate_theme_requirements"}
+# Calls that end the request unless their check passes. The variables named in
+# the checked value are trusted afterwards: a nonce bound to the exact value
+# (check_admin_referer('activate-plugin_' . $plugin)) authenticates it, the
+# same reasoning as hash_equals().
+STATEMENT_GUARDS = {"validate_file_to_edit": 0, "check_admin_referer": 0, "check_ajax_referer": 0}
 UPLOAD_CHECKS = {"getimagesize", "exif_imagetype", "finfo_file", "finfo_open", "finfo", "mime_content_type",
                  "wp_check_filetype", "wp_check_filetype_and_ext", "wp_handle_upload", "wp_handle_sideload",
                  "getimagesizefromstring"}
@@ -132,7 +145,8 @@ def _minus(taint, kinds):
 
 
 def _real(taint):
-    return {x for x in taint if "@" not in x}
+    out = {x for x in taint if "@" not in x}
+    return out if out - {"src"} else set()
 
 
 def _pat_body(pat):
@@ -339,11 +353,20 @@ def _arg_indices(spec, fname, nargs):
 
 
 # ---------------------------------------------------------------------------
+_THIS_PROP = re.compile(r"\$this->(\w+)")
+MAX_ROUNDS = 3             # project-wide summary rounds (wrappers of wrappers across files)
+MAX_LOCAL_PASSES = 3       # summary passes inside one file
+
+
 class FileScanner:
-    def __init__(self, src, relpath, rules):
+    def __init__(self, src, relpath, rules, ext=None, seed_env=None):
         self.src = src
         self.rel = relpath
         self.rules = rules
+        # Project-wide summaries from the other files (see scan_project): None on
+        # the first round. Keys: wrap, tret, retp, info, uniq, exports, resolve.
+        self.ext = ext
+        self.seed_env = dict(seed_env or {})
         self.lines = src.splitlines()
         self._nl = [m.start() for m in re.finditer("\n", src)]
         self.toks = tokenize(src)
@@ -366,6 +389,89 @@ class FileScanner:
         self.in_switch = 0         # inside switch { } / else { }: an assignment is one branch of several
         self._no_tret = False
         self.is_model = bool(re.search(r"extends\s+\\?(?:[\w\\]*\\)?(Model|Authenticatable|Pivot)\b", src))
+        self.retp = {}       # fn name -> {param index: taint kinds its return value carries from that param}
+        self.ret_seen = {}   # fn name -> positions of its `return <expr>` statements
+        self.ret_hit = {}    # fn name -> positions of those that return request data
+        self._no_props = False
+        self.props = {}      # $this->prop -> real taint stored in it (class-local, within this file)
+        self.setters = {}    # fn name -> [(param index, prop, kinds)]: method stores a parameter in a property
+        self.cond_stack = [] # variables named by enclosing if/while conditions (None = not a condition block)
+        self.incl_snap = {}  # included file -> real taint of the variables in scope at the include
+        self.incl_targets = set()
+        self.exports = {}    # file-level variables holding request data at the end of the file
+        # names called in this file, and named functions defined here (with counts)
+        toks = self.toks
+        self.fwd_in_fn = set()   # local functions called from a function body before their definition
+        self.fwd_any = set()     # ... called from anywhere before their definition
+        self.fcalls = set()  # names called from inside function bodies
+        self.calls, self.defcount = set(), {}
+        src_ids = ("request", "get_query_var", "filter_input")
+        has_source = bool(self.seed_env)
+        n = len(toks)
+        for k in range(n):
+            t = toks[k]
+            typ = t[0]
+            if typ == "id":
+                if k + 1 < n and toks[k + 1][0] == "op" and toks[k + 1][1] == "(":
+                    self.calls.add(t[1].lower())
+                low = t[1].lower()
+                if low == "function" and k + 1 < n:
+                    nxt = toks[k + 1] if not _isop(toks[k + 1], "&") else (toks[k + 2] if k + 2 < n else None)
+                    if nxt is not None and nxt[0] == "id":
+                        nm = nxt[1].lower()
+                        self.defcount[nm] = self.defcount.get(nm, 0) + 1
+                elif low in src_ids:
+                    has_source = True
+            elif typ == "var":
+                if t[1] in SUPERGLOBALS or t[1] == "$_SERVER":
+                    has_source = True
+            elif typ in ("str", "dstr") and t[1] in ("php://input", "php://stdin"):
+                has_source = True
+        self.has_source = has_source
+
+    # -- project-wide summaries --
+    def _ext_has(self, table, name):
+        """A summary from another file applies only to a name that is not defined
+        here and that the project defines once (or identically everywhere)."""
+        ext = self.ext
+        return bool(ext) and name in ext[table] and name in ext["uniq"] and name not in self.defcount
+
+    def _note_call(self, name):
+        fwd = self.pass_no == 1 and name in self.defcount and name not in self.funcs
+        if fwd:
+            self.fwd_any.add(name)
+        if self.fn_stack[-1]:
+            self.fcalls.add(name)
+            if fwd:
+                self.fwd_in_fn.add(name)
+
+    def _wraps(self, name, any_receiver=False):
+        """(wrapper list, origin) for a call to `name`; origin is "file:line" for
+        another file's function, None for a local one."""
+        self._note_call(name)
+        if name in self.wrappers and (not any_receiver or (self.ext and name in self.ext["uniq"])):
+            return self.wrappers[name], None
+        if self._ext_has("wrap", name):
+            return self.ext["wrap"][name], self.ext["info"].get(name)
+        return None, None
+
+    def _ret_taint(self, name, args, env, local=True, any_receiver=False):
+        """What a call returns: request data (tret) and/or taint passed through
+        from its arguments (retp). Local summaries first, then other files."""
+        res = set()
+        self._note_call(name)
+        loc_ok = local and (not any_receiver or (self.ext and name in self.ext["uniq"]))
+        if loc_ok and name in self.tret and not self._no_tret:
+            res |= self.tret[name]
+        elif self._ext_has("tret", name):
+            res |= self.ext["tret"][name]
+        rp = self.retp.get(name) if loc_ok and name in self.retp else (
+            self.ext["retp"][name] if self._ext_has("retp", name) else None)
+        if rp:
+            for pi, kinds in rp.items():
+                if pi < len(args):
+                    res |= {x for x in self._taint(args[pi], env) if x.partition("@")[0] in kinds}
+        return res
 
     # -- location helpers --
     def _loc(self, pos):
@@ -402,6 +508,9 @@ class FileScanner:
         res = set()
         if "$" not in raw:
             return res
+        if self.props and not self._no_props and "$this->" in raw:
+            for m in _THIS_PROP.finditer(raw):
+                res |= self.props.get(m.group(1).lower(), NONE)
         for m in _INTERP.finditer(raw):
             name = "$" + m.group(1)
             idx = (m.group(2) or "").strip("[]'\" ")
@@ -410,7 +519,7 @@ class FileScanner:
                     continue
                 if (name + ("[" + idx + "]" if m.group(2) else "")) in self.gstack[-1]:
                     continue
-                res |= ALL
+                res |= STRONG
                 if name == "$_FILES":
                     res.add("upname")
             elif name == "$_SERVER":
@@ -451,7 +560,7 @@ class FileScanner:
             if (recv in REQ_RECEIVERS and meth in REQ_METHODS) or \
                     (recv in BAG_NAMES and j - 1 > i and meth in ("get", "all", "getint") and
                      name[1:].lower() in REQ_RECEIVERS and meth != "getint"):
-                return set(ALL), close + 1
+                return set(STRONG), close + 1
             if meth in SANITIZING_METHODS:
                 inner = [t for a in args for t in a]
                 sub = self._taint(inner, env)
@@ -459,19 +568,24 @@ class FileScanner:
                 if meth in SQL_ESCAPE_METHODS and "sql" in sub:
                     out.add("sqlq")
                 return out, close + 1
-            if name == "$this" and j - 1 == i and meth in self.tret and not self._no_tret:
-                return set(self.tret[meth]), close + 1
-            return set(), close + 1
+            direct_this = name == "$this" and j - 1 == i
+            return self._ret_taint(meth, args, env, local=True, any_receiver=not direct_this), close + 1
         if name in SUPERGLOBALS:
             idx = [t[1] for t in toks[i + 1:j] if t[0] in ("str", "dstr")]
             if name == "$_FILES" and any(k in FILES_SAFE_KEYS for k in idx):
                 return set(), j
-            return set(ALL) | ({"upname"} if name == "$_FILES" else set()), j
+            return set(STRONG) | ({"upname"} if name == "$_FILES" else set()), j
         if name == "$_SERVER":
             idx = [t[1] for t in toks[i + 1:j] if t[0] in ("str", "dstr")]
             if idx and (idx[0].startswith("HTTP_") or idx[0] in SERVER_KEYS):
                 return set(ALL), j
             return set(), j
+        base = env.get(name, NONE)
+        if "upname" in base and any(t[0] in ("str", "dstr") and t[1] in FILES_SAFE_KEYS for t in toks[i + 1:j]):
+            return set(), j          # $upload['tmp_name'] / ['size'] / ['error']: set by PHP, not the client
+        if name == "$this" and j > i + 2 and toks[i + 1][0] == "op" and toks[i + 1][1] in ("->", "?->") \
+                and toks[i + 2][0] == "id" and not self._no_props:
+            return set(self.props.get(toks[i + 2][1].lower(), NONE)), j
         return set(env.get(name, NONE)), j
 
     def _skip_operand(self, toks, i):
@@ -562,16 +676,16 @@ class FileScanner:
                     inner = [t for a in args for t in a]
                     after = close + 1
                     if low == "get_query_var" or low == "filter_input" and not self._filter_safe(inner):
-                        res |= ALL
+                        res |= STRONG
                     elif low in ("file_get_contents", "fopen", "stream_get_contents") and args and \
                             _literal_str(args[0]) in ("php://input", "php://stdin"):
-                        res |= ALL
+                        res |= STRONG
                     elif low == "request":
                         if args:
-                            res |= ALL
+                            res |= STRONG
                         elif after + 2 < n and _isop(toks[after], "->") and toks[after + 1][0] == "id" \
                                 and toks[after + 1][1].lower() in REQ_METHODS and _isop(toks[after + 2], "("):
-                            res |= ALL
+                            res |= STRONG
                             after = _match_close(toks, after + 2) + 1
                         elif after + 1 < n and _isop(toks[after], "->"):
                             after = self._skip_chain(toks, after)
@@ -592,10 +706,10 @@ class FileScanner:
                         res |= _minus(sub, SANITIZERS[low])
                         if low in SQL_ESCAPERS and "sql" in sub:
                             res.add("sqlq")     # safe inside quotes only
-                    elif low in self.tret and not self._no_tret:
-                        res |= self.tret[low]
                     elif low in PROPAGATORS:
                         res |= self._taint(inner, env)
+                    else:
+                        res |= self._ret_taint(low, args, env)
                     if after < n and toks[after][0] == "op" and toks[after][1] in ("->", "?->"):
                         after = self._skip_chain(toks, after)
                     i = after
@@ -606,9 +720,11 @@ class FileScanner:
                     if j < n and _isop(toks[j], "("):
                         close = _match_close(toks, j)
                         if (cls, meth) in STATIC_SOURCES:
-                            res |= ALL
-                        elif cls in ("self", "static") and meth in self.tret and not self._no_tret:
-                            res |= self.tret[meth]
+                            res |= STRONG
+                        else:
+                            sargs, _ = _split_args(toks, j)
+                            res |= self._ret_taint(meth, sargs, env, local=cls in ("self", "static"),
+                                                   any_receiver=cls not in ("self", "static"))
                         j = close + 1
                     i = j
                     continue
@@ -763,6 +879,15 @@ class FileScanner:
                            t[0] == "id" and t[1].lower() == "array" for t in lst) and \
                     len(strict) == 1 and strict[0][1].lower() == "true":
                 key = self._var_key(args[0])
+        elif low in VALIDATORS and args:
+            k = self._var_key(args[0])
+            return set(), ({k} if k else set())            # truthy = invalid
+        elif low == "is_wp_error" and args:
+            inner = _strip_parens(args[0])
+            if len(inner) >= 3 and inner[0][0] == "id" and _lname(inner[0][1]) in VALIDATORS:
+                return self._call_guard(inner)
+        elif low == "wp_verify_nonce" and len(args) >= 2:
+            return self._vars_in(args[1]), set()           # value bound to the nonce action
         elif low == "hash_equals" and len(args) == 2:
             # a value whose MAC/signature matched is authenticated, not attacker-chosen
             keys = set()
@@ -794,9 +919,27 @@ class FileScanner:
         a = cond
         if _isop(a[0], "!"):
             return self._guards_neg(a[1:])
-        if len(a) >= 3 and a[-2][0] == "op" and a[-2][1] in ("===", "==") and a[-1][1].lower() in ("false", "0"):
-            return self._guards_neg(a[:-2])
+        cmp_ = self._zero_cmp(a)
+        if cmp_:
+            op, rest = cmp_
+            return self._guards_neg(rest) if op in ("===", "==") else self._guards_pos(rest)
         return self._call_guard(a)[0]
+
+    @staticmethod
+    def _zero_cmp(a):
+        """`X === 0`, `0 !== X`, `X == false`...: (operator, X) or None."""
+        if len(a) >= 3 and a[-2][0] == "op" and a[-2][1] in ("===", "==", "!==", "!=") and a[-1][1].lower() in ("false", "0"):
+            return a[-2][1], a[:-2]
+        if len(a) >= 3 and a[1][0] == "op" and a[1][1] in ("===", "==", "!==", "!=") and a[0][1].lower() in ("false", "0"):
+            return a[1][1], a[2:]
+        return None
+
+    def _vars_in(self, toks):
+        keys = set()
+        for k in range(len(toks)):
+            if toks[k][0] == "var" and not (k and toks[k - 1][0] == "op" and toks[k - 1][1] in ("->", "::", "$")):
+                keys.add(toks[k][1] + "".join(t[1] for t in toks[k + 1:self._skip_var(toks, k)]))
+        return keys
 
     def _guards_neg(self, cond):
         """Variable expressions known to be validated when `cond` is false."""
@@ -812,8 +955,10 @@ class FileScanner:
         a = cond
         if _isop(a[0], "!"):
             return self._guards_pos(a[1:])
-        if len(a) >= 3 and a[-2][0] == "op" and a[-2][1] in ("===", "==") and a[-1][1].lower() in ("false", "0"):
-            return self._guards_pos(a[:-2])
+        cmp_ = self._zero_cmp(a)
+        if cmp_:
+            op, rest = cmp_
+            return self._guards_pos(rest) if op in ("===", "==") else self._guards_neg(rest)
         return self._call_guard(a)[1]
 
     def _block_exits(self, idx):
@@ -903,14 +1048,45 @@ class FileScanner:
         return out
 
     # -- main walk --
+    def _summary_key(self):
+        return (repr(sorted((k, sorted(v)) for k, v in self.wrappers.items())),
+                repr(sorted((k, sorted(v)) for k, v in self.tret.items())),
+                repr(sorted((k, sorted((p, sorted(kk)) for p, kk in v.items())) for k, v in self.retp.items())),
+                repr(sorted((k, sorted(v)) for k, v in self.setters.items())))
+
     def run(self):
-        self._pass()
-        if self.wrappers or self.tret or self.gtaint:
+        self._pass(dict(self.seed_env))
+        # Summary passes: a function can call a wrapper defined further down, so
+        # repeat while a summarised function is called here and summaries grow.
+        for _ in range(MAX_LOCAL_PASSES - 1):
+            # only a forward call to a function that turned out to have a summary
+            # can change another function's summary
+            # (pass-through summaries alone do not justify another pass: they are
+            # common and rarely decide a finding)
+            names = set(self.wrappers) | set(self.tret)
+            if not (names & self.fwd_in_fn):
+                break
+            before = self._summary_key()
+            self.fwd_in_fn = set()
+            self._pass(dict(self.seed_env))
+            if self._summary_key() == before:
+                break
+        # (other files' summaries and include seeds are known before the first pass,
+        # so they need no second one)
+        fwd_hit = (set(self.wrappers) | set(self.tret) | set(self.setters)) & self.fwd_any
+        if fwd_hit or self.gtaint or self.props:
             # Functions are often defined after they are called (class methods,
             # helpers at the bottom of a file): go over the file once more with
             # the summaries from the first pass.
             self.pass_no = 2
-            self._pass(dict(self.gtaint))
+            seed = dict(self.seed_env)
+            for k, v in self.gtaint.items():
+                seed[k] = seed.get(k, NONE) | v
+            self._pass(seed)
+        # file-level variables other files see through an include: only those that
+        # hold direct request input (not the current URL, not derived leftovers)
+        self.exports = {k: frozenset(_real(v)) for k, v in self.env0.items()
+                        if "src" in v and _real(v) and k not in SUPERGLOBALS}
         for tok, start in self.uploads:
             rng = self.toks if start is None else self.toks[start:_match_close(self.toks, start) + 1]
             line = self._loc(tok[2])[0]
@@ -968,6 +1144,9 @@ class FileScanner:
         kw, cond = self._cond_of(parts[-1]) if parts else (None, None)
         if kw is None:
             return m or None
+        if kw in ("if", "elseif"):
+            self.cond_stack.append({"vars": {t[1] for t in cond if t[0] == "var"}, "saved": {}})
+            m["cond"] = True
         pos = self._guards_pos(cond) - self.gstack[-1]
         if pos:
             self.gstack[-1] |= pos
@@ -991,6 +1170,7 @@ class FileScanner:
         self.fstart = [None]
         self.tls_opt = 0
         self.in_switch = 0
+        self.cond_stack = []
         brace = []           # entries: None, "expr", (fname, start_idx) or a guard dict
         stmt = []
         pending = None       # ('named', name, params) | ('closure',) when 'function' seen
@@ -1060,6 +1240,11 @@ class FileScanner:
                             self.tls_opt = max(0, self.tls_opt - 1)
                         if "switch" in m:
                             self.in_switch = max(0, self.in_switch - 1)
+                        if "cond" in m and self.cond_stack:
+                            fr = self.cond_stack.pop()
+                            env = env_stack[-1]
+                            for k, old in fr["saved"].items():
+                                env[k] = env.get(k, NONE) | old
                     continue
                 if val == ";" and pdepth == 0:
                     self._process(stmt, env_stack[-1])
@@ -1120,6 +1305,11 @@ class FileScanner:
             self._patterns(p, env)
             self._assign(p, env)
             head = p[0][1].lower() if p[0][0] == "id" else ""
+            if head in STATEMENT_GUARDS and len(p) > 2 and _isop(p[1], "(") and _match_close(p, 1) == len(p) - 1:
+                gargs, _ = _split_args(p, 1)
+                gi = STATEMENT_GUARDS[head]
+                if gi < len(gargs):
+                    self.gstack[-1] |= self._vars_in(gargs[gi])
             if head == "global":
                 for t in p[1:]:
                     if t[0] == "var":
@@ -1127,11 +1317,23 @@ class FileScanner:
                         if env is not self.env0 and self.env0.get(t[1]):
                             env[t[1]] = env.get(t[1], NONE) | self.env0[t[1]]
             elif head == "return" and self.pass_no == 1 and self.fn_stack[-1] and len(p) > 1:
-                self._no_tret = True           # one level only: a return of another wrapper is not followed
-                real = _real(self._taint(p[1:], env))
-                self._no_tret = False
+                fn = self.fn_stack[-1]
+                # a property's taint belongs to whatever request set it; it is not
+                # something the method returns on every call
+                self._no_props = True
+                tt = self._taint(p[1:], env)
+                self._no_props = False
+                real = _real(tt)
+                self.ret_seen.setdefault(fn, set()).add(p[0][2])
                 if real:
-                    self.tret[self.fn_stack[-1]] = self.tret.get(self.fn_stack[-1], frozenset()) | real
+                    self.ret_hit.setdefault(fn, set()).add(p[0][2])
+                if real:
+                    self.tret[fn] = self.tret.get(fn, frozenset()) | real
+                for x in tt:
+                    if "@" in x:
+                        kind, _, pi = x.partition("@")
+                        d = self.retp.setdefault(fn, {})
+                        d[int(pi)] = d.get(int(pi), frozenset()) | {kind}
             if k + 1 < len(parts):             # brace-less body in the same statement
                 kw, cond = self._cond_of(p)
                 if kw in ("if", "elseif"):
@@ -1151,6 +1353,23 @@ class FileScanner:
     def _assign(self, stmt, env):
         n = len(stmt)
         t0 = stmt[0]
+        if t0[0] == "id" and t0[1].lower() == "for" and n > 3 and _isop(stmt[1], "("):
+            # for ($i = 0, $j = 1; ...; ...): the init expressions are assignments
+            close = _match_close(stmt, 1)
+            inner = stmt[2:close]
+            depth, cut = 0, len(inner)
+            for k, t in enumerate(inner):
+                if t[0] == "op" and t[1] in ("(", "[", "{"):
+                    depth += 1
+                elif t[0] == "op" and t[1] in (")", "]", "}"):
+                    depth -= 1
+                elif depth == 0 and _isop(t, ";"):
+                    cut = k
+                    break
+            for seg in self._split_top(inner[:cut], (",",)):
+                if seg and seg[0][0] == "var":
+                    self._assign(seg, env)
+            return
         if t0[0] == "id" and t0[1].lower() == "foreach" and n > 3:
             as_i = next((k for k, t in enumerate(stmt) if t[0] == "id" and t[1].lower() == "as"), None)
             if as_i:
@@ -1174,9 +1393,35 @@ class FileScanner:
         taint = frozenset(taint)
         name = t0[1]
         if j > 1 and _isop(stmt[1], "->"):
-            name = None  # property assignment: not tracked
-        if name is None or name in SUPERGLOBALS:
+            # $this->prop = ...: class-local property tracking (within this file)
+            if name == "$this" and j == 3 and stmt[2][0] == "id":
+                prop = stmt[2][1].lower()
+                self._no_props = True            # no property-to-property chains: too coarse across methods
+                taint = frozenset(self._taint(rhs, env))
+                self._no_props = False
+                real = _real(taint)
+                if real:
+                    self.props[prop] = self.props.get(prop, frozenset()) | real
+                fn = self.fn_stack[-1]
+                if fn and self.pass_no == 1:
+                    for x in taint:
+                        if "@" in x:
+                            kind, _, pi = x.partition("@")
+                            ent = (int(pi), prop, kind)
+                            lst = self.setters.setdefault(fn, [])
+                            if ent not in lst:
+                                lst.append(ent)
             return
+        if name in SUPERGLOBALS:
+            return
+        # inside `if (<something else>) { ... }` the assignment may not happen: it
+        # holds inside the block, and after the block the variable may still have
+        # its old value (a sanitiser behind an unrelated flag). Remember the old
+        # value so the block's end can merge it back.
+        if self.cond_stack:
+            fr = self.cond_stack[-1]
+            if name not in fr["vars"] and name not in fr["saved"]:
+                fr["saved"][name] = env.get(name, NONE)
         if j > 1 or stmt[j][1] in (".=", "??=", "+=") or self.in_switch:
             env[name] = env.get(name, NONE) | taint
         else:
@@ -1304,6 +1549,17 @@ class FileScanner:
                     rest = stmt[i + 1:]
                     if "incl" in self._taint(rest, env):
                         self.add("include-tainted", t)
+                    target = self.ext["resolve"](self.rel, rest) if self.ext and self.ext.get("resolve") else None
+                    if target and target != self.rel:
+                        self.incl_targets.add(target)
+                        snap = {k: _real(v) for k, v in env.items() if "src" in v and _real(v)}
+                        if snap:
+                            cur = self.incl_snap.setdefault(target, {})
+                            for k, v in snap.items():
+                                cur[k] = cur.get(k, frozenset()) | v
+                        # the included file's file-level variables now exist here
+                        for k, v in self.ext["exports"].get(target, {}).items():
+                            env[k] = env.get(k, NONE) | v
                     continue
                 if i + 1 >= n or not _isop(stmt[i + 1], "("):
                     if i + 3 < n and _isop(stmt[i + 1], "::") and stmt[i + 2][0] == "id" and _isop(stmt[i + 3], "("):
@@ -1314,16 +1570,27 @@ class FileScanner:
                             for s in specs:
                                 if self._fire(s, key[1], args, env, t):
                                     break
-                        elif key[0] in ("self", "static") and key[1] in self.wrappers:
-                            self._via_wrapper(key[1], _split_args(stmt, i + 3)[0], env, t)
+                        else:
+                            lst, origin = self._wraps(key[1], any_receiver=key[0] not in ("self", "static"))
+                            if lst:
+                                self._via_wrapper(key[1], _split_args(stmt, i + 3)[0], env, t, lst, origin)
                     continue
                 prev = stmt[i - 1] if i else None
                 if prev is not None and (prev[0] == "op" and prev[1] in ("->", "?->", "::") or
                                          prev[0] == "id" and prev[1].lower() in ("function", "new", "fn")):
                     if prev[0] == "op" and prev[1] in ("->", "?->"):
                         self._method_sink(stmt, i, env)
-                        if i >= 2 and stmt[i - 2][0] == "var" and stmt[i - 2][1] == "$this" and low in self.wrappers:
-                            self._via_wrapper(low, _split_args(stmt, i + 1)[0], env, t)
+                        direct_this = i >= 2 and stmt[i - 2][0] == "var" and stmt[i - 2][1] == "$this"
+                        lst, origin = self._wraps(low, any_receiver=not direct_this)
+                        margs = None
+                        if lst:
+                            margs = _split_args(stmt, i + 1)[0]
+                            self._via_wrapper(low, margs, env, t, lst, origin)
+                        if low in self.setters and (direct_this or self.defcount.get(low) == 1):
+                            margs = margs if margs is not None else _split_args(stmt, i + 1)[0]
+                            for pi, prop, kind in self.setters[low]:
+                                if pi < len(margs) and kind in self._taint(margs[pi], env):
+                                    self.props[prop] = self.props.get(prop, frozenset()) | {kind}
                     continue
                 fname = _lname(t[1])
                 args, close = _split_args(stmt, i + 1)
@@ -1332,8 +1599,9 @@ class FileScanner:
                     for s in specs:
                         if self._fire(s, fname, args, env, t):
                             break
-                if fname in self.wrappers:
-                    self._via_wrapper(fname, args, env, t)
+                lst, origin = self._wraps(fname)
+                if lst:
+                    self._via_wrapper(fname, args, env, t, lst, origin)
                 if fname == "move_uploaded_file" and len(args) >= 2 and "upname" in self._taint(args[1], env):
                     cand = (t, self.fstart[-1])
                     if cand not in self.uploads:
@@ -1356,18 +1624,34 @@ class FileScanner:
                 if _real(tt):
                     self.add("variable-variable-tainted", t)
 
-    def _via_wrapper(self, name, args, env, tok):
-        """A same-file function that passes its argument to a sink, called with request data."""
-        for pi, kind, rid, sink in self.wrappers.get(name, ()):
-            if pi < len(args) and kind in self._taint(args[pi], env):
-                self.add(rid, tok, "%s: request data reaches %s() via %s() (argument %d)."
-                         % (RULES_BY_ID[rid]["title"], sink, name, pi + 1))
+    def _via_wrapper(self, name, args, env, tok, lst=None, origin=None):
+        """A function that passes its argument to a sink (here or in another file),
+        called with request data. Called with one of our own parameters instead,
+        it makes the current function a wrapper too (a wrapper of a wrapper)."""
+        where = " in %s" % origin if origin else ""
+        cur = self.fn_stack[-1]
+        for pi, kind, rid, sink in (lst if lst is not None else self.wrappers.get(name, ())):
+            if pi >= len(args):
+                continue
+            t = self._taint(args[pi], env)
+            if kind in t:
+                self.add(rid, tok, "%s: request data reaches %s() via %s()%s (argument %d)."
+                         % (RULES_BY_ID[rid]["title"], sink, name, where, pi + 1))
+            elif self.pass_no == 1 and cur and cur != name:
+                for x in t:
+                    if x.startswith(kind + "@"):
+                        w = (int(x.rsplit("@", 1)[1]), kind, rid, sink)
+                        wl = self.wrappers.setdefault(cur, [])
+                        if w not in wl:
+                            wl.append(w)
 
     def _method_sink(self, stmt, i, env):
         meth = stmt[i][1].lower()
         specs = _METH_SINKS.get(meth)
         if not specs:
             return
+        if self.ext and meth in self.ext["uniq"] and (meth in self.ext["wrap"] or meth in self.wrappers):
+            return    # the project's own method of that name: its summary decides, not a library guess
         recv_t = stmt[i - 2] if i >= 2 else None
         recv = recv_t[1].lstrip("$") if recv_t is not None and recv_t[0] in ("var", "id") else ""
         args, _ = _split_args(stmt, i + 1)
@@ -1665,14 +1949,133 @@ def _bump(sev):
     return SEVERITIES[max(0, i - 1)]
 
 
+_DIR_TOKENS = {"__dir__"}
+
+
+def _make_resolver(files):
+    """Resolve `include <expr>` to a project file when the path is a literal, or
+    a literal joined to __DIR__, dirname(__FILE__) or a constant. Anything with
+    a variable in it is left alone."""
+    def resolve(rel, toks):
+        toks = _strip_parens(toks)
+        lits, base_dir, unknown_const = [], False, False
+        k, n = 0, len(toks)
+        while k < n:
+            t = toks[k]
+            if t[0] in ("str", "dstr"):
+                if t[0] == "dstr" and "$" in t[1]:
+                    return None
+                lits.append(t[1])
+            elif t[0] == "id" and t[1].lower() in _DIR_TOKENS:
+                base_dir = True
+            elif t[0] == "id" and t[1].lower() == "dirname" and k + 1 < n and _isop(toks[k + 1], "("):
+                close = _match_close(toks, k + 1)
+                if not any(x[0] == "id" and x[1] in ("__FILE__", "__DIR__") for x in toks[k + 2:close]):
+                    return None
+                base_dir = True
+                k = close
+            elif t[0] == "id" and re.fullmatch(r"[A-Z_][A-Z0-9_]*", t[1]):
+                unknown_const = True
+            elif _isop(t, "."):
+                pass
+            else:
+                return None
+            k += 1
+        if not lits:
+            return None
+        lit = "".join(lits)
+        here = posixpath.dirname(rel)
+        cands = [posixpath.join(here, lit.lstrip("/"))] if base_dir else \
+            [posixpath.join(here, lit), lit.lstrip("/")] + ([posixpath.join(here, lit.lstrip("/"))] if unknown_const else [])
+        for c in cands:
+            c = posixpath.normpath(c)
+            if c in files:
+                return c
+        return None
+    return resolve
+
+
+def _scan_file(fp, rel, enabled, ext=None, seed=None):
+    try:
+        with open(fp, encoding="utf-8", errors="replace") as fh:
+            src = fh.read()
+    except OSError:
+        return None
+    try:
+        return FileScanner(src, rel, enabled, ext, seed).run()
+    except Exception:  # never let one odd file abort the scan
+        return None
+
+
+def _summary_of(fs):
+    """What other files need from one scanned file; the token stream is dropped."""
+    return {"wrap": {k: list(v) for k, v in fs.wrappers.items()},
+            # other files see a function as "returns request data" only when every
+            # return in it does; one path among several is too weak a claim to export
+            # (and only for direct request input, not the current URL from $_SERVER)
+            "tret": {k: frozenset(v) for k, v in fs.tret.items()
+                     if "src" in v and fs.ret_seen.get(k) and fs.ret_hit.get(k, set()) >= fs.ret_seen[k]},
+            "retp": {k: dict(v) for k, v in fs.retp.items()},
+            "defcount": fs.defcount, "calls": fs.calls, "exports": fs.exports,
+            "snap": fs.incl_snap, "targets": fs.incl_targets,
+            "info": {k: "%s:%d" % (v["file"], v["line"]) for k, v in fs.funcs.items()},
+            "funcs": fs.funcs, "fcalls": fs.fcalls, "has_source": fs.has_source}
+
+
+def _build_ext(sums, resolve):
+    """Merge per-file summaries into the tables a FileScanner reads (`ext`)."""
+    defs, per_name = {}, {}
+    for rel, sm in sums.items():
+        for name, c in sm["defcount"].items():
+            defs[name] = defs.get(name, 0) + c
+            per_name.setdefault(name, []).append(rel)
+    wrap, tret, retp, info, uniq = {}, {}, {}, {}, set()
+    for name, rels in per_name.items():
+        if defs[name] == 1:
+            uniq.add(name)
+        elif len(rels) == defs[name]:
+            # several definitions (one per file): usable only when they all agree
+            keys = {(repr(sorted(sums[r]["wrap"].get(name, []))), repr(sorted(sums[r]["tret"].get(name, ()))),
+                     repr(sorted((p, sorted(k)) for p, k in sums[r]["retp"].get(name, {}).items()))) for r in rels}
+            if len(keys) == 1:
+                uniq.add(name)
+        if name not in uniq:
+            continue
+        r0 = rels[0]
+        if sums[r0]["wrap"].get(name):
+            wrap[name] = sums[r0]["wrap"][name]
+        if sums[r0]["tret"].get(name):
+            tret[name] = sums[r0]["tret"][name]
+        if sums[r0]["retp"].get(name):
+            retp[name] = sums[r0]["retp"][name]
+        if name in sums[r0]["info"]:
+            info[name] = sums[r0]["info"][name]
+    exports = {rel: sm["exports"] for rel, sm in sums.items() if sm["exports"]}
+    seeds = {}
+    for rel, sm in sums.items():
+        for target, snap in sm["snap"].items():
+            cur = seeds.setdefault(target, {})
+            for k, v in snap.items():
+                cur[k] = cur.get(k, frozenset()) | v
+    return {"wrap": wrap, "tret": tret, "retp": retp, "info": info, "uniq": uniq,
+            "exports": exports, "resolve": resolve}, seeds
+
+
 def scan_project(path, *, include_tests=False, lock_findings=None, rules=None, all_rules=False):
     """rules: only these rule ids. all_rules: also run the opt-in rules that are
-    off by default because they are noisy (see list_rules(): "default": false)."""
+    off by default because they are noisy (see list_rules(): "default": false).
+
+    Two stages. Every file is scanned on its own first. Then, for up to
+    MAX_ROUNDS rounds, files are scanned again with what the other files export:
+    functions and methods that pass a parameter to a sink (wrappers), that
+    return request data, or that pass a parameter through to their return value;
+    and file-level variables shared through literal includes. Only names defined
+    once in the project (or identically everywhere) are used."""
     root = os.path.abspath(path)
     enabled = set(rules) if rules else {r["id"] for r in RULES if all_rules or r.get("default", True)}
     files, envs = _walk(root, include_tests) if os.path.isdir(root) else ([root], [])
-    findings, funcs, hooks, rests = [], {}, [], []
-    total = scanned = 0
+    todo = []
+    total = 0
     for fp in files:
         try:
             size = os.path.getsize(fp)
@@ -1683,20 +2086,67 @@ def scan_project(path, *, include_tests=False, lock_findings=None, rules=None, a
         if total + size > MAX_TOTAL:
             break
         total += size
-        try:
-            with open(fp, encoding="utf-8", errors="replace") as fh:
-                src = fh.read()
-        except OSError:
-            continue
         rel = os.path.relpath(fp, root) if os.path.isdir(root) else os.path.basename(fp)
-        rel = rel.replace(os.sep, "/")
-        try:
-            fs = FileScanner(src, rel, enabled).run()
-        except Exception:  # never let one odd file abort the scan
+        todo.append((fp, rel.replace(os.sep, "/")))
+    by_rel = {rel: fp for fp, rel in todo}
+    resolve = _make_resolver(set(by_rel))
+    sums, per_file, keep = {}, {}, {}
+    for fp, rel in todo:
+        fs = _scan_file(fp, rel, enabled, {"wrap": {}, "tret": {}, "retp": {}, "info": {}, "uniq": set(),
+                                            "exports": {}, "resolve": resolve} if len(todo) > 1 else None)
+        if fs is None:
             continue
-        scanned += 1
-        findings.extend(fs.findings.values())
-        funcs.update(fs.funcs)
+        sums[rel] = _summary_of(fs)
+        per_file[rel] = fs.findings
+        if fs.hooks or fs.rest:
+            keep[rel] = fs
+    # project-wide rounds
+    prev_ext = {"wrap": {}, "tret": {}, "retp": {}, "uniq": set()}
+    prev_exports, prev_seeds = {}, {}
+    for _round in range(MAX_ROUNDS if len(sums) > 1 else 0):
+        ext, seeds = _build_ext(sums, resolve)
+        changed = set()
+        # pass-through summaries (retp) are many and only matter one level deep
+        # across files: they trigger rescans in the first round only
+        for table in (("wrap", "tret", "retp") if _round == 0 else ("wrap", "tret")):
+            for name in set(ext[table]) | set(prev_ext[table]):
+                if (ext[table].get(name) != prev_ext[table].get(name)) or \
+                        ((name in ext["uniq"]) != (name in prev_ext["uniq"]) and (name in ext[table] or name in prev_ext[table])):
+                    changed.add(name)
+        changed_exports = {r for r in set(ext["exports"]) | set(prev_exports)
+                           if ext["exports"].get(r) != prev_exports.get(r)}
+        # The including file's variables are not pushed into the included file:
+        # names are reused too freely between templates for that to be precise.
+        changed_seeds = set()
+        ext_tret = set(ext["tret"])
+        redo = []
+        for rel, sm in sums.items():
+            hits = changed & (sm["calls"] - set(sm["defcount"]))
+            if not hits and not (changed_exports & sm["targets"]) and rel not in changed_seeds:
+                continue
+            # rescan when it can change something: a finding here (the file has
+            # request input, or calls a function that returns it) or a summary of a
+            # function defined here (it calls the changed name)
+            if (changed_exports & sm["targets"]) or rel in changed_seeds or \
+                    (hits and (sm["has_source"] or (sm["calls"] & ext_tret))) or (hits & sm["fcalls"]):
+                redo.append(rel)
+        if not redo:
+            break
+        for rel in redo:
+            fs = _scan_file(by_rel[rel], rel, enabled, ext)
+            if fs is None:
+                continue
+            sums[rel] = _summary_of(fs)
+            per_file[rel] = fs.findings
+            if fs.hooks or fs.rest:
+                keep[rel] = fs
+        prev_ext, prev_exports, prev_seeds = ext, ext["exports"], seeds
+    findings, funcs, hooks, rests = [], {}, [], []
+    scanned = len(sums)
+    for rel in sums:                      # file order, as before
+        findings.extend(per_file[rel].values())
+        funcs.update(sums[rel]["funcs"])
+    for rel, fs in keep.items():
         hooks.extend((h, fs) for h in fs.hooks)
         rests.extend((r, fs) for r in fs.rest)
     # WordPress handler resolution (project-wide)
