@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""php2shell-guard — autonomous-defense daemon.
+"""phpwarden-guard: PHP-FPM worker containment daemon.
 
-Implements the Claude<->Grok build contract in DESIGN.md.
+Watches PHP-FPM for a worker poisoned by a memory-corruption exploit and
+recycles it before it serves another request.
 
 Build order honored: status + self-probe + census + killswitch, THEN the
 actuation half (pid-join parser, worker-kill / pool-recycle, breaker counters).
 
-Safety model (do not weaken without re-reading DESIGN.md invariants):
+Safety model (do not weaken these invariants):
   * Boot mode is DRYRUN. Reaching ENFORCE requires an operator ack file AND the
     P1-P7 promotion guards AND the --allow-enforce flag. Absent any of these the
     destructive os.kill / recycle paths are unreachable.
@@ -770,7 +771,7 @@ def render(status):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="php2shell autonomous-defense daemon")
+    ap = argparse.ArgumentParser(description="phpwarden-guard: contain poisoned PHP-FPM workers (boots in dry-run)")
     ap.add_argument("--config", required=True)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--loop", type=int, metavar="SECONDS")

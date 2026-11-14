@@ -11,7 +11,7 @@ Covered by [`LICENSE`](LICENSE) (Apache-2.0):
 
 | Path | What it is |
 |------|------------|
-| `src/phpwarden/` | The engine: CLI + library (scan, deps, wordpress, detect, rules, report, feed) |
+| `src/phpwarden/` | The engine: CLI + library (scan, deps, wordpress, integrity, detect, rules, probe, code, assess, report, feed) |
 | `src/phpwarden/data/` | The **bundled community** vulnerability feed |
 | `integrations/` | The GitHub Action and other integrations |
 | `tests/` | The test suite |
@@ -27,12 +27,14 @@ Apache License, Version 2.0, including commercially.
 |--------------|-------|
 | `saas/` | [`saas/LICENSE.txt`](saas/LICENSE.txt) — proprietary |
 | `server/` | [`server/LICENSE.txt`](server/LICENSE.txt) — proprietary |
-| The **maintained** (continuously-updated) feed | Delivered to paying subscribers; not redistributable |
+| The **maintained** feed (rebuilt twice a day) | Delivered to paying subscribers; not redistributable |
 | The hosted service at phpwarden.io / app.phpwarden.io | Commercial, subject to its terms of service |
 
-The engine runs fully offline on the bundled community feed with no license.
-Paid plans add the maintained live feed, the dashboard, history, alerts and
+The engine runs fully offline on the bundled community feed with no license,
+and `phpwarden feed update` pulls a free weekly snapshot of the feed with no
+key. A one-project dashboard is free. Paid plans add the maintained feed
+(rebuilt twice a day), more projects, weekly live checks, history, alerts and
 outbound webhooks.
 
-Questions about commercial use or redistribution: open an issue or contact the
-maintainers.
+Questions about commercial use or redistribution: open an issue or email
+sales@phpwarden.io.

@@ -10,13 +10,13 @@ phpwarden scan --report-to https://app.phpwarden.io/v1/reports --report-token <t
 ```
 
 What you get back is ranked by real-world exploitation — CISA KEV first, then
-EPSS, then CVSS. Of about 19,500 PHP vulnerabilities in the feed, 41 are known to be
-exploited (as of 2026-11-13); those are the lines at the top.
+EPSS, then CVSS. Of about 19,500 PHP vulnerabilities in the feed, 54 are known to be
+exploited (as of 2026-11-14); those are the lines at the top.
 
 Assumptions throughout:
 
 - `phpwarden` is on `PATH` (`pipx install phpwarden`, `vendor/bin/phpwarden`
-  from `composer require --dev phpwarden/phpwarden`, or `python3 phpwarden.pyz`).
+  from `composer require --dev phpwarden/phpwarden`, or the single file from https://phpwarden.io/phpwarden.pyz, run as `python3 phpwarden.pyz`).
 - The project token lives in the environment, not in the command line, so it
   does not show up in `ps` or shell history. The CLI reads
   `PHPWARDEN_REPORT_URL` and `PHPWARDEN_REPORT_TOKEN` when the flags are
@@ -31,7 +31,10 @@ Subcommands used below and their flags, as implemented in the CLI:
 `deps LOCKFILE [--project DIR] [--no-reachability] [--json]`,
 `wordpress PATH [--host LABEL] [--json]`, `detect LOGFILE [--json]`,
 `report FILES... [--out HTML]`. `--report-to URL --report-token TOKEN` is
-accepted by `scan`, `deps`, `wordpress` and `detect`.
+accepted by `scan`, `deps`, `wordpress` and `detect`. The last three recipes
+also use `probe URL [--passive] [--max-requests N]`,
+`rules [--format nginx|modsecurity] [--dry-run] [--replay ACCESS_LOG]`,
+`code PATH` and `--format sarif` (all new in 2.2.0).
 
 ---
 
@@ -253,6 +256,63 @@ finding instead. For a WordPress box, add
 is the hostname).
 
 ---
+
+## Alongside Trivy (containers, OS packages, JavaScript)
+
+phpwarden covers PHP: the engine, Composer packages and WordPress. It does not
+scan container images, OS packages, npm dependencies or infrastructure files.
+[Trivy](https://trivy.dev) does. Run both and upload both SARIF files (GitHub
+Actions; the job needs `permissions: security-events: write`):
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - run: pip install "phpwarden>=2.2,<3"
+  - run: phpwarden deps composer.lock --format sarif > phpwarden.sarif || true
+  - run: phpwarden code . --format sarif > phpwarden-code.sarif || true
+  # install Trivy first (see trivy.dev), then:
+  - run: trivy fs --format sarif --output trivy.sarif .
+  - uses: github/codeql-action/upload-sarif@v3
+    with: { sarif_file: phpwarden.sarif, category: phpwarden-deps }
+  - uses: github/codeql-action/upload-sarif@v3
+    with: { sarif_file: phpwarden-code.sarif, category: phpwarden-code }
+  - uses: github/codeql-action/upload-sarif@v3
+    with: { sarif_file: trivy.sarif, category: trivy }
+  - run: phpwarden deps composer.lock      # the exit code gates the build
+```
+
+For a built image use `trivy image --format sarif --output trivy-image.sarif your/image:tag`.
+Trivy also reads `composer.lock`, so some PHP packages appear in both reports;
+use phpwarden's order (known exploited, then EPSS) to decide what to fix first
+in PHP.
+
+## A client site you can only reach by URL
+
+`probe` checks a running site from outside with GET and HEAD requests only. The
+active checks need proof that the site is yours:
+
+```bash
+phpwarden probe https://client.example --print-token   # token + three ways to publish it
+phpwarden probe https://client.example                 # run once the token is in place
+phpwarden probe https://client.example --json > client.json
+```
+
+Weekly from cron, mailing only when something high, critical or known
+exploited shows up (exit code 1):
+
+```cron
+15 6 * * 1  phpwarden probe https://client.example > /tmp/probe.txt 2>&1 || mail -s "phpwarden probe: client.example" you@example.com < /tmp/probe.txt
+```
+
+## Try the WAF rules before they block
+
+```bash
+phpwarden rules --replay /var/log/nginx/access.log     # what would have been refused, from a log you already have
+phpwarden rules --format nginx --dry-run --out /etc/nginx/snippets/phpwarden-dryrun.conf
+```
+
+The replay report flags any matching request your server had answered 2xx/3xx:
+check those for false positives before enabling the blocking rules.
 
 ## Reading the result
 

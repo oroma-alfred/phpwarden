@@ -4,7 +4,8 @@ The engine and the base (community) feed are open and free. A subscription
 provides a license key that unlocks the hosted feed channel, which is updated as
 new PHP CVEs are triaged and fitted with version ranges and detection
 signatures. This module is the client: it resolves the active feed (cache ->
-bundled), and `update()` pulls a newer feed when a license key is present.
+bundled), and `update()` pulls a newer feed: the maintained channel (rebuilt
+twice a day) with a license key, the free weekly snapshot without one.
 
 No network call happens without an explicit `update()`, and the tool works
 fully offline on the bundled feed.
@@ -25,6 +26,10 @@ from phpwarden.vulndb import Feed
 # The hosted maintained-feed channel (server/feedserver.py behind TLS). Override
 # with PHPWARDEN_FEED_URL for self-hosted or staging feed servers.
 DEFAULT_FEED_URL = "https://feed.phpwarden.io/v1/feed"
+# Free channel: the same feed, snapshotted once a week, no key needed. Override
+# with PHPWARDEN_FREE_FEED_URL; set it to "off" to never contact the server
+# without a license key.
+DEFAULT_FREE_FEED_URL = "https://feed.phpwarden.io/v1/feed/free"
 CACHE_DIR_DEFAULT = Path(os.environ.get("PHPWARDEN_HOME", str(Path.home() / ".phpwarden")))
 CACHE_FILE = "php-cve-feed.cache.json"
 # Outcome of the last `update()` that proved or disproved the license key, so
@@ -48,10 +53,13 @@ MAX_SHRINK = 0.10
 
 
 class FeedManager:
-    def __init__(self, cache_dir: Path = None, license_key: str = None, feed_url: str = None):
+    def __init__(self, cache_dir: Path = None, license_key: str = None, feed_url: str = None,
+                 free_feed_url: str = None):
         self.cache_dir = Path(cache_dir or CACHE_DIR_DEFAULT)
         self.license_key = license_key or os.environ.get("PHPWARDEN_LICENSE")
         self.feed_url = feed_url or os.environ.get("PHPWARDEN_FEED_URL", DEFAULT_FEED_URL)
+        self.free_feed_url = free_feed_url or os.environ.get("PHPWARDEN_FREE_FEED_URL",
+                                                              DEFAULT_FREE_FEED_URL)
 
     # --- resolve the active feed ----------------------------------------- #
     def _cache_path(self) -> Path:
@@ -74,8 +82,9 @@ class FeedManager:
         cache = self._cache_path()
         if cache.exists():
             try:
-                if version_key(Feed.load(cache).feed_version) >= version_key(Feed.bundled().feed_version):
-                    return "subscription-cache"
+                cached = Feed.load(cache)
+                if version_key(cached.feed_version) >= version_key(Feed.bundled().feed_version):
+                    return "free-weekly-cache" if cached.channel == "free-weekly" else "subscription-cache"
             except Exception:  # noqa: BLE001
                 pass
         return "bundled-community"
@@ -114,8 +123,51 @@ class FeedManager:
         return v if isinstance(v, bool) else None
 
     # --- subscription update --------------------------------------------- #
+    def _no_license(self, why: str = "") -> dict:
+        return {"status": "no_license",
+                "message": "No license key set. Running on the free community feed"
+                           + (f" ({why})" if why else "") + ". "
+                           "Set PHPWARDEN_LICENSE to subscribe to the maintained channel.",
+                "feed_version": self.current().feed_version}
+
+    def _update_free(self) -> dict:
+        """No key: pull the free weekly snapshot. Any failure (offline, server
+        down, endpoint missing) degrades to the plain no_license status, so an
+        unlicensed `feed update` never turns into an error."""
+        url = (self.free_feed_url or "").strip()
+        if not url or url.lower() == "off":
+            return self._no_license()
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "phpwarden-feed/1",
+                "If-None-Match": f'"{self.current().feed_version}"'})
+            with urllib.request.urlopen(req, timeout=20) as resp:  # noqa: S310
+                raw = resp.read()
+                http_status = resp.status
+        except urllib.error.HTTPError as e:
+            if e.code == 304:
+                return {"status": "current", "channel": "free-weekly", "http_status": 304,
+                        "feed_version": self.current().feed_version,
+                        "message": "Already up to date with the free weekly feed. "
+                                   "Set PHPWARDEN_LICENSE for the maintained channel."}
+            why = "free weekly update is rate-limited, try later" if e.code == 429 \
+                else f"free weekly update unavailable: HTTP {e.code}"
+            return self._no_license(why)
+        except Exception as e:  # noqa: BLE001 — offline is a normal state here
+            return self._no_license(f"free weekly update unreachable: {e.__class__.__name__}")
+        res = self._apply(raw, http_status)
+        res.pop("license_valid", None)
+        res["channel"] = "free-weekly"
+        if res["status"] == "current":
+            res["message"] = ("Already up to date with the free weekly feed. "
+                              "Set PHPWARDEN_LICENSE for the maintained channel.")
+        return res
+
     def update(self) -> dict:
-        """Pull a newer feed if a license key is set. Returns a status dict.
+        """Pull a newer feed. Returns a status dict.
+
+        With a license key: the maintained channel. Without one: the free weekly
+        snapshot (falls back to status no_license if it can't be reached).
 
         status: updated | current | no_license | unlicensed | error.
         "unlicensed" means the server answered 401/403 — the key was rejected
@@ -123,10 +175,7 @@ class FeedManager:
         error, or a bad document. `http_status` carries the server's code when
         there was one."""
         if not self.license_key:
-            return {"status": "no_license",
-                    "message": "No license key set. Running on the free community feed. "
-                               "Set PHPWARDEN_LICENSE to subscribe to the maintained channel.",
-                    "feed_version": self.current().feed_version}
+            return self._update_free()
         try:
             req = urllib.request.Request(
                 self.feed_url,
@@ -151,6 +200,10 @@ class FeedManager:
                     "feed_version": self.current().feed_version}
         # a 2xx with the bearer key means the key is good, whatever the document says
         self._remember_license(True, http_status)
+        return self._apply(raw, http_status)
+
+    def _apply(self, raw: bytes, http_status: int) -> dict:
+        """Validate a fetched feed document and make it the cached feed."""
 
         # Validate the document fully BEFORE it can touch the cache: a server
         # that returns `5`, a CVE without an id, or an empty feed must leave the

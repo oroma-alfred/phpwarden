@@ -28,6 +28,7 @@ def check(name, cond):
 HOME = Path(tempfile.mkdtemp(prefix="pw-cli-home-"))
 ENV = dict(os.environ, PYTHONPATH=str(ROOT / "src"), PHPWARDEN_HOME=str(HOME))
 ENV.pop("PHPWARDEN_LICENSE", None)
+ENV["PHPWARDEN_FREE_FEED_URL"] = "off"   # never touch the network from tests
 ENV.pop("PHPWARDEN_REPORT_URL", None)
 ENV.pop("PHPWARDEN_REPORT_TOKEN", None)
 
@@ -117,6 +118,8 @@ rc, out, err = run("detect", str(log), "--report-to", BAD_URL)
 check("detect shares _maybe_report: clean log + failed upload exits 5", rc == 5 and "No exploitation signatures" in out)
 wproot = HOME / "wp"
 (wproot / "wp-content" / "plugins").mkdir(parents=True)
+(wproot / "wp-includes").mkdir()
+(wproot / "wp-includes" / "version.php").write_text("<?php\n$wp_version = '99.0';\n")
 rc, out, err = run("wordpress", str(wproot), "--report-to", BAD_URL)
 check("wordpress shares _maybe_report: clean install + failed upload exits 5", rc == 5 and "WordPress at" in out)
 check("every failing upload actually reached the ingest server", SEEN["posts"] >= 5)
@@ -160,6 +163,10 @@ rc, out, err = run("feed", "update", env=ENV)
 check("no_license path unchanged: exit 0 with the community-feed message",
       rc == 0 and out.startswith("No license key set."))
 
+rc, out, err = run("wordpress", str(HOME / "no-such-dir"))
+check("wordpress on a path with no install is exit 4, never 'clean'", rc == 4 and "no WordPress install" in err)
+rc, out, err = run("integrity", str(HOME / "no-such-dir"), "--json")
+check("integrity --json on a path with no install is exit 4", rc == 4 and "no WordPress install" in err)
 srv.shutdown()
 print("\nRESULT:", "ALL PASS" if ok else "FAILURES")
 sys.exit(0 if ok else 1)

@@ -1,0 +1,102 @@
+benign: 12291 requests in 14 categories; attacks: 28 request shapes
+== Coverage ==
+engine CVEs in the feed: 146; with a request signature: 3 (CVE-2024-4577 ['%ad', 'auto_prepend_file', 'allow_url_include'], CVE-2019-11043 ['%0a'], CVE-2012-1823 ['auto_prepend_file', 'allow_url_include'])
+for scale, the bundled feed 2026.11.13.3 has 145 engine CVEs, 8804 Composer and 12330 WordPress advisories; none of the Composer or WordPress ones has a request signature
+
+== Benign traffic: false positives ==
+category           requests   replay    nginx   modsec
+wp-file                 214        0        0        0
+wp-asset                929        0        0        0
+wp-rest                  92        0        0        0
+framework-route          33        0        0        0
+search-ascii           3000        0        0        0
+search-unicode          392        0      192      192
+slug-unicode            147        0       72       72
+utm                    1200        0        0        0
+pagination             1200        0        0        0
+token                  2400        0        0        0
+multiline-form          800        0      800      800
+docs-search              72        0       72       72
+docs-path                12        0       10       10
+encoded-misc           1800        0        0        0
+TOTAL                 12291        0     1146     1146
+  replay: 0/12291 benign requests would be blocked (0.00%)
+  nginx: 1146/12291 benign requests would be blocked (9.32%)
+  modsec: 1146/12291 benign requests would be blocked (9.32%)
+
+Examples of blocked benign requests (up to 3 per category and matcher):
+  [nginx] search-unicode: /?s=categor%C3%ADa  -> CVE-2024-4577
+  [nginx] search-unicode: /?s=categor%c3%ada  -> CVE-2024-4577
+  [nginx] search-unicode: /search?q=categor%C3%ADa  -> CVE-2024-4577
+  [nginx] slug-unicode: /categor%C3%ADa/  -> CVE-2024-4577
+  [nginx] slug-unicode: /blog/categor%C3%ADa/?utm_source=newsletter  -> CVE-2024-4577
+  [nginx] slug-unicode: /tag/categor%c3%ada/feed/  -> CVE-2024-4577
+  [nginx] multiline-form: /contact?name=Ana&message=privacy%20plugin%20update%0d%0acomposer%20about%20install%0d%0aprivacy%20settings%20  -> CVE-2019-11043
+  [nginx] multiline-form: /wp-admin/admin-ajax.php?action=preview&content=privacy%20plugin%20update%0d%0acomposer%20about%20install%0d%0  -> CVE-2019-11043
+  [nginx] multiline-form: /contact?name=Ana&message=blue%20laptop%20invoice%20import%0Aprivacy%20order  -> CVE-2019-11043
+  [nginx] docs-search: /?s=auto_prepend_file  -> CVE-2012-1823, CVE-2024-4577
+  [nginx] docs-search: /?s=auto_prepend_file  -> CVE-2012-1823, CVE-2024-4577
+  [nginx] docs-search: /search?q=auto_prepend_file  -> CVE-2012-1823, CVE-2024-4577
+  [nginx] docs-path: /blog/why-allow_url_include-is-dangerous/  -> CVE-2012-1823, CVE-2024-4577
+  [nginx] docs-path: /blog/why-allow_url_include-is-dangerous/?ref=search  -> CVE-2012-1823, CVE-2024-4577
+  [nginx] docs-path: /docs/php/allow_url_include  -> CVE-2012-1823, CVE-2024-4577
+  [modsec] search-unicode: /?s=categor%C3%ADa  -> CVE-2024-4577
+  [modsec] search-unicode: /?s=categor%c3%ada  -> CVE-2024-4577
+  [modsec] search-unicode: /search?q=categor%C3%ADa  -> CVE-2024-4577
+  [modsec] slug-unicode: /categor%C3%ADa/  -> CVE-2024-4577
+  [modsec] slug-unicode: /blog/categor%C3%ADa/?utm_source=newsletter  -> CVE-2024-4577
+  [modsec] slug-unicode: /tag/categor%c3%ada/feed/  -> CVE-2024-4577
+  [modsec] multiline-form: /contact?name=Ana&message=privacy%20plugin%20update%0d%0acomposer%20about%20install%0d%0aprivacy%20settings%20  -> CVE-2019-11043
+  [modsec] multiline-form: /wp-admin/admin-ajax.php?action=preview&content=privacy%20plugin%20update%0d%0acomposer%20about%20install%0d%0  -> CVE-2019-11043
+  [modsec] multiline-form: /contact?name=Ana&message=blue%20laptop%20invoice%20import%0Aprivacy%20order  -> CVE-2019-11043
+  [modsec] docs-search: /?s=auto_prepend_file  -> CVE-2012-1823, CVE-2024-4577
+  [modsec] docs-search: /?s=auto_prepend_file  -> CVE-2012-1823, CVE-2024-4577
+  [modsec] docs-search: /search?q=auto_prepend_file  -> CVE-2012-1823, CVE-2024-4577
+  [modsec] docs-path: /blog/why-allow_url_include-is-dangerous/  -> CVE-2012-1823, CVE-2024-4577
+  [modsec] docs-path: /blog/why-allow_url_include-is-dangerous/?ref=search  -> CVE-2012-1823, CVE-2024-4577
+  [modsec] docs-path: /docs/php/allow_url_include  -> CVE-2012-1823, CVE-2024-4577
+
+== Attack request shapes: detection ==
+CVE             variant                                       technique               replay   nginx  modsec
+CVE-2024-4577   published PoC                                 canonical                  yes     yes     yes
+CVE-2024-4577   PoC against index.php                         canonical                  yes     yes     yes
+CVE-2024-4577   XAMPP PoC with cgi.force_redirect             canonical                  yes     yes     yes
+CVE-2024-4577   lower-case hex                                case                       yes     yes     yes
+CVE-2024-4577   mixed-case directive names                    case                       yes     yes     yes
+CVE-2024-4577   raw = instead of %3d                          encoding                   yes     yes     yes
+CVE-2024-4577   upper-case %3D                                encoding                   yes     yes     yes
+CVE-2024-4577   source disclosure only (-s)                   no directive               yes     yes     yes
+CVE-2024-4577   different directives (extension, open_basedi  no listed directive        yes     yes     yes
+CVE-2024-4577   encoded underscores in directive names        encoding                   yes     yes     yes
+CVE-2024-4577   double-encoded soft hyphen                    double encoding           MISS    MISS     yes
+CVE-2024-4577   raw 0xAD byte as nginx logs it                raw byte                   yes     yes     yes
+CVE-2012-1823   published PoC                                 canonical                  yes     yes     yes
+CVE-2012-1823   short PoC                                     canonical                  yes     yes     yes
+CVE-2012-1823   %20 separators                                encoding                   yes     yes     yes
+CVE-2012-1823   no space after -d                             encoding                   yes     yes     yes
+CVE-2012-1823   mixed-case directive names                    case                       yes     yes     yes
+CVE-2012-1823   source disclosure (-s)                        no directive              MISS    MISS    MISS
+CVE-2012-1823   encoded underscores                           encoding                  MISS    MISS     yes
+CVE-2012-1823   auto_append_file instead                      no listed directive       MISS    MISS    MISS
+CVE-2012-1823   double-encoded                                double encoding           MISS    MISS    MISS
+CVE-2019-11043  phuip-fpizdam detection request               canonical                  yes     yes     yes
+CVE-2019-11043  payload stage                                 canonical                  yes     yes     yes
+CVE-2019-11043  lower-case path                               case                       yes     yes     yes
+CVE-2019-11043  other script name                             canonical                  yes     yes     yes
+CVE-2019-11043  double-encoded newline                        double encoding           MISS    MISS     yes
+CVE-2019-11043  raw newline as logged (\x0A)                  raw byte                   yes    MISS    MISS
+CVE-2019-11043  carriage return + newline                     encoding                   yes     yes     yes
+
+Per CVE (detected / shapes):
+  CVE-2024-4577   replay 11/12  nginx 11/12  modsec 12/12
+  CVE-2012-1823   replay 5/9  nginx 5/9  modsec 6/9
+  CVE-2019-11043  replay 6/7  nginx 5/7  modsec 6/7
+Per technique (detected / shapes):
+  canonical             replay 8/8  nginx 8/8  modsec 8/8
+  case                  replay 4/4  nginx 4/4  modsec 4/4
+  double encoding       replay 0/3  nginx 0/3  modsec 2/3
+  encoding              replay 6/7  nginx 6/7  modsec 7/7
+  no directive          replay 1/2  nginx 1/2  modsec 1/2
+  no listed directive   replay 1/2  nginx 1/2  modsec 1/2
+  raw byte              replay 2/2  nginx 1/2  modsec 1/2
+Overall: replay 22/28  nginx 21/28  modsec 24/28

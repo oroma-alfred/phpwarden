@@ -1,0 +1,100 @@
+== 1. DVWA: vulnerable low.php vs fixed impossible.php ==
+type                        | low.php (vulnerable)                                | impossible.php (fixed)
+api (out of scope)          | -                                                   | -
+authbypass (out of scope)   | -                                                   | -
+bac (out of scope)          | -  [other: sql-mysqli-query]                        | -  [other: display-errors-on]
+brute (out of scope)        | -  [other: sql-mysqli-query, weak-hash-password]    | -  [other: weak-hash-password]
+captcha (out of scope)      | -  [other: weak-hash-password]                      | -  [other: weak-hash-password]
+cryptography (out of scope) | -                                                   | -
+csp (out of scope)          | -                                                   | -
+csrf (out of scope)         | -  [other: weak-hash-password]                      | -  [other: weak-hash-password]
+exec                        | cmd-shell-exec                                      | cmd-shell-exec
+fi                          | -                                                   | -
+javascript (out of scope)   | -                                                   | -
+open_redirect               | redirect-header                                     | -
+sqli                        | sql-db-query                                        | -
+sqli_blind                  | sql-db-query                                        | -
+upload                      | -                                                   | -  [other: path-copy-rename, path-delete]
+weak_id (out of scope)      | -  [other: cookie-insecure]                         | -
+xss_d (out of scope)        | -                                                   | -
+xss_r                       | -                                                   | -
+xss_s                       | -                                                   | -
+
+In-scope types: 4/8 vulnerable files flagged with a relevant rule; 1/8 fixed files wrongly flagged with a relevant rule.
+  medium.php (still vulnerable, with a partial filter): 3/8 flagged
+  high.php (still vulnerable, with a partial filter): 3/8 flagged
+
+== 2. Mutillidae II: eleven well-known vulnerable pages ==
+  user-info.php                         SQL injection               MISSED
+  includes/process-login-attempt.php    SQL injection (login)       MISSED
+  add-to-your-blog.php                  SQL injection / stored XSS  MISSED
+  dns-lookup.php                        command injection           MISSED
+  echo.php                              command injection           MISSED
+  index.php                             local file inclusion        MISSED  [other: redirect-header]
+  source-viewer.php                     arbitrary file read         MISSED  [other: xss-echo]
+  text-file-viewer.php                  remote file read / SSRF     path-read  [other: xss-echo]
+  xml-validator.php                     XML external entity         xxe-entity-loader
+  upload-file.php                       unrestricted upload         path-move-upload  [other: xss-echo]
+  redirectandlog.php                    open redirect               MISSED
+
+3/11 pages flagged with a relevant rule.
+
+All Mutillidae findings by rule:
+files 294, summary {'critical': 2, 'high': 7, 'medium': 23, 'low': 2}
+   19  xss-echo
+    4  redirect-header
+    3  tls-verify-disabled
+    2  cmd-shell-exec
+    2  xxe-entity-loader
+    1  path-read
+    1  path-move-upload
+    1  phpinfo-call
+    1  unserialize-no-allowed-classes
+
+== 3. Clean codebases: findings per 100k lines ==
+target       files    lines  crit  high   med   low  high+crit /100k  all /100k
+wordpress     1900   671441     1    10    13    17             1.64       6.11
+laravel       1826   284473     0     0     0    30             0.00      10.55
+symfony       2952  1617127     0     0     0     4             0.00       0.25
+
+wordpress: by rule
+   13  low      unserialize-no-allowed-classes
+    6  medium   xss-echo
+    5  high     tls-verify-disabled
+    3  high     weak-hash-password
+    3  medium   redirect-wp
+    3  low      display-errors-on
+    2  medium   weak-random-secret
+    2  medium   xss-printf
+    1  critical include-tainted
+    1  high     sql-wpdb
+    1  high     path-readfile
+    1  low      phpinfo-call
+  high/critical findings (11), for triage:
+    wp-admin/update.php:101  include-tainted  | include WP_PLUGIN_DIR . '/' . $plugin;
+    wp-admin/network/upgrade.php:92  tls-verify-disabled  | 'sslverify'   => false,
+    wp-admin/setup-config.php:338  sql-wpdb  | $wpdb->query( "SELECT $prefix" );
+    wp-includes/Requests/src/Transport/Curl.php:194  tls-verify-disabled  | curl_setopt($this->handle, CURLOPT_SSL_VERIFYHOST, 0);
+    wp-includes/Requests/src/Transport/Curl.php:195  tls-verify-disabled  | curl_setopt($this->handle, CURLOPT_SSL_VERIFYPEER, 0);
+    wp-includes/Requests/src/Transport/Curl.php:202  tls-verify-disabled  | curl_setopt($this->handle, CURLOPT_SSL_VERIFYHOST, 0);
+    wp-includes/class-phpass.php:162  weak-hash-password  | $hash = md5($salt . $password, TRUE);
+    wp-includes/class-phpass.php:164  weak-hash-password  | $hash = md5($hash . $password, TRUE);
+    wp-includes/https-detection.php:130  tls-verify-disabled  | 'sslverify' => false,
+    wp-includes/ms-files.php:99  path-readfile  | readfile( $file );
+    wp-includes/pluggable.php:2853  weak-hash-password  | $check = hash_equals( $hash, md5( $password ) );
+
+laravel: by rule
+   28  low      unserialize-no-allowed-classes
+    2  low      laravel-guarded-empty
+
+symfony: by rule
+    2  low      unserialize-no-allowed-classes
+    1  low      phpinfo-call
+    1  low      display-errors-on
+
+== 4. Speed ==
+  dvwa          169 files    0.16 s     1028 files/s  @ a1978a2fed19
+  mutillidae    294 files    0.22 s     1361 files/s  @ 126a1fdb4ff9
+  wordpress    1900 files    2.60 s      730 files/s  @ db96f5eaa77a
+  laravel      1826 files    1.01 s     1803 files/s  @ f5c01f6b6380
+  symfony      2952 files    4.51 s      654 files/s  @ eca3b7b6bd3a

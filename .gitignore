@@ -31,3 +31,4 @@ site/demos/guard-demo/build/*.png
 site/demos/guard-demo/build/concat_*.txt
 site/demos/guard-demo/build/anim*/
 site/demos/guard-demo/build/vo/
+site/dl/

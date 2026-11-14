@@ -1,0 +1,43 @@
+{
+  "name": "phpwarden",
+  "publisher": "phpwarden",
+  "displayName": "phpwarden — PHP vulnerabilities ranked by exploitation",
+  "description": "Flags vulnerable Composer packages in composer.lock and risky PHP code, ranked by real-world exploitation (CISA KEV, EPSS). Runs the local phpwarden CLI.",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "icon": "images/icon.png",
+  "homepage": "https://phpwarden.io",
+  "repository": { "type": "git", "url": "https://github.com/oroma-alfred/phpwarden" },
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Linters"],
+  "keywords": ["php", "composer", "security", "vulnerability", "cve", "kev"],
+  "activationEvents": ["workspaceContains:composer.lock", "onLanguage:php"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "phpwarden.scanWorkspace", "title": "Scan workspace", "category": "phpwarden" },
+      { "command": "phpwarden.scanLock", "title": "Scan composer.lock", "category": "phpwarden" },
+      { "command": "phpwarden.feedStatus", "title": "Show feed status", "category": "phpwarden" }
+    ],
+    "configuration": {
+      "title": "phpwarden",
+      "properties": {
+        "phpwarden.path": { "type": "string", "default": "phpwarden", "description": "Path to the phpwarden CLI (e.g. `phpwarden`, or `python3 /path/to/phpwarden.pyz`)." },
+        "phpwarden.runOnSave": { "type": "boolean", "default": true, "description": "Scan composer.lock / PHP files on save." },
+        "phpwarden.codeScan": { "type": "boolean", "default": true, "description": "Run `phpwarden code` on saved PHP files." },
+        "phpwarden.minSeverity": { "type": "string", "enum": ["low", "medium", "high", "critical"], "default": "low", "description": "Hide dependency findings below this severity (KEV / EPSS ≥ 0.5 findings are always shown)." }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "tsc -p ./ && node --test out/test/",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "@types/vscode": "~1.85.0",
+    "typescript": "^5.4.0"
+  }
+}

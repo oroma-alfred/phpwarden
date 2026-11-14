@@ -2,8 +2,8 @@
 
 Scan `composer.lock`, a WordPress install and your production PHP version on
 every push, with findings ranked by real-world exploitation — CISA KEV first,
-then EPSS, then CVSS. Of the ~21,100 PHP advisories in the feed, 43 are
-actually being exploited (as of 2026-11-12); `fail-on: exploited` breaks the
+then EPSS, then CVSS. Of about 19,500 PHP vulnerabilities in the feed, 54 are
+known to be exploited (CISA KEV, as of 2026-11-14); `fail-on: exploited` breaks the
 build on those and nothing else.
 
 The action lives in its own repository so it can be listed on the GitHub

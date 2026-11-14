@@ -7,7 +7,7 @@ The phpwarden engine — the command-line scanner and its library
 See the LICENSE file.
 
 The hosted-service components (saas/ and server/) and the maintained
-(continuously-updated) vulnerability feed are proprietary and are NOT covered
+(maintained (rebuilt twice a day)) vulnerability feed are proprietary and are NOT covered
 by the Apache License. See LICENSING.md for the full scope breakdown and
 saas/LICENSE.txt / server/LICENSE.txt for their terms.
 

@@ -1,0 +1,30 @@
+site             mode      requests  expected  found  true+ false+  missed  only GET/HEAD
+clean            active          31         0      0      0      0       0  yes
+forbidden        active          31         0      0      0      0       0  yes
+soft404-static   active          31         0      0      0      0       0  yes
+soft404-dynamic  active          31         0      0      0      0       0  yes
+redirect-login   active          60         0      0      0      0       0  yes
+decoys           active          31         0      0      0      0       0  yes
+planted          active          33        29     29     29      0       0  yes
+TOTAL                                      29            29      0       0
+
+clean: 404 for everything but the homepage
+  other findings (headers, versions): disclosure-server, no-https-redirect
+forbidden: 403 for everything but the homepage
+  other findings (headers, versions): disclosure-server, no-https-redirect
+soft404-static: 200 with the same page for every path
+  other findings (headers, versions): disclosure-server, no-https-redirect
+  notes: site returns 200 for nonexistent paths (soft-404); relying on content checks
+soft404-dynamic: 200 for every path; page echoes the path, has a random nonce and a nav naming phpMyAdmin, Adminer, Horizon...
+  other findings (headers, versions): disclosure-server, no-https-redirect
+  notes: site returns 200 for nonexistent paths (soft-404); relying on content checks
+redirect-login: every path redirects to /login (200, nav names the same tools)
+  other findings (headers, versions): disclosure-server, no-https-redirect
+  notes: site returns 200 for nonexistent paths (soft-404); relying on content checks; request cap reached
+decoys: 15 sensitive paths exist but hold harmless content
+  other findings (headers, versions): disclosure-server, no-https-redirect
+planted: all 29 exposures and endpoints really present
+  other findings (headers, versions): disclosure-server, no-https-redirect
+
+secret values or usernames echoed in the output: none
+planted site with the WRONG token: mode=passive, 2 request(s) reached the server, 0 exposure/endpoint findings

@@ -1,0 +1,17 @@
+{
+  "lockfile": "composer.lock",
+  "vulnerable": [
+    {"package": "guzzlehttp/guzzle", "installed": "7.4.0", "cve": "CVE-2022-29248", "severity": "high", "cvss": 8.1,
+     "known_exploited": false, "ransomware": false, "epss": 0.02, "epss_percentile": 0.6,
+     "title": "Cross-domain cookie leakage", "fixed": ["6.5.6", "7.4.3"], "reach": "used"},
+    {"package": "symfony/http-kernel", "installed": "5.4.1", "cve": "CVE-2022-24894", "severity": "medium", "cvss": 0,
+     "known_exploited": true, "ransomware": false, "epss": null, "epss_percentile": null,
+     "title": "Cookie headers stored in HttpCache", "fixed": ["5.4.20", "6.2.6"], "reach": "unknown"},
+    {"package": "monolog/monolog", "installed": "2.0.0", "cve": "CVE-0000-0001", "severity": "low", "cvss": 3.1,
+     "known_exploited": false, "ransomware": false, "epss": 0.6, "epss_percentile": 0.99,
+     "title": "Example", "fixed": ["2.1.0"], "reach": "unknown"},
+    {"package": "psr/log", "installed": "1.0.0", "cve": "CVE-0000-0002", "severity": "low", "cvss": 2.0,
+     "known_exploited": false, "ransomware": false, "epss": 0.01, "epss_percentile": 0.1,
+     "title": "Low one", "fixed": [], "reach": "unknown"}
+  ]
+}

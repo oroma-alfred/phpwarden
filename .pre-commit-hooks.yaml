@@ -2,7 +2,7 @@
 #
 #   repos:
 #     - repo: https://github.com/oroma-alfred/phpwarden
-#       rev: main   # pin to a tag with `pre-commit autoupdate`
+#       rev: v2.1.0   # pin to a tag with `pre-commit autoupdate`
 #       hooks:
 #         - id: phpwarden-deps
 #           # args: ["--no-reachability"]   # faster: skip the "is it referenced in code?" pass

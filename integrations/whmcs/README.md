@@ -76,7 +76,7 @@ On the product details page the customer sees:
   report) in a sandboxed frame. The link behind it is signed, tied to that one
   project and valid for one hour; a new one is made on each page view.
 - how to connect the site, with their token:
-  - install the phpwarden WordPress plugin and paste the token, or
+  - install the phpwarden WordPress plugin (https://phpwarden.io/docs#wp-plugin) and paste the token, or
   - run `phpwarden wordpress /path --report-to https://app.phpwarden.io/v1/reports --report-token <token>`.
 
 If the summary cannot be loaded, the customer sees a short "not available right

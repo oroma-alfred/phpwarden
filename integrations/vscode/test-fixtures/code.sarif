@@ -1,0 +1,7 @@
+{"version": "2.1.0", "runs": [{"tool": {"driver": {"name": "phpwarden"}}, "results": [
+ {"ruleId": "PHPW-SQLI", "level": "error", "message": {"text": "SQL built from request input"},
+  "locations": [{"physicalLocation": {"artifactLocation": {"uri": "src/db.php"}, "region": {"startLine": 12, "startColumn": 5}}}]},
+ {"ruleId": "PHPW-EVAL", "level": "note", "message": {"text": "eval() use"},
+  "locations": [{"physicalLocation": {"artifactLocation": {"uri": "file:///abs/x.php"}, "region": {"startLine": 3}}}]},
+ {"ruleId": "BROKEN", "message": {"text": "no location"}}
+]}]}

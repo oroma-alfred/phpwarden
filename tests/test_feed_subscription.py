@@ -68,7 +68,7 @@ threading.Thread(target=srv.serve_forever, daemon=True).start()
 tmp = Path(tempfile.mkdtemp(prefix="pwfeed-"))
 
 # 1) No license -> stays on community feed.
-fm0 = FeedManager(cache_dir=tmp, license_key=None)
+fm0 = FeedManager(cache_dir=tmp, license_key=None, free_feed_url="off")
 r0 = fm0.update()
 check("no license -> no_license status", r0["status"] == "no_license")
 check("no license -> community feed still active", fm0.current().feed_version == base.feed_version)

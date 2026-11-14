@@ -1,0 +1,11 @@
+{
+ "_comment": "CISA KEV entries that mention PHP-related products but that phpwarden does not cover. Listed here so the KEV gap check and the public status file only report real gaps. Scope: the PHP engine, Composer packages on Packagist, WordPress core/plugins/themes.",
+ "out_of_scope": {
+  "CVE-2026-56290": "Joomla extension (Joomlack Page Builder): Joomla is not distributed through Composer",
+  "CVE-2026-48907": "Joomla extension (Joomla Content Editor): Joomla is not distributed through Composer",
+  "CVE-2026-41940": "cPanel & WHM / WP2 (WordPress Squared): a hosting control panel product, not WordPress or a plugin",
+  "CVE-2023-23752": "Joomla core: Joomla is not distributed through Composer",
+  "CVE-2019-16759": "vBulletin: commercial forum software, not distributed through Composer",
+  "CVE-2020-17496": "vBulletin: commercial forum software, not distributed through Composer"
+ }
+}

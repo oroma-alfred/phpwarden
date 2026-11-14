@@ -1,0 +1,7 @@
+src/**
+out/test/**
+test-fixtures/**
+**/*.map
+tsconfig.json
+.gitignore
+node_modules/**

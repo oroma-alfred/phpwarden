@@ -1,8 +1,8 @@
 # phpwarden — scan composer.lock in GitLab CI, ranked by real-world exploitation.
 #
 # Findings are ordered CISA KEV (actually being exploited) first, then EPSS
-# probability, then CVSS — of the ~21,100 PHP advisories in the feed, 43 are
-# in KEV (as of 2026-11-12), and those are what this job surfaces at the top.
+# probability, then CVSS — of about 19,500 PHP vulnerabilities in the feed, 54 are
+# in KEV (as of 2026-11-14), and those are what this job surfaces at the top.
 #
 # Usage: copy this job into your .gitlab-ci.yml, or include it:
 #
@@ -37,6 +37,10 @@ phpwarden:
     # Machine-readable copy first (kept as an artifact), then the human report.
     # `|| true` here only defers the verdict: the second run decides the job.
     - phpwarden deps "$PHPWARDEN_LOCKFILE" --json > phpwarden.json || true
+    # SARIF copy for tools that read it (phpwarden 2.2.0 or newer; on an
+    # older CLI this line fails quietly and the job carries on). GitLab does
+    # not display SARIF in merge requests by itself.
+    - phpwarden deps "$PHPWARDEN_LOCKFILE" --format sarif > phpwarden.sarif 2>/dev/null || true
     - |
       set +e
       if [ -n "$PHPWARDEN_REPORT_TO" ]; then
@@ -59,6 +63,7 @@ phpwarden:
     expire_in: 30 days
     paths:
       - phpwarden.json
+      - phpwarden.sarif
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

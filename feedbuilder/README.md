@@ -19,8 +19,6 @@ builds its own database from the same open upstreams those vendors draw from:
 | [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) | actively-exploited flag | public domain | enrichment |
 | [FIRST EPSS](https://www.first.org/epss/) | exploitation probability | open | enrichment |
 
-A licensed vendor feed (Wordfence v3) is supported as an *optional interim*
-accelerator (`fetch_wordfence.py` + `import_wordfence.py`), never a dependency.
 
 ## Pipeline
 
@@ -48,7 +46,7 @@ python3 -I import_php_news.py --out output/engine_news.json \
     --news-dir output/news --nvd-dir output/nvd          # ~145 CVEs since 2016
 python3 -I merge_engine_cves.py --base base/php-cve-feed.base.json \
     --imported output/engine_news.json \
-    [--kev-seen ../data/kev-seen.json] [--shipped ../src/phpwarden/data/php-cve-feed.json]
+    [--kev-seen kev-seen.json] [--shipped ../src/phpwarden/data/php-cve-feed.json]
 ```
 
 `merge_engine_cves.py` is additive: a CVE already in the curated base keeps
@@ -91,13 +89,6 @@ python3 -I import_nvd_wordpress.py nvd/nvd-wp-*.json output/wp_nvd.json
 
 NVD holds 20,000+ WordPress CVEs — the full WordPress database, no vendor licence.
 
-### Optional interim: Wordfence v3 (licensed)
-
-```bash
-WORDFENCE_API_KEY=... python3 -I fetch_wordfence.py wordfence.json
-python3 -I import_wordfence.py wordfence.json output/wp_wordfence.json
-```
-
 ## 4. Merge + enrich into the shipped feed
 
 ```bash
@@ -128,7 +119,7 @@ python3 -I check_feed.py ../src/phpwarden/data/php-cve-feed.json [--verbose]
 Exit 1 on any: open-ended OR-group with a fixed version inside it, `fixed`
 version inside its own affected range, duplicate `(package|slug, cve)`,
 version token the matcher cannot parse, or NVD slug that differs from its CPE
-product without wordpress.org-reference / curated backing. `feed-refresh.sh`
+product without wordpress.org-reference / curated backing. the maintainer's refresh job
 runs it before the publish gate.
 
 ## Data rules worth knowing
