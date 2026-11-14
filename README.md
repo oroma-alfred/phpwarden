@@ -37,7 +37,8 @@ $ phpwarden deps composer.lock
 | Composer dependency CVEs | `deps` | Snyk, `composer audit` |
 | WordPress core, plugin and theme CVEs | `wordpress` | Patchstack, Wordfence |
 | WordPress file integrity (wordpress.org checksums, injected files) | `integrity` | Wordfence CLI malware-scan (partly) |
-| Your own PHP code (75 rules) | `code` | — (not a PHPStan/Psalm replacement) |
+| Your own PHP code: whole-program, Laravel/Symfony/WordPress-aware (89 rules) | `code` | Snyk Code, Semgrep, Psalm taint |
+| Exploits of the vulnerabilities this site has, blocked inside PHP | `shield` | the WAF rule you would have to write |
 | Live site from outside: exposed files, debug endpoints | `probe` | — |
 | One ranked verdict across all of the above | `assess` | — |
 | Exploitation signatures in logs | `detect` | SIEM content |
@@ -98,7 +99,8 @@ phpwarden rules --format nginx --out php-block.conf   # PHP-specific WAF rules (
 phpwarden rules --format nginx --dry-run     # the same rules, log-only: nothing is blocked
 phpwarden rules --replay /var/log/nginx/access.log    # what the rules would have blocked in an existing log
 phpwarden probe https://example.com  # live check of a site you own: exposed files, debug endpoints, versions vs the feed
-phpwarden code .                     # your own PHP: 75 high-signal rules, 74 on by default (injection, unserialize, WordPress handlers)
+phpwarden code .                     # your own PHP, whole program: 89 rules (injection, auth, mass assignment, Blade/Twig, WordPress)
+phpwarden shield policy . && phpwarden shield install   # block exploits of what is installed here, inside PHP (log-only first)
 phpwarden assess . --url https://example.com --log access.log   # one ranked verdict; --out / --baseline shows what is fixed and verified
 phpwarden report web01.json web02.json --out fleet.html   # aggregate a fleet view
 phpwarden feed status                # which feed is active, how many advisories
@@ -111,7 +113,7 @@ phpwarden feed update                # pull a newer feed: free weekly snapshot, 
 `probe`, `code`, `assess`, `--format sarif`, `rules --dry-run` / `--replay` and
 the no-key `feed update` are new in 2.2.0.
 
-Every command takes `--json`. Exit codes are shared across subcommands and
+Every scanning command takes `--json` (`shield install` and `shield promote` do not). Exit codes are shared across subcommands and
 built for gating: `0` clean, `1` exposed / vulnerable / signature hits / tampered
 files / high or critical `code` and `probe` findings (`probe` also on any
 known-exploited finding) / anything to act on now or this week (`assess`),
@@ -120,7 +122,7 @@ error, `5` `--report-to` upload failed on an otherwise clean run, `64` usage
 error. Full table: `phpwarden --help`.
 
 
-## New in 2.2.0
+## New in 2.3.0 and 2.2
 
 - **`phpwarden probe URL`**: a live check of a running site using GET and HEAD
   requests only. It looks for exposed files (`.env`, `.git`, backups), open debug
@@ -128,11 +130,21 @@ error. Full table: `phpwarden --help`.
   matches those against the feed. Active checks run only after you prove the
   site is yours (DNS TXT record, a file, or a meta tag; `--print-token` shows
   how). Without that it reads the homepage and stops.
-- **`phpwarden code PATH`**: 75 rules (74 on by default) for your own PHP code, following request
-  data to `eval`, shell commands, SQL, `unserialize`, includes and redirects.
-  It follows data across files (helper functions and classes elsewhere in the
-  project, fixed includes, class properties); it is not a type checker like
-  PHPStan or Psalm. `phpwarden code --list-rules` lists every rule.
+- **`phpwarden code PATH`** (whole-program engine, default in 2.3.0): parses the
+  project, resolves namespaces, Composer autoloading, inheritance and types, and
+  follows request data across files to SQL, shell, `eval`, `unserialize`,
+  includes, redirects and HTTP clients, with a trace per finding (SARIF
+  `codeFlows`). Models Laravel, Symfony and WordPress: routes with no auth check,
+  mass assignment, raw Blade/Twig output, IDOR hints, CSRF exclusions, nonces.
+  Follows data stored in the session or WordPress options (second-order).
+  89 rules. On the same pinned apps it found more than Semgrep and Psalm with far
+  fewer findings on clean framework code ([comparison](https://github.com/oroma-alfred/phpwarden/tree/main/bench/sast-compare-2026-11)).
+  Data that round-trips through the database is not followed.
+- **`phpwarden shield`**: one PHP file loaded before your app that blocks exploit
+  attempts against the exploited vulnerabilities this site actually has, scoped
+  to their entry points. Logs until you promote rules (7-day burn-in, explicit
+  flag), fails open, has a kill switch, about 0.07 ms per request. Not an edge
+  WAF: no DDoS, bot or TLS handling.
 - **`phpwarden assess`**: one ranked list from every view of a site: installed
   versions, your code, the live site from outside, and the access log, with the
   reason for each item ("exploited, reachable, visible from outside, already
@@ -214,7 +226,7 @@ see [phpwarden/laravel](https://packagist.org/packages/phpwarden/laravel).
 ```yaml
 repos:
   - repo: https://github.com/oroma-alfred/phpwarden
-    rev: v2.1.0        # pin to a tag with `pre-commit autoupdate`
+    rev: v2.3.0        # pin to a tag with `pre-commit autoupdate`
     hooks:
       - id: phpwarden-deps
         # args: ["--no-reachability"]   # faster: skip the reachability pass

@@ -1,0 +1,1 @@
+{"name": "acme/lib", "autoload": {"psr-4": {"Acme\\Lib\\": "src/"}, "files": ["src/helpers.php"]}}

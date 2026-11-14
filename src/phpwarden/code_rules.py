@@ -15,10 +15,11 @@ SEVERITIES = ("critical", "high", "medium", "low")
 RULES = []
 
 
-def _r(rid, cat, sev, cwe, title, desc, fix, default=True):
-    """default=False: an opt-in rule, run only when selected by id or with all_rules."""
+def _r(rid, cat, sev, cwe, title, desc, fix, default=True, engine="any"):
+    """default=False: an opt-in rule, run only when selected by id or with all_rules.
+    engine="ast": the rule needs the whole-program engine (engine="ast"/"auto")."""
     RULES.append({"id": rid, "category": cat, "severity": sev, "cwe": cwe,
-                  "title": title, "description": desc, "fix": fix, "default": default})
+                  "title": title, "description": desc, "fix": fix, "default": default, "engine": engine})
 
 
 # --- code execution ---------------------------------------------------------
@@ -280,6 +281,36 @@ _r("xxe-xmlreader-subst", C, "high", "CWE-611", "XMLReader entity substitution e
    "XMLReader::SUBST_ENTITIES set to true enables XXE.",
    "Do not enable SUBST_ENTITIES.")
 
+# --- found by the AST engine (whole-program taint + framework models) --------
+C = "framework"
+_r("mass-assignment", C, "high", "CWE-915", "Whole request mass-assigned to an Eloquent model",
+   "The complete request ($request->all(), except(), input()) is passed to create()/fill()/update() on a model "
+   "with $guarded = [] (or through forceFill/forceCreate), so a request can set any column, e.g. is_admin.",
+   "Pass $request->validated() or $request->only([...]) with an explicit list, and declare $fillable.", engine="ast")
+_r("blade-raw", "xss", "medium", "CWE-79", "Request data printed unescaped in a Blade template",
+   "A value that comes from the request reaches {!! ... !!} in a Blade view, which prints it without escaping.",
+   "Use {{ ... }} (escaped), or sanitize with clean()/strip_tags before using {!! !!}.", engine="ast")
+_r("twig-raw", "xss", "medium", "CWE-79", "Request data printed with |raw in a Twig template",
+   "A value that comes from the request is printed with the |raw filter or inside {% autoescape false %}.",
+   "Remove |raw, or sanitize the value (e.g. with an HTML sanitizer) before rendering.", engine="ast")
+_r("xss-response", "xss", "medium", "CWE-79", "Request data returned as an HTML response body",
+   "Request data is the body of a Response with the default text/html content type.",
+   "Escape the value, return JSON (JsonResponse/response()->json()), or set a non-HTML Content-Type.", engine="ast")
+_r("ssrf-http-client", "ssrf", "high", "CWE-918", "User-controlled URL in an HTTP client request",
+   "A request value is used as the URL of a Guzzle / Symfony HttpClient / PSR-18 request (server-side request forgery).",
+   "Allow-list hosts and schemes before requesting a URL that comes from the request.", engine="ast")
+_r("cmd-process", "command-injection", "critical", "CWE-78", "User input in a shell command line (Process)",
+   "Request data is part of a command string given to Process::fromShellCommandline(), new Process(string) or "
+   "Laravel's Process::run(), which runs it through a shell.",
+   "Pass the command as an array of arguments (new Process(['cmd', $arg])) and validate each value.", engine="ast")
+_r("mail-header-injection", "injection", "medium", "CWE-93", "User input in mail headers",
+   "Request data is used in the headers argument of mail()/wp_mail(); a newline lets an attacker add headers.",
+   "Never build mail headers from request data; strip CR/LF and validate addresses.", engine="ast")
+_r("wp-option-key-tainted", "wordpress", "high", "CWE-15", "Request data chooses which option or meta key is written",
+   "update_option()/update_user_meta() and similar are called with a key taken from the request, so a request can "
+   "overwrite any setting (e.g. users_can_register, default_role, wp_capabilities).",
+   "Map allowed keys from a fixed list; never use a request value as the option or meta name.", engine="ast")
+
 RULES_BY_ID = {r["id"]: r for r in RULES}
 
 # ---------------------------------------------------------------------------
@@ -367,3 +398,42 @@ GADGET_PACKAGES = [
     "cakephp/cakephp", "thinkphp/", "topthink/framework", "drupal/core",
     "phpseclib/phpseclib", "pear/archive_tar", "wordpress/",
 ]
+
+
+# --- layer 5 (whole-program engine) -------------------------------------------
+C = "second-order"
+_r("second-order-injection", C, "high", "CWE-74", "Stored request data used later in a sink (second-order)",
+   "Request data is saved under a fixed option or meta key and read back elsewhere, where it reaches a SQL query, "
+   "HTML output, an include or another sink without being sanitised for that use.",
+   "Sanitise when the value is used, not only when it is stored: prepare SQL, escape output, whitelist paths.",
+   engine="ast")
+C = "authorization"
+_r("laravel-route-no-auth", C, "medium", "CWE-862", "State-changing route with no authentication or authorization",
+   "A POST/PUT/PATCH/DELETE route reaches a database write, but neither the route (or its group) has auth "
+   "middleware nor does the controller call authorize() or a Gate.",
+   "Add ->middleware('auth') (or 'can:...') to the route or group, or call $this->authorize() in the controller.",
+   engine="ast")
+_r("symfony-route-no-auth", C, "medium", "CWE-862", "Controller action writes entities with no access check",
+   "A #[Route] action persists or removes entities without #[IsGranted] or denyAccessUnlessGranted().",
+   "Add #[IsGranted('ROLE_...')] or call $this->denyAccessUnlessGranted(); or cover the path in access_control.",
+   engine="ast")
+_r("laravel-idor-hint", C, "medium", "CWE-639", "Record from a route parameter changed without an ownership check",
+   "An authenticated route loads a model from a route parameter and updates or deletes it, with no policy, Gate "
+   "or ownership comparison, so one user may change another user's record (IDOR).",
+   "Authorize with a policy ($this->authorize('update', $post)) or scope the query to the current user.",
+   engine="ast")
+C = "csrf"
+_r("laravel-csrf-excluded", C, "medium", "CWE-352", "State-changing route excluded from CSRF protection",
+   "A URI in VerifyCsrfToken::$except (or validateCsrfTokens(except: ...)) matches a POST/PUT/PATCH/DELETE web "
+   "route, so another site can submit it on behalf of a signed-in user.",
+   "Remove it from the exception list, or verify the caller another way (a webhook signature).",
+   engine="ast")
+_r("wp-admin-post-no-nonce", C, "medium", "CWE-352", "admin-post handler changes state without a nonce check",
+   "An admin_post_ action handler writes options, posts or the database without check_admin_referer() or "
+   "wp_verify_nonce(), so another site can trigger it for a logged-in administrator.",
+   "Add a nonce to the form and call check_admin_referer('action') at the top of the handler.",
+   engine="ast")
+
+
+# rules appended after the table above (Stage C) must be indexed too
+RULES_BY_ID.update({r["id"]: r for r in RULES})

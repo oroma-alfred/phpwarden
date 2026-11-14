@@ -1,0 +1,294 @@
+{
+ "phpwarden-auto|wordpress|wp-admin/includes/ajax-actions.php:1744|unserialize-tainted": {
+  "note": "admin-only AJAX handler behind a nonce and capability check",
+  "verdict": "false positive"
+ },
+ "phpwarden-auto|wordpress|wp-admin/network/upgrade.php:92|tls-verify-disabled": {
+  "note": "sslverify=false on a request to the site itself (loopback / HTTPS self-test)",
+  "verdict": "by design"
+ },
+ "phpwarden-auto|wordpress|wp-includes/class-phpass.php:162|weak-hash-password": {
+  "note": "md5 kept for legacy/portable password hashes (phpass, old-hash migration), not for new hashes",
+  "verdict": "by design"
+ },
+ "phpwarden-auto|wordpress|wp-includes/class-phpass.php:164|weak-hash-password": {
+  "note": "md5 kept for legacy/portable password hashes (phpass, old-hash migration), not for new hashes",
+  "verdict": "by design"
+ },
+ "phpwarden-auto|wordpress|wp-includes/https-detection.php:130|tls-verify-disabled": {
+  "note": "sslverify=false on a request to the site itself (loopback / HTTPS self-test)",
+  "verdict": "by design"
+ },
+ "phpwarden-auto|wordpress|wp-includes/ms-files.php:99|path-readfile": {
+  "note": "path built from BLOGUPLOADDIR with '..' removed and is_file() checked",
+  "verdict": "false positive"
+ },
+ "phpwarden-auto|wordpress|wp-includes/pluggable.php:2853|weak-hash-password": {
+  "note": "md5 kept for legacy/portable password hashes (phpass, old-hash migration), not for new hashes",
+  "verdict": "by design"
+ },
+ "phpwarden-tokens|wordpress|wp-admin/network/upgrade.php:92|tls-verify-disabled": {
+  "note": "sslverify=false on a request to the site itself (loopback / HTTPS self-test)",
+  "verdict": "by design"
+ },
+ "phpwarden-tokens|wordpress|wp-admin/plugins.php:53|path-read": {
+  "note": "admin-only; $plugin passed validate_plugin() first",
+  "verdict": "false positive"
+ },
+ "phpwarden-tokens|wordpress|wp-includes/class-phpass.php:162|weak-hash-password": {
+  "note": "md5 kept for legacy/portable password hashes (phpass, old-hash migration), not for new hashes",
+  "verdict": "by design"
+ },
+ "phpwarden-tokens|wordpress|wp-includes/class-phpass.php:164|weak-hash-password": {
+  "note": "md5 kept for legacy/portable password hashes (phpass, old-hash migration), not for new hashes",
+  "verdict": "by design"
+ },
+ "phpwarden-tokens|wordpress|wp-includes/https-detection.php:130|tls-verify-disabled": {
+  "note": "sslverify=false on a request to the site itself (loopback / HTTPS self-test)",
+  "verdict": "by design"
+ },
+ "phpwarden-tokens|wordpress|wp-includes/ms-files.php:99|path-readfile": {
+  "note": "path built from BLOGUPLOADDIR with '..' removed and is_file() checked",
+  "verdict": "false positive"
+ },
+ "phpwarden-tokens|wordpress|wp-includes/pluggable.php:2853|weak-hash-password": {
+  "note": "md5 kept for legacy/portable password hashes (phpass, old-hash migration), not for new hashes",
+  "verdict": "by design"
+ },
+ "psalm|laravel|src/Illuminate/Auth/Access/Gate.php:492|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Container/Container.php:1151|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Database/Eloquent/Builder.php:1934|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Database/Eloquent/Factories/Factory.php:953|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Database/Migrations/Migrator.php:879|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Events/Dispatcher.php:518|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Filesystem/Filesystem.php:602|TaintedFile": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Foundation/Bootstrap/RegisterProviders.php:49|TaintedInclude": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Foundation/Console/BroadcastingInstallCommand.php:141|TaintedFile": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Foundation/Console/LangPublishCommand.php:51|TaintedFile": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Foundation/FileBasedMaintenanceMode.php:52|TaintedSSRF": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Foundation/Vite.php:1012|TaintedSSRF": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Queue/Failed/FileFailedJobProvider.php:209|TaintedSSRF": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Support/ServiceProvider.php:614|TaintedFile": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|laravel|src/Illuminate/Support/Testing/Fakes/BusFake.php:572|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/DependencyInjection/ContainerBuilder.php:412|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/DependencyInjection/LazyProxy/Instantiator/LazyServiceInstantiator.php:41|TaintedEval": {
+  "note": "eval of generated proxy code built from service definitions, not request data",
+  "verdict": "by design"
+ },
+ "psalm|symfony|src/Symfony/Component/DependencyInjection/LazyProxy/PhpDumper/LazyServiceDumper.php:166|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/DomCrawler/Field/FileFormField.php:65|TaintedFile": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/DomCrawler/Field/FileFormField.php:67|TaintedFile": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/Form/ChoiceList/Loader/FilterChoiceLoaderDecorator.php:27|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/HttpClient/NoPrivateNetworkHttpClient.php:106|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/HttpFoundation/Response.php:393|TaintedHtml": {
+  "note": "Response::sendContent() echoes the response body; that is its job",
+  "verdict": "by design"
+ },
+ "psalm|symfony|src/Symfony/Component/HttpKernel/HttpCache/Store.php:424|TaintedFile": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/Notifier/Bridge/Bluesky/BlueskyTransport.php:280|TaintedSSRF": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/Notifier/Bridge/Twitter/TwitterTransport.php:185|TaintedFile": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/Serializer/Normalizer/AbstractNormalizer.php:560|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/Serializer/Normalizer/AbstractObjectNormalizer.php:252|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|symfony|src/Symfony/Component/Serializer/Normalizer/ObjectNormalizer.php:184|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-admin/includes/class-bulk-upgrader-skin.php:174|TaintedTextWithQuotes": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-admin/includes/class-bulk-upgrader-skin.php:96|TaintedHtml": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-admin/includes/class-bulk-upgrader-skin.php:98|TaintedTextWithQuotes": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-admin/includes/class-ftp-sockets.php:88|TaintedHtml": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-admin/menu-header.php:194|TaintedHtml": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-admin/upgrade.php:145|TaintedHtml": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-includes/IXR/class-IXR-server.php:150|TaintedTextWithQuotes": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-includes/PHPMailer/POP3.php:383|TaintedHtml": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-includes/class-wp-customize-widgets.php:958|TaintedTextWithQuotes": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-includes/class-wp-styles.php:339|TaintedHtml": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-includes/functions.php:4302|TaintedHtml": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-includes/functions.php:4608|TaintedTextWithQuotes": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-includes/rest-api/endpoints/class-wp-rest-controller.php:435|TaintedCallable": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "psalm|wordpress|wp-includes/theme.php:1979|TaintedTextWithQuotes": {
+  "note": "framework/library internals: class names, callbacks and paths from configuration or code, not request data",
+  "verdict": "false positive"
+ },
+ "semgrep|symfony|src/Symfony/Bundle/WebProfilerBundle/Controller/ProfilerController.php:323|phpinfo-use": {
+  "note": "deliberate phpinfo() in the debug profiler / runtime info helper",
+  "verdict": "by design"
+ },
+ "semgrep|symfony|src/Symfony/Component/Process/Process.php:1421|phpinfo-use": {
+  "note": "deliberate phpinfo() in the debug profiler / runtime info helper",
+  "verdict": "by design"
+ },
+ "semgrep|wordpress|wp-admin/includes/ajax-actions.php:1253|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/includes/ajax-actions.php:4456|tainted-sql-string": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/includes/ajax-actions.php:4808|tainted-sql-string": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/includes/file.php:2626|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/includes/media.php:2093|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/includes/media.php:2259|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/includes/nav-menu.php:748|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/includes/plugin-install.php:788|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/network/upgrade.php:126|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/plugins.php:379|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/update-core.php:1256|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-admin/user-edit.php:133|tainted-sql-string": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-includes/functions.php:4224|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ },
+ "semgrep|wordpress|wp-links-opml.php:83|echoed-request": {
+  "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
+  "verdict": "false positive"
+ }
+}

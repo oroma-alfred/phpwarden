@@ -155,7 +155,7 @@ class Lexer:
                 if brace is not None:
                     raise LexError("?> inside string interpolation", i)
                 self._emit(toks, ("close", "?>", i))
-                if self._halt == 4:
+                if self._halt >= 3:
                     return n
                 i = self._html(j, toks)
                 continue

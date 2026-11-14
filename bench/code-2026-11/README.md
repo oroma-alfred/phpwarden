@@ -233,3 +233,178 @@ start-up. No crashes on any target.
   WordPress were read but not each verified.
 - **Numbers move** with every rule change; the commit hashes above pin the
   targets, not the scanner.
+
+## AST engine (stage B, 2026-11-14)
+
+`phpwarden.sast` replaces the token engine's taint analysis with a
+whole-program one on the parsed AST: types resolve method calls, every
+function gets a summary (parameters to sinks, parameters and request data to
+the return value, parameters to `$this` properties), summaries are computed
+callee-first over the call graph's strongly connected components and iterated
+to a fixed point, and framework models supply Laravel, Symfony and WordPress
+sources, sinks and entry points. Every finding carries a trace (source, hops,
+sink), also emitted as SARIF `codeFlows`.
+
+It is opt-in: `code.scan_project(path, engine="ast")` (or `"auto"`, which
+keeps token-engine taint findings for files the parser could not read). The
+default stays `engine="tokens"`, because the AST engine adds new high/critical
+findings on clean code (below), and the rule was that the default only changes
+with better recall *and* no precision loss. Pattern rules (weak hashes, TLS,
+cookies...) come from the token engine in every mode.
+
+Same targets, same commits, same `score.py`:
+
+| | token engine | AST engine |
+|---|---|---|
+| DVWA low.php: in-scope types flagged | 5/8 | **7/8** (+fi, +xss_r) |
+| DVWA impossible.php: wrongly flagged | 0/8 | 0/8 |
+| DVWA medium.php / high.php flagged | 4/8 / 3/8 | **6/8 / 5/8** |
+| Mutillidae: pages flagged | 11/11 | 11/11 |
+| WordPress high+critical | 7 | 11 |
+| Laravel high+critical | 0 | 0 |
+| Symfony high+critical | 0 | 4 |
+| Time: DVWA / Mutillidae | 0.1 s / 0.4 s | 0.3 s / 0.9 s |
+| Time: WordPress / Laravel / Symfony | 8.8 s / 2.4 s / 6.0 s | 17.6 s / 12.3 s / 43.1 s |
+
+The AST times include the token engine (pattern rules) plus parsing and
+modelling the whole project; Symfony is 1.6 M lines.
+
+New high/critical findings on clean code, triaged (all false positives or by
+design; none is a vulnerability):
+
+- WordPress `ajax-actions.php:1744` (unserialize): meta values from an
+  admin-only, nonce-checked AJAX handler are shown through `_list_meta_row()`,
+  which calls `maybe_unserialize()`. Admin-gated, and WordPress stores meta
+  serialized by design.
+- WordPress `class-file-upload-upgrader.php:153` (path-delete): the package
+  path is what `wp_handle_upload()` returns: the upload moved to a sanitized,
+  unique name. The engine sees `$_FILES[$form]` go in and a path come out.
+- WordPress `class-wp-links-list-table.php:76` and `functions.php:1147/1153`
+  (sql-wpdb): request data reaches `get_bookmarks()`, which escapes the search
+  term and whitelists ordering. The engine is field-sensitive inside a
+  function but not across calls, so an array with one tainted key taints all
+  keys in the callee.
+- Symfony `HttpClientKernel.php:53` (ssrf-http-client): the kernel exists to
+  forward the request to an HTTP client; by design.
+- Symfony `Request.php:2169`, `FormEncodedBodyExtractor.php:40`,
+  `QueryAccessTokenExtractor.php:40` (ssrf-http-client): the token or host
+  ends up in the query string of a URL whose host is configured, not chosen
+  by the request.
+
+Precision measures that got it there, each kept because it removed false
+positives without losing a recall target: unmodelled validation hides in deep
+chains, so parameter-to-sink flows are kept for at most 2 calls (3 for SQL
+query wrappers, 1 for paths, includes, unserialize and HTTP clients, 0 for
+dynamic calls); return flows for at most 3 functions; untyped `$x->m()` is
+followed only when at most two classes define `m`; property stores fed from
+outside the class are not shared between instances; known sanitizers win over
+a project's own definition of the same name (WordPress defines `esc_sql`);
+an included file contributes only what it read from the request itself.
+
+Not yet handled by the AST engine: field sensitivity across calls (the
+WordPress cases above), callbacks given as closures to unknown functions,
+URL-prefix reasoning for SSRF (a fixed host before the tainted part), and
+anything the token engine's ad-hoc wrapper rules catch that a 2-call limit
+cuts off.
+
+## Stage C (2026-11-14): AST engine precision, layer-5 rules
+
+Full output: `results-2026-11-14-stage-c.txt`.
+
+| target | tokens | auto (stage B) | auto (stage C) |
+|---|---|---|---|
+| DVWA low (of 8) | 5 | 7 | 7 |
+| DVWA medium / high | 4 / 3 | 6 / 5 | 6 / 5 |
+| DVWA impossible wrongly flagged | 0 | 0 | 0 |
+| Mutillidae (of 11) | 11 | 11 | 11 |
+| WordPress / Laravel / Symfony high+critical | 7 / 0 / 0 | 16 / 0 / 0 | 7 / 0 / 0 |
+| time WP / Laravel / Symfony (s) | 9.1 / 2.5 / 6.3 | | 14.0 / 6.1 / 28.6 |
+
+Precision fixes: per-key array taint across calls, switch/in_array whitelists,
+local property writes preferred over the class-wide union, framework
+sanitising return values, SSRF only when the value controls scheme/host/port,
+admin-only flows lowered one level with context `requires-authenticated-admin`.
+
+New AST rules (medium unless stated), all with 0 findings on WordPress, Laravel
+and Symfony core: second-order-injection (high), wp-admin-post-no-nonce,
+laravel-route-no-auth, symfony-route-no-auth, laravel-idor-hint,
+laravel-csrf-excluded; unserialize-tainted escalates to critical when
+composer.lock has a known gadget-chain package.
+
+Default engine stays `tokens`: the benchmark gates pass, but 19 checks in
+tests/test_code.py encode token-engine behaviour (message wording "via f()",
+reporting at the caller rather than in library files, PHP_SELF as a source,
+non-strict in_array not a guard, global-variable taint, etc.) that the AST engine
+does not reproduce yet.
+
+## Default engine (2026-11-14)
+
+`phpwarden code` now uses the AST engine by default (`engine="auto"`: the whole-program
+taint engine for files it parses, the token engine for files it cannot, and the token
+engine's pattern rules everywhere). `PHPWARDEN_CODE_ENGINE=tokens` restores the old engine.
+
+To get there, the AST engine was brought in line with the token engine's precision rules:
+int/float/bool-typed parameters carry no injectable data; `pathinfo(..., PATHINFO_EXTENSION)`
+cannot lead a path; a `preg_replace()` that strips everything outside a safe character class
+cleans the value; `isset($allowed[$v])` with a fallback assignment is an allowlist; a function
+counts as returning request data only if every return does, and never for `$_SERVER` values;
+`$_SERVER['PHP_SELF']`/`PATH_INFO` reach HTML; closures see `use ($x)` values; `global $x`
+set in a function is visible at file scope; `curl_setopt(..., CURLOPT_URL, ...)` is an SSRF
+sink; a `$wpdb->query()` whose SQL starts with SELECT/SHOW/DESCRIBE/EXPLAIN is not a write.
+Values returned by a helper are reported where they are used, with "via helper() in
+file:line"; flows through an include are still reported where the included file reads the
+request. Loose `in_array()` is a whitelist only against non-numeric string literals.
+
+Gates with the new default (`results-2026-11-14-default-auto.txt`):
+
+| | token engine | default (auto) |
+|---|---|---|
+| DVWA low.php flagged (of 8) | 5 | **7** |
+| DVWA medium / high | 4 / 3 | **6 / 5** |
+| DVWA impossible.php wrongly flagged | 0 | **0** |
+| Mutillidae (of 11) | 11 | **11** |
+| Clean WordPress / Laravel / Symfony high+critical | 7 / 0 / 0 | **7 / 0 / 0** |
+| Time: DVWA / Mutillidae / WordPress / Laravel / Symfony | 0.3 / 0.7 / 9.1 / 2.5 / 6.3 s | 0.4 / 1.1 / 16.7 / 4.8 / 39.0 s |
+
+The default engine is slower: about 2x on WordPress and Laravel and 6x on Symfony
+(1.6M lines), where parsing and the whole-program call graph dominate.
+`phpwarden code --list-rules` lists 89 rules with the default engine (75 with the token engine).
+
+## Fixes after the comparison benchmark (2026-11-14)
+
+`bench/sast-compare-2026-11` (phpwarden against Semgrep and Psalm) exposed four
+gaps; all are fixed, with regression tests, and the gates still hold. Results:
+`results-2026-11-14-stage-d-fixes.txt` (default engine, `auto`).
+
+| | before (`06d4700`) | after |
+|---|---|---|
+| DVWA low.php flagged (of 8) | 7 | 7 |
+| DVWA medium / high flagged | 6 / 5 | **7 / 6** |
+| DVWA impossible.php wrongly flagged | 0 | 0 |
+| Mutillidae (of 11) | 11 | 11 |
+| Clean WordPress / Laravel / Symfony high+critical | 7 / 0 / 0 | 7 / 0 / 0 |
+| Runtime WordPress / Laravel / Symfony | 16.7 / 4.8 / 39.0 s | 14.3 / 5.2 / 15.9 s |
+
+- **Session values as a second-order source:** `$_SESSION['k'] = <request data>`
+  anywhere in the project makes reads of `$_SESSION['k']` (same literal key) a
+  source; the finding keeps the sink's rule and carries the context
+  "stored in session at file:line". Dynamic keys do nothing. This finds DVWA's
+  SQL injection at `high`.
+- **Client MIME type is not validation:** `$_FILES[..]['type']` comparisons no
+  longer count as an upload check (also in the token engine); real checks are an
+  extension allow-list from the file name, `getimagesize`/`finfo`/
+  `mime_content_type`, `wp_check_filetype(_and_ext)`, or a Laravel `mimes:`/
+  `image` rule. This finds DVWA upload at `medium`; the fixed version stays clean.
+- **Reflected XSS through an array element in another file** and **the fixed
+  file-inclusion allow-list** were already right at `06d4700`; both now have
+  regression tests.
+- **Speed:** the parser skips data-only files (no variables, declarations,
+  includes or output once strings and comments are removed: translation and emoji
+  tables), the token pass runs in a second process while the AST is built, and
+  garbage collection pauses during the analysis. Symfony went from 39 s to 16 s
+  (1.3 times the token engine on the same run).
+
+Still missed: DVWA stored XSS (database rows are not sources) and the `high`
+upload level (extension allow-list plus `getimagesize`, exploitable only with a
+second bug).
+

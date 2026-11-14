@@ -8,7 +8,7 @@ traverse without knowing every kind.
 """
 from __future__ import annotations
 
-_SKIP = frozenset(("kind", "line", "col", "doc", "parent", "sym"))
+_SKIP = frozenset(("kind", "line", "col", "doc", "sym", "ctx", "site"))
 
 
 class Node:
@@ -28,15 +28,19 @@ class Node:
         return {k: v for k, v in self.__dict__.items() if k not in _SKIP}
 
     def children(self):
+        """Child nodes in field order (a list: this is the hottest call in every walker)."""
+        out = []
+        app = out.append
         for k, v in self.__dict__.items():
-            if k in _SKIP:
-                continue
-            if isinstance(v, Node):
-                yield v
-            elif isinstance(v, list):
+            t = type(v)
+            if t is Node:
+                if k not in _SKIP:
+                    app(v)
+            elif t is list:
                 for x in v:
-                    if isinstance(x, Node):
-                        yield x
+                    if type(x) is Node:
+                        app(x)
+        return out
 
     def __repr__(self):
         f = ", ".join("%s=%r" % (k, v) for k, v in self.fields().items()
@@ -52,7 +56,7 @@ def walk(node):
         if n is None:
             continue
         yield n
-        kids = list(n.children())
+        kids = n.children()
         kids.reverse()
         stack.extend(kids)
 

@@ -1,0 +1,58 @@
+policy: 33 rules (the whole library, every rule enabled: worst case for false positives)
+
+== False positives on benign traffic (Python matcher, same rules as the agent)
+  get:waf-corpus          12291
+  post:checkout             300
+  post:comment              300
+  post:contact-form         400
+  post:graphql              300
+  post:laravel-form         200
+  post:login                200
+  post:rest-json            300
+  benign requests: 14291  matched by any rule: 0
+
+== Real PHP agent on 3500 benign requests (1,500 sampled GETs + all 2000 POSTs): 0 logged match(es)
+
+== Exploit-shape requests logged by the matching rule (real agent)
+  php-cgi-best-fit-argument-injection        CVE-2024-4577    2/2
+  php-cgi-query-switch                       CVE-2012-1823    2/2
+  php-fpm-path-info-newline                  CVE-2019-11043   1/1
+  phpunit-eval-stdin                         CVE-2017-9841    1/1
+  laravel-ignition-execute-solution          CVE-2021-3129    1/1
+  phpmailer-sender-injection                 CVE-2016-10033   1/1
+  thinkphp-invokefunction                    CVE-2018-20062   1/1
+  thinkphp3-invokefunction                   CVE-2019-9082    1/1
+  magento-cosmicsting-xxe                    CVE-2024-34102   1/1
+  magento-template-filter                    CVE-2022-24086   1/1
+  drupalgeddon2-render-array                 CVE-2018-7600    1/1
+  drupalgeddon2-drupal7                      CVE-2018-7600    1/1
+  craftcms-generate-transform                CVE-2025-32432   1/1
+  craftcms-register-argc-argv                CVE-2024-56145   2/2
+  roundcube-upload-from-deserialization      CVE-2025-49113   1/1
+  phpmyadmin-setup-config-injection          CVE-2009-1151    1/1
+  wp-file-manager-connector                  CVE-2020-25213   1/1
+  litespeed-cache-role-cookie                CVE-2024-28000   1/1
+  backup-migration-content-dir               CVE-2023-6553    1/1
+  wp-automatic-csv-sql                       CVE-2024-27956   1/1
+  duplicator-download-traversal              CVE-2020-11738   1/1
+  social-warfare-swp-url                     CVE-2019-9978    1/1
+  kaswara-upload-font-icon                   CVE-2021-24284   1/1
+  bricks-render-element-query-editor         CVE-2024-25600   1/1
+  bricks-render-element-rest                 CVE-2024-25600   1/1
+  woocommerce-payments-impersonation         CVE-2023-28121   1/1
+  essential-addons-password-reset            CVE-2023-32243   1/1
+  really-simple-ssl-2fa-skip                 CVE-2024-10924   1/1
+  wp-core-upgrade-staging-php                CVE-2026-119977  1/1
+  generic-php-stream-wrapper-in-param        -                2/2
+  generic-ini-directive-in-query             -                1/1
+  generic-serialized-object-gadget           -                2/2
+  generic-traversal-to-secrets               -                2/2
+  total: 39/39
+
+== Agent cost per request, CLI micro-benchmark (20,000 runs each, 50-rule policy)
+  GET /blog/post-slug/?utm_source=x (policy JSON)      62.8 µs
+  GET, policy as .php (opcache-style)                  79.3 µs
+  POST contact form (policy JSON)                      60.7 µs
+  HTTP no shield          p50 0.098 ms  p95 0.130 ms  (2,000 requests, php -S, one client)
+  HTTP shield, 50 rules   p50 0.171 ms  p95 0.226 ms  (2,000 requests, php -S, one client)
+  added: p50 +0.073 ms, p95 +0.096 ms

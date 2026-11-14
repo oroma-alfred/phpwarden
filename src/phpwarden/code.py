@@ -1099,8 +1099,15 @@ class FileScanner:
         ids = {t[1].lower() for t in rng if t[0] == "id"}
         if ids & UPLOAD_CHECKS:
             return True
+        # Validation rules that check the real file (Laravel "mimes:" / "image").
+        if any(t[0] in ("str", "dstr") and re.search(r"(?i)(?:^|\|)(?:image(?:\||$)|mimes:|mimetypes:|extensions:)", t[1] or "")
+               for t in rng):
+            return True
+        # An extension taken from the file name and compared with a list is a check.
+        # The client-supplied MIME type ($_FILES[..]['type'], getClientMimeType())
+        # is NOT: the browser, or an attacker, chooses it.
         ext = "pathinfo_extension" in ids or "strrchr" in ids or "strrpos" in ids or \
-            ("explode" in ids and "end" in ids) or any(t[0] in ("str", "dstr") and t[1] == "type" for t in rng)
+            ("explode" in ids and "end" in ids)
         cmp_ = "in_array" in ids or "preg_match" in ids or "switch" in ids or "match" in ids or \
             any(t[0] == "op" and t[1] in ("==", "===", "!=", "!==") for t in rng)
         return ext and cmp_
@@ -2061,7 +2068,104 @@ def _build_ext(sums, resolve):
             "exports": exports, "resolve": resolve}, seeds
 
 
-def scan_project(path, *, include_tests=False, lock_findings=None, rules=None, all_rules=False):
+DEFAULT_ENGINE = os.environ.get("PHPWARDEN_CODE_ENGINE", "auto")
+
+
+def _start_token_worker(path, tok_kw):
+    """Run the token pass in a separate Python process (plain subprocess: it never
+    re-runs the caller's script, unlike multiprocessing's spawn). None if the
+    arguments are not JSON-able or the process cannot start."""
+    import subprocess
+    import sys as _sys
+    try:
+        payload = json.dumps({"path": os.path.abspath(path), "kw": tok_kw})
+    except (TypeError, ValueError):
+        return None
+    pkg_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    env = dict(os.environ, PYTHONPATH=pkg_parent + os.pathsep + os.environ.get("PYTHONPATH", ""))
+    code_ = ("import json,sys;from phpwarden import code as c;a=json.loads(sys.stdin.read());"
+             "sys.stdout.write(json.dumps(c._scan_tokens(a['path'],**a['kw'])))")
+    try:
+        p = subprocess.Popen([_sys.executable, "-c", code_], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                             stderr=subprocess.DEVNULL, env=env)
+        p.stdin.write(payload.encode())
+        p.stdin.close()
+        return p
+    except OSError:
+        return None
+
+
+def _finish_token_worker(p):
+    try:
+        out = p.stdout.read()
+        if p.wait() != 0:
+            return None
+        return json.loads(out)
+    except (OSError, ValueError):
+        return None
+
+
+def _count_php(root, include_tests, limit):
+    n = 0
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and (include_tests or d.lower() not in TEST_DIRS)]
+        n += sum(1 for f in filenames if f.endswith(PHP_EXTS))
+        if n >= limit:
+            break
+    return n
+
+
+def scan_project(path, *, include_tests=False, lock_findings=None, rules=None, all_rules=False, engine=None):
+    """engine: "tokens" (the token engine), "ast" (the whole-program AST taint
+    engine in phpwarden.sast for taint rules, token engine for pattern rules) or
+    "auto" (like "ast", but files the parser could not read cleanly keep their
+    token-engine taint findings). Default: DEFAULT_ENGINE."""
+    engine = engine or DEFAULT_ENGINE
+    # With the AST engine deciding the taint rules, the token engine only needs
+    # its per-file pass (pattern rules, and taint for files the parser could not
+    # read in "auto"); its project-wide rounds would be thrown away.
+    tok_kw = dict(include_tests=include_tests, lock_findings=lock_findings, rules=rules,
+                  all_rules=all_rules, rounds=(engine == "tokens"))
+    if engine == "tokens" or not os.path.isdir(os.path.abspath(path)):
+        return _scan_tokens(path, **tok_kw)
+    from phpwarden.sast import engine as _ast
+    enabled = set(rules) if rules else {r["id"] for r in RULES if all_rules or r.get("default", True)}
+    # The token pass and the AST analysis are independent: on a large project run
+    # the token pass in a second process while this one parses (its result is a
+    # small dict). Small projects, or no usable process pool, run it inline.
+    proc = None
+    if _count_php(path, include_tests, 400) >= 400:
+        proc = _start_token_worker(path, tok_kw)
+    import gc as _gc
+    _gc_was = _gc.isenabled()
+    _gc.disable()        # millions of long-lived AST nodes: generational GC only re-scans them
+    try:
+        found, handled, _p = _ast.analyse(path, include_tests=include_tests, enabled=enabled)
+    except Exception:  # noqa: BLE001  - never lose the scan to the new engine
+        found = None
+    finally:
+        _p = None
+        if _gc_was:
+            _gc.enable()
+    res = _finish_token_worker(proc) if proc is not None else None
+    if res is None:
+        res = _scan_tokens(path, **tok_kw)
+    if found is None:
+        return res
+    keep = [f for f in res["findings"]
+            if f["rule"] not in _ast.TAINT_RULES or (engine == "auto" and f["file"] not in handled)]
+    have = {(f["rule"], f["file"], f["line"]) for f in keep}
+    keep += [f for f in found if (f["rule"], f["file"], f["line"]) not in have]
+    keep.sort(key=lambda f: (SEV_RANK.get(f["severity"], 9), f["file"], f["line"], f["column"], f["rule"]))
+    res["findings"] = keep
+    res["summary"] = {s: 0 for s in SEVERITIES}
+    for f in keep:
+        res["summary"][f["severity"]] = res["summary"].get(f["severity"], 0) + 1
+    res["engine"] = engine
+    return res
+
+
+def _scan_tokens(path, *, include_tests=False, lock_findings=None, rules=None, all_rules=False, rounds=True):
     """rules: only these rule ids. all_rules: also run the opt-in rules that are
     off by default because they are noisy (see list_rules(): "default": false).
 
@@ -2103,7 +2207,7 @@ def scan_project(path, *, include_tests=False, lock_findings=None, rules=None, a
     # project-wide rounds
     prev_ext = {"wrap": {}, "tret": {}, "retp": {}, "uniq": set()}
     prev_exports, prev_seeds = {}, {}
-    for _round in range(MAX_ROUNDS if len(sums) > 1 else 0):
+    for _round in range(MAX_ROUNDS if len(sums) > 1 and rounds else 0):
         ext, seeds = _build_ext(sums, resolve)
         changed = set()
         # pass-through summaries (retp) are many and only matter one level deep
@@ -2204,8 +2308,11 @@ def scan_project(path, *, include_tests=False, lock_findings=None, rules=None, a
             "findings": findings, "summary": summary}
 
 
-def list_rules():
-    return [dict(r) for r in RULES]
+def list_rules(engine=None):
+    """Rules that run with the given engine (default: DEFAULT_ENGINE); the AST-only
+    rules are listed with engine="ast"/"auto"."""
+    engine = engine or DEFAULT_ENGINE
+    return [dict(r) for r in RULES if engine in ("ast", "auto") or r.get("engine", "any") != "ast"]
 
 
 def exit_code(result):
@@ -2237,7 +2344,10 @@ _SEC_SCORE = {"critical": "9.5", "high": "8.0", "medium": "5.5", "low": "3.0"}
 def to_sarif(result):
     rules = []
     index = {}
-    for i, r in enumerate(RULES):
+    eng = result.get("engine", DEFAULT_ENGINE)
+    used = {f.get("rule") for f in result.get("findings", [])}
+    listed = [r for r in RULES if eng in ("ast", "auto") or r.get("engine", "any") != "ast" or r["id"] in used]
+    for i, r in enumerate(listed):
         index[r["id"]] = i
         rules.append({"id": r["id"], "name": r["id"].replace("-", "_"),
                       "shortDescription": {"text": r["title"]},
@@ -2256,6 +2366,12 @@ def to_sarif(result):
                             "region": {"startLine": f["line"], "startColumn": f["column"],
                                        "snippet": {"text": f["snippet"]}}}}],
                         "properties": {"severity": f["severity"], "cwe": f["cwe"], "context": f.get("context") or []}})
+        if f.get("trace"):
+            results[-1]["codeFlows"] = [{"threadFlows": [{"locations": [
+                {"location": {"physicalLocation": {"artifactLocation": {"uri": h["file"], "uriBaseId": "%SRCROOT%"},
+                                                   "region": {"startLine": h["line"],
+                                                              "startColumn": max(1, h.get("column") or 1)}},
+                              "message": {"text": h["note"]}}} for h in f["trace"]]}]}]
     return {"$schema": "https://json.schemastore.org/sarif-2.1.0.json", "version": "2.1.0",
             "runs": [{"tool": {"driver": {"name": "phpwarden-code", "version": result["version"],
                                           "informationUri": "https://phpwarden.io", "rules": rules}},

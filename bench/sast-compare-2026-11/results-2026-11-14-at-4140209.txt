@@ -1,0 +1,59 @@
+tools: phpwarden-tokens, phpwarden-auto, semgrep, psalm
+
+== 1. DVWA: found per vulnerability type and level (low / medium / high), wrong flags on impossible ==
+type              phpwarden-tokens      phpwarden-auto             semgrep               psalm
+sqli                           xx.                 xx.                 x..                 x..
+sqli_blind                     xxx                 xxx                 xxx                 x.x
+exec                           xxx                 xxx          xxx  WRONG          xxx  WRONG
+fi                             ...          xxx  WRONG                 ..x                 ...
+xss_r                          ...                 ...                 ...                 ...
+xss_s                          ...                 ...                 ...                 ...
+upload                         x..                 x..                 ...          xxx  WRONG
+open_redirect                  xxx                 xxx                 ...                 xxx
+found (of 8)         5/4/3               6/5/4               3/2/3               5/3/4        
+wrong flags                      0                   1                   1                   2
+
+== 2. Mutillidae: 11 documented vulnerable pages ==
+page                                      phpwarden-tokens    phpwarden-auto           semgrep             psalm
+user-info.php                                        found             found                 -                 -
+includes/process-login-attempt.php                   found             found                 -                 -
+add-to-your-blog.php                                 found             found                 -             found
+dns-lookup.php                                       found             found             found             found
+echo.php                                             found             found             found             found
+index.php                                            found             found                 -             found
+source-viewer.php                                    found             found             found             found
+text-file-viewer.php                                 found             found             found             found
+xml-validator.php                                    found             found                 -                 -
+upload-file.php                                      found             found                 -             found
+redirectandlog.php                                   found             found                 -             found
+found (of 11)                                           11                11                 4                 8
+
+== 3. Clean code: high/critical findings (presumed noise), per 100k lines ==
+target         lines      phpwarden-tokens        phpwarden-auto               semgrep                 psalm
+wordpress     671441        7 (  1.0/100k)          7 (  1.0/100k)        173 ( 25.8/100k)        442 ( 65.8/100k)  
+laravel       284473        0 (  0.0/100k)          0 (  0.0/100k)          0 (  0.0/100k)        590 (207.4/100k)  
+symfony      1617127        0 (  0.0/100k)          0 (  0.0/100k)          2 (  0.1/100k)        985 ( 60.9/100k)  
+
+   triaged samples (true positive / false positive / by design):
+   wordpress  phpwarden-tokens  sampled  7: by design 5, false positive 2
+   wordpress  phpwarden-auto    sampled  7: by design 5, false positive 2
+   wordpress  semgrep           sampled 15: false positive 15
+   wordpress  psalm             sampled 15: false positive 15
+   laravel    psalm             sampled 15: false positive 15
+   symfony    semgrep           sampled  2: by design 2
+   symfony    psalm             sampled 15: false positive 13, by design 2
+
+== 4. Runtime (wall seconds, exit code) ==
+target       phpwarden-tokens    phpwarden-auto           semgrep             psalm
+dvwa                 0.2s rc1          0.4s rc1          3.1s rc0          1.5s rc2
+mutillidae           0.5s rc1          1.0s rc1          5.8s rc0          4.4s rc2
+wordpress            8.7s rc1         15.8s rc1         53.4s rc0         19.5s rc2
+laravel              2.6s rc0          4.8s rc0          4.3s rc0         24.9s rc2
+symfony              6.2s rc0         30.1s rc0          9.4s rc0         37.4s rc2
+
+== 5. Findings by category (all severities) ==
+  dvwa: phpwarden-tokens cmdi=7,other=26,path=8,redirect=3,sqli=17,upload=1,xss=4; phpwarden-auto cmdi=7,include=4,other=26,path=8,redirect=4,sqli=17,upload=1,xss=13; semgrep cmdi=9,code=8,other=1,sqli=14,ssrf=11,xss=1; psalm cmdi=9,other=1,path=17,redirect=4,sqli=8,ssrf=9,xss=28
+  mutillidae: phpwarden-tokens cmdi=6,include=1,other=7,path=2,redirect=5,sqli=27,ssrf=1,upload=1,xss=43,xxe=2; phpwarden-auto cmdi=6,include=1,other=7,path=2,redirect=2,sqli=65,ssrf=1,upload=1,xss=58,xxe=2; semgrep cmdi=6,code=5,other=2,sqli=1,ssrf=2,xss=84; psalm cmdi=5,code=4,include=2,other=3,path=7,redirect=17,ssrf=5,xss=206
+  wordpress: phpwarden-tokens other=11,path=2,redirect=8,xss=10; phpwarden-auto deser=1,other=12,path=1,redirect=12,xss=89; semgrep code=7,other=3,sqli=52,ssrf=29,xss=119; psalm cmdi=1,code=88,include=12,path=41,redirect=12,sqli=2,ssrf=25,xss=261
+  laravel: phpwarden-tokens other=2; phpwarden-auto other=2; semgrep ssrf=1; psalm cmdi=3,code=250,deser=17,include=25,other=11,path=195,ssrf=81,xss=8
+  symfony: phpwarden-tokens other=2; phpwarden-auto other=2; semgrep other=6,ssrf=11; psalm cmdi=7,code=488,deser=8,include=13,other=12,path=214,redirect=37,ssrf=128,xss=78

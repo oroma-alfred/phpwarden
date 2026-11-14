@@ -1,0 +1,203 @@
+# Stage C, 2026-11-14: tokens engine
+== 1. DVWA: vulnerable low.php vs fixed impossible.php ==
+type                        | low.php (vulnerable)                                | impossible.php (fixed)
+api (out of scope)          | -                                                   | -
+authbypass (out of scope)   | -                                                   | -
+bac (out of scope)          | -  [other: sql-mysqli-query]                        | -  [other: display-errors-on]
+brute (out of scope)        | -  [other: sql-mysqli-query, weak-hash-password]    | -  [other: weak-hash-password]
+captcha (out of scope)      | -  [other: weak-hash-password]                      | -  [other: weak-hash-password]
+cryptography (out of scope) | -                                                   | -
+csp (out of scope)          | -                                                   | -
+csrf (out of scope)         | -  [other: weak-hash-password]                      | -  [other: weak-hash-password]
+exec                        | cmd-shell-exec                                      | -
+fi                          | -                                                   | -
+javascript (out of scope)   | -                                                   | -
+open_redirect               | redirect-header                                     | -
+sqli                        | sql-db-query, sql-mysqli-query                      | -
+sqli_blind                  | sql-db-query, sql-mysqli-query                      | -
+upload                      | upload-unrestricted                                 | -
+weak_id (out of scope)      | -  [other: cookie-insecure]                         | -
+xss_d (out of scope)        | -                                                   | -
+xss_r                       | -                                                   | -
+xss_s                       | -                                                   | -
+
+In-scope types: 5/8 vulnerable files flagged with a relevant rule; 0/8 fixed files wrongly flagged with a relevant rule.
+  medium.php (still vulnerable, with a partial filter): 4/8 flagged
+  high.php (still vulnerable, with a partial filter): 3/8 flagged
+
+== 2. Mutillidae II: eleven well-known vulnerable pages ==
+  user-info.php                         SQL injection               sql-db-query  [other: xss-echo]
+  includes/process-login-attempt.php    SQL injection (login)       sql-db-query
+  add-to-your-blog.php                  SQL injection / stored XSS  sql-db-query
+  dns-lookup.php                        command injection           cmd-shell-exec  [other: xss-echo]
+  echo.php                              command injection           cmd-shell-exec  [other: xss-echo]
+  index.php                             local file inclusion        include-tainted  [other: redirect-header, sql-db-query, ssrf-curl]
+  source-viewer.php                     arbitrary file read         path-readfile  [other: xss-echo]
+  text-file-viewer.php                  remote file read / SSRF     path-read  [other: xss-echo]
+  xml-validator.php                     XML external entity         xxe-entity-loader
+  upload-file.php                       unrestricted upload         path-move-upload  [other: xss-echo]
+  redirectandlog.php                    open redirect               xss-echo
+
+11/11 pages flagged with a relevant rule.
+
+All Mutillidae findings by rule:
+files 294, summary {'critical': 7, 'high': 37, 'medium': 50, 'low': 1}
+   43  xss-echo
+   27  sql-db-query
+    6  cmd-shell-exec
+    5  redirect-header
+    3  tls-verify-disabled
+    2  xxe-entity-loader
+    1  include-tainted
+    1  ldap-injection
+    1  ssrf-curl
+    1  path-readfile
+    1  path-read
+    1  path-move-upload
+    1  weak-random-secret
+    1  xpath-injection
+    1  phpinfo-call
+
+== 3. Clean codebases: findings per 100k lines ==
+target       files    lines  crit  high   med   low  high+crit /100k  all /100k
+wordpress     1900   671441     0     7    20     4             1.04       4.62
+laravel       1826   284473     0     0     0     2             0.00       0.70
+symfony       2952  1617127     0     0     0     2             0.00       0.12
+
+wordpress: by rule
+    8  medium   redirect-wp
+    8  medium   xss-echo
+    3  high     weak-hash-password
+    3  low      display-errors-on
+    2  high     tls-verify-disabled
+    2  medium   weak-random-secret
+    2  medium   xss-printf
+    1  high     path-read
+    1  high     path-readfile
+    1  low      phpinfo-call
+  high/critical findings (7), for triage:
+    wp-admin/network/upgrade.php:92  tls-verify-disabled  | 'sslverify'   => false,
+    wp-admin/plugins.php:53  path-read  | if ( is_multisite() && ! is_network_admin() && is_network_only_plugin( $plugin ) ) {
+    wp-includes/class-phpass.php:162  weak-hash-password  | $hash = md5($salt . $password, TRUE);
+    wp-includes/class-phpass.php:164  weak-hash-password  | $hash = md5($hash . $password, TRUE);
+    wp-includes/https-detection.php:130  tls-verify-disabled  | 'sslverify' => false,
+    wp-includes/ms-files.php:99  path-readfile  | readfile( $file );
+    wp-includes/pluggable.php:2853  weak-hash-password  | $check = hash_equals( $hash, md5( $password ) );
+
+laravel: by rule
+    2  low      laravel-guarded-empty
+
+symfony: by rule
+    1  low      phpinfo-call
+    1  low      display-errors-on
+
+== 4. Speed ==
+  dvwa          169 files    0.16 s     1069 files/s  @ x
+  mutillidae    294 files    0.42 s      707 files/s  @ x
+  wordpress    1900 files    9.14 s      208 files/s  @ x
+  laravel      1826 files    2.51 s      728 files/s  @ x
+  symfony      2952 files    6.30 s      468 files/s  @ x
+
+# Stage C, 2026-11-14: auto engine (AST taint + token pattern rules)
+== 1. DVWA: vulnerable low.php vs fixed impossible.php ==
+type                        | low.php (vulnerable)                                | impossible.php (fixed)
+api (out of scope)          | -                                                   | -
+authbypass (out of scope)   | -                                                   | -
+bac (out of scope)          | -  [other: sql-mysqli-query, xss-echo]              | -  [other: display-errors-on]
+brute (out of scope)        | -  [other: sql-mysqli-query, weak-hash-password, xss-echo]| -  [other: weak-hash-password, xss-echo]
+captcha (out of scope)      | -  [other: weak-hash-password, xss-echo]            | -  [other: weak-hash-password]
+cryptography (out of scope) | -                                                   | -
+csp (out of scope)          | -                                                   | -
+csrf (out of scope)         | -  [other: weak-hash-password]                      | -  [other: weak-hash-password]
+exec                        | cmd-shell-exec                                      | -
+fi                          | include-tainted                                     | -
+javascript (out of scope)   | -                                                   | -
+open_redirect               | redirect-header                                     | -
+sqli                        | sql-db-query, sql-mysqli-query  [other: xss-echo]   | -
+sqli_blind                  | sql-db-query, sql-mysqli-query                      | -
+upload                      | upload-unrestricted  [other: xss-echo]              | -
+weak_id (out of scope)      | -  [other: cookie-insecure]                         | -
+xss_d (out of scope)        | -                                                   | -
+xss_r                       | xss-echo                                            | -
+xss_s                       | -                                                   | -
+
+In-scope types: 7/8 vulnerable files flagged with a relevant rule; 0/8 fixed files wrongly flagged with a relevant rule.
+  medium.php (still vulnerable, with a partial filter): 6/8 flagged
+  high.php (still vulnerable, with a partial filter): 5/8 flagged
+
+== 2. Mutillidae II: eleven well-known vulnerable pages ==
+  user-info.php                         SQL injection               sql-db-query  [other: xss-echo]
+  includes/process-login-attempt.php    SQL injection (login)       sql-db-query  [other: redirect-header]
+  add-to-your-blog.php                  SQL injection / stored XSS  sql-db-query
+  dns-lookup.php                        command injection           cmd-shell-exec  [other: sql-db-query, xss-echo]
+  echo.php                              command injection           cmd-shell-exec  [other: sql-db-query, xss-echo]
+  index.php                             local file inclusion        include-tainted  [other: sql-db-query, ssrf-curl]
+  source-viewer.php                     arbitrary file read         path-readfile  [other: sql-db-query, xss-echo]
+  text-file-viewer.php                  remote file read / SSRF     path-read  [other: sql-db-query, xss-echo]
+  xml-validator.php                     XML external entity         xxe-entity-loader  [other: sql-db-query, xss-echo]
+  upload-file.php                       unrestricted upload         path-move-upload  [other: xss-echo]
+  redirectandlog.php                    open redirect               xss-echo  [other: sql-db-query]
+
+11/11 pages flagged with a relevant rule.
+
+All Mutillidae findings by rule:
+files 294, summary {'critical': 7, 'high': 75, 'medium': 48, 'low': 1}
+   65  sql-db-query
+   45  xss-echo
+    6  cmd-shell-exec
+    3  tls-verify-disabled
+    2  xxe-entity-loader
+    1  include-tainted
+    1  ldap-injection
+    1  ssrf-curl
+    1  path-readfile
+    1  path-read
+    1  path-move-upload
+    1  weak-random-secret
+    1  redirect-header
+    1  xpath-injection
+    1  phpinfo-call
+
+== 3. Clean codebases: findings per 100k lines ==
+target       files    lines  crit  high   med   low  high+crit /100k  all /100k
+wordpress     1900   671441     0     7    18    24             1.04       7.30
+laravel       1826   284473     0     0     1     2             0.00       1.05
+symfony       2952  1617127     0     0     0     2             0.00       0.12
+
+wordpress: by rule
+   13  medium   xss-echo
+    9  low      xss-echo
+    8  low      redirect-wp
+    3  high     weak-hash-password
+    3  medium   redirect-wp
+    3  low      display-errors-on
+    2  high     tls-verify-disabled
+    2  medium   weak-random-secret
+    2  low      xss-printf
+    1  high     unserialize-tainted
+    1  high     path-readfile
+    1  low      mail-header-injection
+    1  low      phpinfo-call
+  high/critical findings (7), for triage:
+    wp-admin/includes/ajax-actions.php:1744  unserialize-tainted  | 'data'         => _list_meta_row(
+    wp-admin/network/upgrade.php:92  tls-verify-disabled  | 'sslverify'   => false,
+    wp-includes/class-phpass.php:162  weak-hash-password  | $hash = md5($salt . $password, TRUE);
+    wp-includes/class-phpass.php:164  weak-hash-password  | $hash = md5($hash . $password, TRUE);
+    wp-includes/https-detection.php:130  tls-verify-disabled  | 'sslverify' => false,
+    wp-includes/ms-files.php:99  path-readfile  | readfile( $file );
+    wp-includes/pluggable.php:2853  weak-hash-password  | $check = hash_equals( $hash, md5( $password ) );
+
+laravel: by rule
+    2  low      laravel-guarded-empty
+    1  medium   redirect-laravel
+
+symfony: by rule
+    1  low      phpinfo-call
+    1  low      display-errors-on
+
+== 4. Speed ==
+  dvwa          169 files    0.28 s      603 files/s  @ x
+  mutillidae    294 files    0.86 s      344 files/s  @ x
+  wordpress    1900 files   13.97 s      136 files/s  @ x
+  laravel      1826 files    6.09 s      300 files/s  @ x
+  symfony      2952 files   28.58 s      103 files/s  @ x

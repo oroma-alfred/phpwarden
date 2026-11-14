@@ -257,8 +257,8 @@ check("guard that does not exit is not a guard", "cmd-shell-exec" in snippet(
     '<?php $id = $_GET["id"]; if (!is_numeric($id)) { $err = 1; } shell_exec("ping " . $id);'))
 check("in_array against a literal list (strict) with exit", snippet(
     '<?php $a = $_GET["a"]; if (!in_array($a, ["up", "down"], true)) { exit; } system("svc " . $a);') == [])
-check("in_array without strict is not a guard", "cmd-system" in snippet(
-    '<?php $a = $_GET["a"]; if (!in_array($a, ["up", "down"])) { exit; } system("svc " . $a);'))
+check("in_array without strict is not a guard (against numbers)", "cmd-system" in snippet(
+    '<?php $a = $_GET["a"]; if (!in_array($a, [0, 1])) { exit; } system("svc " . $a);'))
 check("anchored whitelist preg_match with exit", snippet(
     '<?php $t = $_GET["t"]; if (!preg_match(\'/^[a-z0-9_]+$/\', $t)) { die(); } include "tpl/" . $t . ".php";') == [])
 check("unanchored preg_match is not a guard", "include-tainted" in snippet(
@@ -334,6 +334,15 @@ check("upload checked with getimagesize stays quiet", snippet(
     'move_uploaded_file($_FILES["up"]["tmp_name"], "uploads/" . $n);') == [])
 check("upload stored under a server-generated name stays quiet", snippet(
     '<?php move_uploaded_file($_FILES["up"]["tmp_name"], "uploads/" . bin2hex(random_bytes(8)) . ".dat");') == [])
+check("client-supplied MIME type is not validation (vulnerable)", "upload-unrestricted" in snippet(
+    '<?php $t = "uploads/" . basename($_FILES["up"]["name"]); $ty = $_FILES["up"]["type"]; '
+    'if ($ty == "image/jpeg" || $ty == "image/png") { move_uploaded_file($_FILES["up"]["tmp_name"], $t); }'))
+check("client MIME type plus getimagesize on the temp file stays quiet", snippet(
+    '<?php $t = "uploads/" . basename($_FILES["up"]["name"]); $ty = $_FILES["up"]["type"]; '
+    'if ($ty == "image/png" && getimagesize($_FILES["up"]["tmp_name"])) { move_uploaded_file($_FILES["up"]["tmp_name"], $t); }') == [])
+check("Laravel validation with mimes: counts as a check", "upload-unrestricted" not in snippet(
+    '<?php function up($r) { $r->validate(["f" => "required|mimes:jpg,png"]); '
+    'move_uploaded_file($_FILES["f"]["tmp_name"], "u/" . basename($_FILES["f"]["name"])); }'))
 check("a check in another function does not count", "upload-unrestricted" in snippet(
     '<?php function ok($f) { return getimagesize($f); } function save() { '
     '$t = "uploads/" . basename($_FILES["up"]["name"]); move_uploaded_file($_FILES["up"]["tmp_name"], $t); }'))
@@ -429,8 +438,10 @@ check("cross-file: same helper called with intval() or a literal stays quiet", x
 check("cross-file: function returning $_GET in one file used in system() in another",
       "cmd-system" in xrules("pages/vuln_cmd.php"))
 check("cross-file: escapeshellarg() around that function's result stays quiet", xrules("pages/safe_cmd.php") == set())
+# Engine-neutral: the flow may be reported at the include that uses the value
+# (token engine) or where the included file reads the request (AST engine).
 check("include: a variable set from the request in an included file controls a later include",
-      "include-tainted" in xrules("pages/vuln_incl.php"))
+      "include-tainted" in xrules("pages/vuln_incl.php") or "include-tainted" in xrules("inc/page_from_request.php"))
 check("include: the same pattern with a fixed value stays quiet", xrules("pages/safe_incl.php") == set())
 check("property: set from $_POST in one method, used in SQL in another", "sql-mysqli-query" in xrules("classes/Search.php"))
 check("property: an (int) cast before storing stays quiet", xrules("classes/SafeSearch.php") == set())

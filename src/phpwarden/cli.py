@@ -13,6 +13,7 @@
   phpwarden probe URL            safe live HTTP check of a site you own
   phpwarden code PATH            scan your own PHP code for high-signal security bugs
   phpwarden assess PATH --url U --log L   one ranked verdict from every view
+  phpwarden shield policy PATH   protection inside PHP for the exploited vulns installed here
 
 Exit codes (shared by every subcommand; usable as a CI gate):
   0   nothing applies / clean
@@ -562,6 +563,85 @@ def _assess(args):
     return vd.exit_code(res)
 
 
+def _shield(args):
+    from pathlib import Path as _P
+    from phpwarden.shield import policy as sp, report as sr
+    if args.shield_cmd == "policy":
+        root = _P(args.path)
+        if not root.is_dir():
+            sys.stderr.write(f"error: not a directory: {args.path}\n")
+            return 4
+        pol = sp.build_policy_for_path(str(root), FeedManager().current(), php_version=args.php_version,
+                                       php_sapi=args.php_sapi, log_path=args.log)
+        out = args.out or "phpwarden-shield.policy.json"
+        j, php = sp.write_policy(pol, out)
+        if args.json:
+            print(json.dumps(pol, indent=2))
+            return 0
+        print(f"wrote {j} and {php}  ({len(pol['rules'])} rule(s), mode: log)")
+        for r in pol["rules"]:
+            print(f"  + {r['id']:<34} {r.get('cve') or '':<16} {r['component']}: {r['why']}")
+        if not pol["rules"]:
+            print("  No exploited vulnerability with a known request shape is installed here; the policy only has")
+            print("  the generic checks, if any applied. Nothing to protect against beyond those.")
+        print("\nNext: `phpwarden shield install` shows how to load the agent. It only logs until you promote rules.")
+        return 0
+    if args.shield_cmd == "install":
+        agent = _P(__file__).resolve().parent / "shield" / "agent" / "phpwarden-shield.php"
+        dest = _P(args.dest) if args.dest else None
+        if dest:
+            try:
+                dest.mkdir(parents=True, exist_ok=True)
+                (dest / "phpwarden-shield.php").write_bytes(agent.read_bytes())
+            except OSError as e:
+                sys.stderr.write(f"error: {e}\n")
+                return 4
+            where = (dest / "phpwarden-shield.php").resolve()
+            print(f"copied the agent to {where}")
+        else:
+            where = "/path/to/phpwarden-shield.php"
+            print(f"The agent ships with phpwarden at {agent}. Copy it next to your site, or rerun with --dest DIR.")
+        print(f"""
+Load it before your application (pick one; nothing is changed for you):
+  php.ini or .user.ini:   auto_prepend_file={where}
+  WordPress:              add  require '{where}';  as the first line of wp-config.php
+  Laravel / other apps:   add  require '{where}';  at the top of public/index.php
+
+Put phpwarden-shield.policy.php (from `phpwarden shield policy`) next to the agent, or set
+PHPWARDEN_SHIELD_POLICY to its path. It starts in log-only mode and fails open on any error.
+Turn it off instantly: create a file named phpwarden-shield.off next to the agent, or set
+PHPWARDEN_SHIELD=off.""")
+        return 0
+    if args.shield_cmd == "report":
+        try:
+            with open(args.log, errors="replace") as fh:
+                summ = sr.summarize(fh)
+        except OSError as e:
+            sys.stderr.write(f"error: {e}\n")
+            return 4
+        print(json.dumps(summ, indent=2, default=list) if args.json else sr.to_text(summ))
+        return 0
+    if args.shield_cmd == "promote":
+        try:
+            pol = json.loads(_P(args.policy).read_text())
+            with open(args.log, errors="replace") as fh:
+                summ = sr.summarize(fh)
+        except (OSError, ValueError) as e:
+            sys.stderr.write(f"error: {e}\n")
+            return 4
+        pol, rep = sp.promote(pol, summ, operator_ack=args.i_understand_this_blocks_requests,
+                              rule_ids=set(args.rule) if args.rule else None)
+        for rid in rep["promoted"]:
+            print(f"  BLOCK  {rid}")
+        for r in rep["refused"]:
+            print(f"  still logging  {r['id']}: {r['reason']}")
+        if rep["promoted"]:
+            sp.write_policy(pol, args.policy)
+            print(f"\nupdated {args.policy} (and its .php twin). Promoted rules now return 403.")
+        return 0
+    return EX_USAGE
+
+
 def _integrity(args):
     from phpwarden import integrity as integ
     res = integ.check(args.path, locale=args.locale, plugins=not args.no_plugins)
@@ -673,6 +753,29 @@ def main(argv=None):
     _format_arg(wpc)
     _report_args(wpc)
     wpc.set_defaults(func=_wordpress)
+
+    sh = sub.add_parser("shield", help="protection inside PHP: block exploits of the vulnerabilities this site "
+                                       "actually has (log-only until you promote rules)")
+    shs = sh.add_subparsers(dest="shield_cmd", required=True, parser_class=_Parser)
+    shp = shs.add_parser("policy", help="build a policy for the exploited vulnerabilities installed at PATH")
+    shp.add_argument("path", nargs="?", default=".", help="project or WordPress root (default: .)")
+    shp.add_argument("--out", help="policy file (default phpwarden-shield.policy.json; a .php twin is written too)")
+    shp.add_argument("--php-version", help="the production PHP version, for engine CVE rules")
+    shp.add_argument("--php-sapi", choices=["fpm", "cgi", "cli"], help="the production SAPI")
+    shp.add_argument("--log", help="where the agent should write its log (default: next to the agent)")
+    shp.add_argument("--json", action="store_true", help="print the policy as JSON")
+    shi = shs.add_parser("install", help="show how to load the agent (and copy it with --dest)")
+    shi.add_argument("--dest", metavar="DIR", help="copy phpwarden-shield.php into this folder")
+    shr = shs.add_parser("report", help="summarise the agent's log")
+    shr.add_argument("log", help="phpwarden-shield.log")
+    shr.add_argument("--json", action="store_true", help="machine-readable JSON output")
+    shm = shs.add_parser("promote", help="switch rules from logging to blocking after a clean burn-in")
+    shm.add_argument("policy", help="the policy JSON to update")
+    shm.add_argument("--log", required=True, help="the agent log covering the burn-in")
+    shm.add_argument("--rule", action="append", metavar="ID", help="only this rule (repeatable)")
+    shm.add_argument("--i-understand-this-blocks-requests", action="store_true",
+                     help="required: promoted rules return 403 to matching requests")
+    sh.set_defaults(func=_shield)
 
     asx = sub.add_parser("assess", help="one ranked verdict from every view: installed versions, your code, "
                                         "the live site from outside, and attacks in the access log")

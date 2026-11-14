@@ -325,3 +325,21 @@ Every finding line carries the exploitation tag the ranking is based on:
 `KEV` means CISA lists it as exploited in the wild (`KEV·ransomware` when
 used in ransomware campaigns); `EPSS` is the 30-day exploitation probability
 and percentile. Fix those first, regardless of what the CVSS column says.
+
+## Block exploits of what a site runs, inside PHP
+
+Build the policy on the server (or in the deploy step) from what is installed,
+load the agent before the app, and let it log for a week before promoting:
+
+```bash
+cd /var/www/shop
+phpwarden shield policy . --php-version "$(php -r 'echo PHP_VERSION;')" --php-sapi fpm
+phpwarden shield install --dest /var/www/shop          # prints the auto_prepend_file / require line
+# a week later, after reading the log:
+phpwarden shield report /var/www/shop/phpwarden-shield.log
+phpwarden shield promote phpwarden-shield.policy.json --log /var/www/shop/phpwarden-shield.log \
+  --i-understand-this-blocks-requests
+```
+
+Rebuild the policy after each deploy so upgraded components lose their rules.
+To stop it at once: `touch /var/www/shop/phpwarden-shield.off`.

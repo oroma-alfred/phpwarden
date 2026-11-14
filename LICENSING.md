@@ -11,7 +11,7 @@ Covered by [`LICENSE`](LICENSE) (Apache-2.0):
 
 | Path | What it is |
 |------|------------|
-| `src/phpwarden/` | The engine: CLI + library (scan, deps, wordpress, integrity, detect, rules, probe, code, assess, report, feed) |
+| `src/phpwarden/` | The engine: CLI + library (scan, deps, wordpress, integrity, detect, rules, probe, code, assess, shield, report, feed) |
 | `src/phpwarden/data/` | The **bundled community** vulnerability feed |
 | `integrations/` | The GitHub Action and other integrations |
 | `tests/` | The test suite |
