@@ -1,0 +1,7 @@
+parameters:
+    app.log_table: 'app_log'
+    app.other: '%env(OTHER)%'
+
+services:
+    _defaults:
+        autowire: true

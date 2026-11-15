@@ -120,10 +120,25 @@ files / high or critical `code` and `probe` findings (`probe` also on any
 known-exploited finding) / anything to act on now or this week (`assess`),
 `2` possibly exposed (`scan`), `3` PHP version unknown (`scan`), `4` input
 error, `5` `--report-to` upload failed on an otherwise clean run, `64` usage
-error. Full table: `phpwarden --help`.
+error. `1` also means `feed update` failed. Full table: `phpwarden --help`.
 
 
-## New in 2.4.0, 2.3.0 and 2.2
+## New in 2.5.0, 2.4.0, 2.3.0 and 2.2
+
+- **2.5.0: live check behind a login.** On a site that has proved ownership,
+  `probe --cookie` / `--cookie-file` / `--header` (or a saved test-account login
+  on the dashboard, one same-origin login POST) repeats a few read-only requests
+  signed in: on WordPress, `/wp-admin/` (version) and `plugins.php` (plugin
+  versions). Logout, delete and nonce URLs are never requested; credential values
+  are never printed or logged, are stored encrypted (AES-256-GCM) and are deleted
+  with the project. Use a low-privilege test account. [Docs](https://phpwarden.io/docs#probe-auth).
+- **2.5.0: PhpStorm plugin** in `integrations/phpstorm-plugin`, at parity with
+  the VS Code extension. Not on JetBrains Marketplace yet: build it and install
+  from disk.
+- **2.5.0: `phpwarden code` resolves table names fixed in the code** (constants,
+  `define()`, Laravel `config()`, Symfony parameters, concatenation, `$wpdb->prefix`
+  and core table properties, Eloquent `$table`), closing the dynamic-table-name
+  limit of 2.4.0. Benchmark results are unchanged.
 
 - **2.4.0: `phpwarden code` follows data through the database and callbacks.**
   Request data saved with raw SQL, `$wpdb`, Eloquent, the query builder or
@@ -156,13 +171,13 @@ error. Full table: `phpwarden --help`.
   includes, redirects and HTTP clients, with a trace per finding (SARIF
   `codeFlows`). Models Laravel, Symfony and WordPress: routes with no auth check,
   mass assignment, raw Blade/Twig output, IDOR hints, CSRF exclusions, nonces.
-  Follows data stored in the session or WordPress options (second-order).
-  89 rules. On the same pinned apps it found more than Semgrep and Psalm with far
+  Follows data stored in the session or WordPress options, and (2.4.0; names resolved in 2.5.0) data saved to database tables (second-order), matched by table name: literal names, constants, Laravel config / Symfony parameters, `$wpdb->prefix` + name, `$wpdb->posts` etc. and Eloquent `$table` are resolved; table names built from run-time data are not matched.
+  89 rules. In our published comparison (2026-11-15) it found more than Semgrep, Psalm and Snyk Code, with far
   fewer findings on clean framework code ([comparison](https://github.com/oroma-alfred/phpwarden/tree/main/bench/sast-compare-2026-11)).
 - **`phpwarden shield`**: one PHP file loaded before your app that blocks exploit
   attempts against the exploited vulnerabilities this site actually has, scoped
   to their entry points. Logs until you promote rules (7-day burn-in, explicit
-  flag), fails open, has a kill switch, about 0.07 ms per request. Not an edge
+  flag), fails open, has a kill switch, about 0.1 ms per request in our benchmark. Not an edge
   WAF: no DDoS, bot or TLS handling.
 - **`phpwarden assess`**: one ranked list from every view of a site: installed
   versions, your code, the live site from outside, and the access log, with the
@@ -177,9 +192,11 @@ error. Full table: `phpwarden --help`.
 - **Coverage commitment**: in-scope CISA KEV entries are in the maintained feed
   within 24 hours of listing, checked on every rebuild and published at
   https://phpwarden.io/feeds/kev-status.json. Details: https://phpwarden.io/sla
-- **Editors**: a VS Code extension in `integrations/vscode` (build and install
-  the `.vsix` from that folder; not on the Marketplace yet) and PhpStorm External Tool steps in
-  `integrations/phpstorm`.
+- **Editors**: a VS Code extension on the
+  [Marketplace](https://marketplace.visualstudio.com/items?itemName=phpwarden.phpwarden)
+  (`code --install-extension phpwarden.phpwarden`; source in `integrations/vscode`) and a PhpStorm plugin
+  in `integrations/phpstorm-plugin` (not on JetBrains Marketplace yet: build it and
+  use Install Plugin from Disk; External Tool steps in `integrations/phpstorm`).
 
 ## Replacing Wordfence CLI
 
@@ -245,7 +262,7 @@ see [phpwarden/laravel](https://packagist.org/packages/phpwarden/laravel).
 ```yaml
 repos:
   - repo: https://github.com/oroma-alfred/phpwarden
-    rev: v2.4.0        # pin to a tag with `pre-commit autoupdate`
+    rev: v2.5.0        # pin to a tag with `pre-commit autoupdate`
     hooks:
       - id: phpwarden-deps
         # args: ["--no-reachability"]   # faster: skip the reachability pass
@@ -262,7 +279,7 @@ The bundled community feed (2026.11.14.2 in this release) works forever, offline
   [FriendsOfPHP](https://github.com/FriendsOfPHP/security-advisories)),
   ~12,300 WordPress (from [NVD](https://nvd.nist.gov): plugin, core and theme),
   and 146 PHP engine/FPM CVEs, including hand-curated entries with per-branch
-  fixed versions, exposure conditions and detection signatures. About 19,800 carry an
+  fixed versions, exposure conditions and detection signatures. About 18,200 distinct vulnerabilities carry an
   EPSS score; 54 distinct vulnerabilities were in KEV when this feed was built.
 - **License-independent by construction.** Every source is open or
   public-domain (OSV, NVD, FriendsOfPHP, php-src release notes, CISA KEV, FIRST EPSS). No commercial

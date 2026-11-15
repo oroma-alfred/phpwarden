@@ -1,7 +1,7 @@
-# phpwarden code vs Semgrep and Psalm, November 2026
+# phpwarden code vs Semgrep, Psalm and Snyk Code, November 2026
 
 The same pinned PHP codebases, run through four analysers, scored against the
-same ground truth. Run by the maintainer on 2026-11-14; everything is
+same ground truth. Run by the maintainer on 2026-11-14 (Snyk Code added in a run on 2026-11-15); everything is
 reproducible with `sh bench/sast-compare-2026-11/run.sh` and the raw output of
 that run is in `results-2026-11-14.txt`. The phpwarden rows were rerun the
 same day after fixing what the first run exposed; the first run (phpwarden at
@@ -17,13 +17,14 @@ verdict (`triage.json`) are published so you can check them.
 **Short version.**
 
 - On the two deliberately vulnerable apps, phpwarden found the most: all 11
-  documented Mutillidae vulnerabilities (Psalm 8, Semgrep 4) and 8/8/7 of the 8
+  documented Mutillidae vulnerabilities (Psalm 8, Semgrep 4, Snyk Code 4) and 8/8/7 of the 8
   in-scope DVWA types at low/medium/high with its default whole-program engine
-  (Psalm 5/3/4, Semgrep 3/2/3), with no wrong flag on DVWA's fixed versions
-  (Semgrep 1, Psalm 2).
-- On clean framework code, phpwarden was by far the quietest: 7 high findings
+  (Psalm 5/3/4, Semgrep 3/2/3, Snyk Code 3/2/2), with no wrong flag on DVWA's
+  fixed versions (Semgrep 1, Psalm 2, Snyk Code 0).
+- On clean framework code, phpwarden was by far the quietest in this comparison: 7 high findings
   in all of WordPress core (5 of them accurate reports of intentional patterns,
-  2 false positives) and none in Laravel or Symfony. Semgrep raised 173 in
+  2 false positives) and none in Laravel or Symfony. Snyk Code raised 51 in
+  WordPress, 5 in Laravel and 55 in Symfony; Semgrep raised 173 in
   WordPress, Psalm 442 in WordPress, 590 in Laravel and 985 in Symfony; every
   sampled one was a false positive or intended behaviour.
 - phpwarden was the fastest tool on DVWA, Mutillidae and WordPress. On Laravel
@@ -33,8 +34,17 @@ verdict (`triage.json`) are published so you can check them.
   `SELECT` in another file, and phpwarden follows request data through literal
   table columns.
 - **Where phpwarden loses:** it misses DVWA's `high` upload level. Details below.
-- **Snyk Code is not in this comparison.** It needs an account and a logged-in
-  CLI, so we could not run it. The script supports it (see "Running Snyk Code").
+- **Snyk Code** was added on 2026-11-15 (CLI 1.1308.4, free organisation;
+  output in `results-2026-11-15-with-snyk.txt`, whose phpwarden columns are
+  from before 2.4.0). It found 3/2/2 of the 8 DVWA types with no wrong flag on
+  the fixed versions, and 4 of the 11 Mutillidae vulnerabilities. On clean code
+  it raised 51 high findings in WordPress, 5 in Laravel and 55 in Symfony; of
+  the 35 we sampled and hand-checked, 32 were false positives and 3 intended
+  behaviour (two hard-coded HMAC keys used as constants, one framework queue
+  payload), none a real vulnerability. Most of the Symfony ones are developer
+  CLI scripts whose `$_SERVER['argv']` Snyk treats as HTTP input. Its wall times
+  (22.6 s on DVWA to 137.6 s on WordPress) include uploading the code to Snyk's
+  cloud analysis, so they are not comparable with the local tools.
 
 ## What was compared
 
@@ -43,6 +53,7 @@ verdict (`triage.json`) are published so you can check them.
 | phpwarden, token engine | this repo after commit `06d4700` (the commit that adds session sources, the upload MIME fix and the speed work) | `PHPWARDEN_CODE_ENGINE=tokens phpwarden code TARGET --json` |
 | phpwarden, whole-program engine (the default since `06d4700`) | same | `PHPWARDEN_CODE_ENGINE=auto phpwarden code TARGET --json` |
 | Semgrep OSS | 1.185.0 | `semgrep scan --config p/php --config p/owasp-top-ten --metrics=off`, excluding `tests/`, `Tests/` and `vendor/` |
+| Snyk Code | CLI 1.1308.4, free organisation, run 2026-11-15 | `snyk code test --sarif` in each target with a logged-in CLI (`SNYK=1` or `TOOLS=snyk`) |
 | Psalm | 7.5.0 | `psalm --taint-analysis` with a minimal config that excludes `vendor/` and test folders at any depth; SARIF report (it carries Psalm's taint traces) |
 
 Semgrep's registry packs are not versioned, so the exact files used are kept by
@@ -101,18 +112,18 @@ and target was read by hand.
 DVWA, found at low / medium / high (`x` found, `.` missed), and wrong flags on
 the fixed version:
 
-| Type | phpwarden tokens | phpwarden whole-program | Semgrep | Psalm |
-|---|---|---|---|---|
-| SQL injection | xx. | xxx | x.. | x.. |
-| blind SQL injection | xxx | xxx | xxx | x.x |
-| command injection | xxx | xxx | xxx, **wrong flag** | xxx, **wrong flag** |
-| file inclusion | ... | xxx | ..x | ... |
-| reflected XSS | ... | xxx | ... | ... |
-| stored XSS | ... | xxx | ... | ... |
-| upload | xx. | xx. | ... | xxx, **wrong flag** |
-| open redirect | xxx | xxx | ... | xxx |
-| **found (of 8)** | 5 / 5 / 3 | **8 / 8 / 7** | 3 / 2 / 3 | 5 / 3 / 4 |
-| **wrong flags (of 8)** | **0** | **0** | 1 | 2 |
+| Type | phpwarden tokens | phpwarden whole-program (2.4.0) | Semgrep | Psalm | Snyk Code |
+|---|---|---|---|---|---|
+| SQL injection | xx. | xxx | x.. | x.. | x.. |
+| blind SQL injection | xxx | xxx | xxx | x.x | xxx |
+| command injection | xxx | xxx | xxx, **wrong flag** | xxx, **wrong flag** | xxx |
+| file inclusion | ... | xxx | ..x | ... | ... |
+| reflected XSS | ... | xxx | ... | ... | ... |
+| stored XSS | ... | xxx | ... | ... | ... |
+| upload | xx. | xx. | ... | xxx, **wrong flag** | ... |
+| open redirect | xxx | xxx | ... | xxx | ... |
+| **found (of 8)** | 5 / 5 / 3 | **8 / 8 / 7** | 3 / 2 / 3 | 5 / 3 / 4 | 3 / 2 / 2 |
+| **wrong flags (of 8)** | **0** | **0** | 1 | 2 | **0** |
 
 The two benchmarks score DVWA differently: this one counts a level when a finding
 of the matching category is in that level's file, `bench/code-2026-11` counts
@@ -125,22 +136,34 @@ This benchmark credits a level whose file is in the finding's trace (8/8/7);
 
 Mutillidae, documented vulnerable pages found:
 
-| | phpwarden tokens | phpwarden whole-program | Semgrep | Psalm |
-|---|---|---|---|---|
-| **found (of 11)** | **11** | **11** | 4 | 8 |
+| Page | phpwarden tokens | phpwarden whole-program (2.4.0) | Semgrep | Psalm | Snyk Code |
+|---|---|---|---|---|---|
+| `user-info.php` | found | found | - | - | - |
+| `includes/process-login-attempt.php` | found | found | - | - | - |
+| `add-to-your-blog.php` | found | found | - | found | - |
+| `dns-lookup.php` | found | found | found | found | found |
+| `echo.php` | found | found | found | found | found |
+| `index.php` | found | found | - | found | - |
+| `source-viewer.php` | found | found | found | found | - |
+| `text-file-viewer.php` | found | found | found | found | found |
+| `xml-validator.php` | found | found | - | - | - |
+| `upload-file.php` | found | found | - | found | - |
+| `redirectandlog.php` | found | found | - | found | found |
+| **found (of 11)** | **11** | **11** | 4 | 8 | 4 |
 
 Semgrep found the two command injections and the two file reads. Psalm missed
 both SQL injections that go through Mutillidae's helper class
-(`user-info.php`, `process-login-attempt.php`) and the XXE. Per page:
-`results-2026-11-14.txt`, section 2.
+(`user-info.php`, `process-login-attempt.php`) and the XXE. Snyk Code found
+`dns-lookup.php`, `echo.php`, `text-file-viewer.php` and `redirectandlog.php`. Per page: `results-2026-11-14.txt` and
+`results-2026-11-15-with-snyk.txt`, section 2.
 
 ### Clean framework code: high-severity findings
 
-| Target | Lines | phpwarden tokens | phpwarden whole-program | Semgrep | Psalm |
-|---|---|---|---|---|---|
-| WordPress 7.1.4 | 671,441 | 7 (1.0 per 100k) | 7 (1.0) | 173 (25.8) | 442 (65.8) |
-| Laravel v13.42.0 | 284,473 | 0 | 0 | 0 | 590 (207.4) |
-| Symfony v8.1.11 | 1,617,127 | 0 | 0 | 2 (0.1) | 985 (60.9) |
+| Target | Lines | phpwarden tokens | phpwarden whole-program | Semgrep | Psalm | Snyk Code |
+|---|---|---|---|---|---|---|
+| WordPress 7.1.4 | 671,441 | 7 (1.0 per 100k) | 7 (1.0) | 173 (25.8) | 442 (65.8) | 51 (7.6) |
+| Laravel v13.42.0 | 284,473 | 0 | 0 | 0 | 590 (207.4) | 5 (1.8) |
+| Symfony v8.1.11 | 1,617,127 | 0 | 0 | 2 (0.1) | 985 (60.9) | 55 (3.4) |
 
 Hand triage of the samples (verdicts and notes in `triage.json`):
 
@@ -153,6 +176,10 @@ Hand triage of the samples (verdicts and notes in `triage.json`):
 | Laravel | Psalm | 15 of 590 | 0 | 15 | 0 |
 | Symfony | Semgrep | 2 (all) | 0 | 0 | 2 |
 | Symfony | Psalm | 15 of 985 | 0 | 13 | 2 |
+| WordPress | Snyk Code | 15 of 51 | 0 | 14 | 1 |
+| Laravel | Snyk Code | 5 (all) | 0 | 3 | 2 |
+| Symfony | Snyk Code | 15 of 55 | 0 | 15 | 0 |
+| **All three** | **Snyk Code** | **35** | **0** | **32** | **3** |
 
 phpwarden's "intended behaviour" findings are `sslverify => false` on WordPress's
 requests to itself and MD5 kept for legacy password hashes: accurate, but not
@@ -221,7 +248,8 @@ Psalm's times exclude installing dependencies.
 
 ## What this does not show
 
-- Snyk Code, CodeQL, SonarQube and commercial analysers are not included.
+- CodeQL, SonarQube and other commercial analysers are not included. Snyk Code
+  was run with its default rules on a free organisation.
 - Two deliberately vulnerable apps are a small recall sample, and both are
   written in an old, procedural PHP style. Framework-style apps (Laravel
   controllers, Symfony services, WordPress plugins) are measured only for noise
@@ -237,10 +265,13 @@ Psalm's times exclude installing dependencies.
 ## Running Snyk Code
 
 Snyk Code needs a Snyk account. If you have one, log in with the Snyk CLI
-(`snyk auth`) and run `TOOLS="snyk" sh bench/sast-compare-2026-11/run.sh`; the
+(`snyk auth`) and run `SNYK=1 sh bench/sast-compare-2026-11/run.sh` (all tools plus Snyk) or
+`TOOLS="snyk" sh bench/sast-compare-2026-11/run.sh` (Snyk only); the
 script calls `snyk code test --sarif` in each target and the scorer reads its
-SARIF output. The script never reads, asks for or stores a token. We would
-publish the result, including where phpwarden loses.
+SARIF output (categories come from keywords in the rule ID, such as `php/XSS`
+or `php/Sqli`; every Snyk result at `error` level counts as high). The script never
+reads, asks for or stores a token. Our 2026-11-15 run is in
+`results-2026-11-15-with-snyk.txt`.
 
 ## Files
 
@@ -250,3 +281,7 @@ publish the result, including where phpwarden loses.
   `score.py --sample WORKDIR` prints the clean-code samples to triage.
 - `triage.json`: the hand verdict for every sampled clean-code finding.
 - `results-2026-11-14.txt`: the scorer's output for the run reported here.
+- `results-2026-11-14-phpwarden-db-callbacks.txt`: the phpwarden whole-program
+  rerun with taint through the database and callbacks (2.4.0; DVWA 8/8/7).
+- `results-2026-11-15-with-snyk.txt`: the 2026-11-15 run that adds Snyk Code
+  (its phpwarden columns are from before 2.4.0).

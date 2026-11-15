@@ -1,0 +1,47 @@
+<idea-plugin>
+    <id>io.phpwarden.ide</id>
+    <name>phpwarden</name>
+    <vendor email="sales@phpwarden.io" url="https://phpwarden.io">phpwarden</vendor>
+    <description><![CDATA[
+    <p>Vulnerable Composer packages and risky PHP code, flagged in the editor by the
+    <a href="https://phpwarden.io">phpwarden</a> CLI you already have installed.</p>
+    <ul>
+      <li>Open or save <code>composer.lock</code>: runs <code>phpwarden deps composer.lock --json</code> and marks
+          each vulnerable package on its <code>"name"</code> line. Known-exploited (CISA KEV) or EPSS &ge; 0.5
+          findings are errors.</li>
+      <li>Save a PHP file: runs <code>phpwarden code &lt;file&gt; --format sarif</code> and marks each finding.</li>
+      <li>Tooltips show the CVE, fixed versions and a <code>composer require</code> upgrade command;
+          a quick fix copies it.</li>
+    </ul>
+    <p>Everything runs locally; the plugin uploads nothing. Requires the phpwarden CLI
+    (<code>pipx install phpwarden</code>); <code>phpwarden code</code> needs 2.2.0 or newer.
+    Open source under Apache-2.0.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.jetbrains.php</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="io.phpwarden.phpstorm.PhpwardenSettings"/>
+        <applicationConfigurable parentId="tools" instance="io.phpwarden.phpstorm.PhpwardenConfigurable"
+                                 id="io.phpwarden.phpstorm.settings" displayName="phpwarden"/>
+        <externalAnnotator language="JSON" implementationClass="io.phpwarden.phpstorm.LockAnnotator"/>
+        <externalAnnotator language="PHP" implementationClass="io.phpwarden.phpstorm.CodeAnnotator"/>
+        <notificationGroup id="phpwarden" displayType="BALLOON"/>
+    </extensions>
+
+    <applicationListeners>
+        <listener class="io.phpwarden.phpstorm.SaveListener" topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    </applicationListeners>
+
+    <actions>
+        <action id="io.phpwarden.phpstorm.Rescan" class="io.phpwarden.phpstorm.RescanAction"
+                text="phpwarden: Rescan Open Files" description="Clear cached phpwarden results and rescan open files">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="io.phpwarden.phpstorm.FeedStatus" class="io.phpwarden.phpstorm.FeedStatusAction"
+                text="phpwarden: Feed Status" description="Show the local phpwarden advisory feed version">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

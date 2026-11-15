@@ -3,7 +3,7 @@
   "publisher": "phpwarden",
   "displayName": "phpwarden — PHP vulnerabilities ranked by exploitation",
   "description": "Flags vulnerable Composer packages in composer.lock and risky PHP code, ranked by real-world exploitation (CISA KEV, EPSS). Runs the local phpwarden CLI.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "Apache-2.0",
   "icon": "images/icon.png",
   "homepage": "https://phpwarden.io",

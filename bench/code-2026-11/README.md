@@ -7,6 +7,9 @@ unreleased `code` command (75 rules, 74 on by default). Rerun with
 `sh bench/code-2026-11/run.sh`; the output of the latest run is in
 `results-2026-11-14.txt`.
 
+> Current figures (phpwarden 2.4.0: DVWA 8/8/7, Mutillidae 11 of 11, against
+> Semgrep, Psalm and Snyk Code) are in [`bench/sast-compare-2026-11`](../sast-compare-2026-11/README.md).
+
 **Three runs.** The first run (`results-2026-11-14-before-fixes.txt`) found real
 gaps in the scanner; they were fixed the same day without special-casing any
 target (`results-2026-11-14-before-cross-file.txt`). The third run adds
@@ -110,9 +113,11 @@ What the fixes changed here:
   part of the IP with `is_numeric()` in the `if` that wraps the command. Such
   validation guards are now understood.
 
-## 2. Recall on Mutillidae II
+## 2. Recall on Mutillidae II (earlier historical run: 2.1.1, 75 rules)
 
-Eleven pages whose vulnerability the project documents itself:
+Eleven pages whose vulnerability the project documents itself. This table is
+from the first run, before the fixes and cross-file work described above; later
+runs in this file and the current 2.4.0 engine find all 11:
 
 | Page | Class | Result |
 |---|---|---|

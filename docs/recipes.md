@@ -269,7 +269,7 @@ Actions; the job needs `permissions: security-events: write`):
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - run: pip install "phpwarden>=2.3,<3"
+  - run: pip install "phpwarden>=2.4,<3"
   - run: phpwarden deps composer.lock --format sarif > phpwarden.sarif || true
   - run: phpwarden code . --format sarif > phpwarden-code.sarif || true
   # install Trivy first (see trivy.dev), then:

@@ -455,8 +455,32 @@ def _probe(args):
               f"  3. A tag in the homepage <head>:\n       <meta name=\"phpwarden-verify\" content=\"{token}\">\n\n"
               f"Without it, probe only reads the homepage response (passive mode).")
         return 0
+    auth = None
+    if args.cookie or args.cookie_file or args.header:
+        if args.passive:
+            sys.stderr.write("error: --cookie/--cookie-file need the active checks; drop --passive\n")
+            return 4
+        try:
+            raw = list(args.cookie or [])
+            if args.cookie_file:
+                with open(args.cookie_file, encoding="utf-8") as fh:
+                    raw.append(fh.read())
+            cookies = {}
+            for r in raw:
+                cookies.update(pr.parse_cookies(r))
+            headers = {}
+            for hv in args.header or []:
+                k, sep, v = hv.partition(":")
+                if not sep:
+                    raise ValueError("header must be 'Name: value'")
+                headers[k.strip()] = v.strip()
+            auth = pr.Auth(cookies=cookies, headers=headers)
+        except (OSError, ValueError) as e:     # messages never contain the cookie value
+            sys.stderr.write(f"error: could not read the cookie: {e.__class__.__name__}"
+                             f"{'' if isinstance(e, OSError) else ': ' + str(e)}\n")
+            return 4
     res = pr.run_probe(url, token=token, active=False if args.passive else None,
-                       max_requests=args.max_requests)
+                       max_requests=args.max_requests, auth=auth)
     if args.json:
         print(json.dumps(res, indent=2))
     elif _fmt(args) == "sarif":
@@ -883,6 +907,14 @@ def main(argv=None):
                     help="show how to verify ownership of the site, then exit")
     pb.add_argument("--passive", action="store_true", help="read the homepage response only")
     pb.add_argument("--max-requests", type=int, default=60, help="request budget (default 60)")
+    pb.add_argument("--cookie", action="append", metavar="NAME=VALUE",
+                    help="session cookie for the signed-in check (repeatable; used only after ownership is "
+                         "verified, only on that site, GET/HEAD only; never printed). Use a low-privilege test account")
+    pb.add_argument("--cookie-file", metavar="FILE",
+                    help="read cookies from FILE (name=value lines or a Netscape cookies.txt); keeps them out of "
+                         "shell history")
+    pb.add_argument("--header", action="append", metavar="'NAME: VALUE'",
+                    help="extra header sent with the signed-in requests (repeatable; never printed)")
     pb.add_argument("--json", action="store_true", help="machine-readable JSON output")
     _format_arg(pb)
     pb.set_defaults(func=_probe)

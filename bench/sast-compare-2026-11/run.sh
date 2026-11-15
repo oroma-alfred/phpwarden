@@ -17,6 +17,7 @@ set -eu
 HERE="$(cd "$(dirname "$0")" && pwd)"; REPO="$(cd "$HERE/../.." && pwd)"
 W="${BENCH_DATA:-$(mktemp -d)}"; mkdir -p "$W/targets" "$W/tools" "$W/out"
 TOOLS="${TOOLS:-phpwarden-tokens phpwarden-auto semgrep psalm}"
+if [ "${SNYK:-0}" = 1 ]; then TOOLS="$TOOLS snyk"; fi
 TARGETS="${TARGETS:-dvwa mutillidae wordpress laravel symfony}"
 PY312="${PY312:-python3.12}"
 SEMGREP_VERSION=1.185.0
@@ -92,7 +93,6 @@ for t in $TARGETS; do
     echo "$tool $t: exit $rc, $(python3 -c "print(round($e-$s,1))") s"
   done
 done
-[ "${SNYK:-0}" = 1 ] && echo "note: add 'snyk' to TOOLS to run Snyk Code with your logged-in CLI"
 "$W/tools/semgrep-venv/bin/semgrep" --version > "$W/out/versions.txt" 2>/dev/null || true
 [ -x "$W/tools/psalm/vendor/bin/psalm" ] && "$W/tools/psalm/vendor/bin/psalm" --version >> "$W/out/versions.txt" || true
 python3 -I "$HERE/score.py" "$W"

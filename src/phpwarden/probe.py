@@ -3,7 +3,8 @@
 SAFETY RULES (these are the design, not suggestions):
 
 * GET/HEAD only. No POST, no payloads, no fuzzing, no brute force, no login or
-  auth attempts, no form submission. Nothing is ever written to the target.
+  auth attempts, no form submission (except the opt-in signed-in check below:
+  one login POST). Nothing is ever written to the target.
 * No crawling. Only the homepage plus a FIXED list of well-known paths is ever
   requested (see EXPOSURE_CHECKS / ENDPOINT_CHECKS below). Links found on a
   page are never followed; the only page-derived requests are
@@ -23,6 +24,15 @@ SAFETY RULES (these are the design, not suggestions):
   in an exposed .env, the NUMBER of enumerable users) and never values.
 * Every exposure is content-confirmed; status 200 alone never counts, and a
   random nonexistent path is requested first to detect soft-404 sites.
+
+AUTHENTICATED CHECK (optional, see `Auth`): the owner can hand the probe a
+session cookie, or a TEST account's login (one form POST to obtain cookies).
+It runs only after ownership is verified. The login POST is the only non-GET
+request the probe ever makes, and only to the verified origin. Requests that
+carry credentials go only to the verified origin (same scheme, host, port);
+a redirect elsewhere is refused, and no URL matching a logout / delete /
+state-changing pattern (or carrying a nonce/CSRF parameter) is requested
+while signed in. Credential values are scrubbed from the whole result.
 """
 import difflib
 import hashlib
@@ -83,8 +93,9 @@ class Response:
         return self.body.decode("utf-8", errors="replace")
 
 
-def default_fetch(url, method="GET", timeout=TIMEOUT, max_bytes=MAX_BYTES):
-    """Single HTTP request, no redirect following. Returns a Response."""
+def default_fetch(url, method="GET", timeout=TIMEOUT, max_bytes=MAX_BYTES, headers=None, data=None):
+    """Single HTTP request, no redirect following. Returns a Response.
+    `headers`/`data` are only passed by the authenticated check."""
     parts = urlsplit(url)
     path = parts.path or "/"
     if parts.query:
@@ -95,7 +106,9 @@ def default_fetch(url, method="GET", timeout=TIMEOUT, max_bytes=MAX_BYTES):
     else:
         conn = http.client.HTTPConnection(parts.hostname, parts.port or 80, timeout=timeout)
     try:
-        conn.request(method, path, headers={"User-Agent": USER_AGENT, "Accept": "*/*"})
+        h = {"User-Agent": USER_AGENT, "Accept": "*/*"}
+        h.update(headers or {})
+        conn.request(method, path, body=data, headers=h)
         r = conn.getresponse()
         body = r.read(max_bytes) if method != "HEAD" else b""
         return Response(r.status, r.getheaders(), body, url)
@@ -103,7 +116,126 @@ def default_fetch(url, method="GET", timeout=TIMEOUT, max_bytes=MAX_BYTES):
         conn.close()
 
 
+# --------------------------------------------------------------------------- #
+# Authenticated check: credentials and the rules for using them
+# --------------------------------------------------------------------------- #
+# Never requested while signed in: anything that could end the session or
+# change state. Matched against the full URL (path and query), case-insensitive.
+UNSAFE_URL_RE = re.compile(
+    r"log[-_ ]?out|log[-_ ]?off|sign[-_ ]?out|sign[-_ ]?off|delete|remove|destroy|trash|"
+    r"unsubscribe|deactivate|uninstall|disable|revoke|purge|reset|drop|wipe|"
+    r"[?&](?:_wpnonce|nonce|_token|csrf[^=&]*)=", re.I)
+_FORBIDDEN_HEADERS = {"host", "content-length", "transfer-encoding", "connection", "user-agent",
+                      "content-type", "cookie"}
+_TOKEN_RE = re.compile(r"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$")
+
+
+def is_unsafe_url(url) -> bool:
+    """True for URLs the authenticated check must never request."""
+    return bool(UNSAFE_URL_RE.search(url or ""))
+
+
+def parse_cookies(text) -> dict:
+    """'a=1; b=2' (or one name=value per line; Netscape cookies.txt lines are
+    understood too) -> {name: value}. Raises ValueError on junk. The error
+    message never contains the input."""
+    out = {}
+    for line in (text or "").replace("\r", "").split("\n"):
+        line = line.strip()
+        if line.startswith("#HttpOnly_"):
+            line = line[len("#HttpOnly_"):]
+        elif not line or line.startswith("#"):
+            continue
+        cols = line.split("\t")
+        if len(cols) == 7:                       # Netscape cookies.txt
+            if not _TOKEN_RE.match(cols[5].strip()):
+                raise ValueError("bad cookie name")
+            out[cols[5].strip()] = cols[6].strip()
+            continue
+        for part in line.split(";"):
+            part = part.strip()
+            if not part:
+                continue
+            name, sep, value = part.partition("=")
+            name = name.strip()
+            if not sep or not _TOKEN_RE.match(name):
+                raise ValueError("cookie must be name=value")
+            out[name] = value.strip()
+    if not out:
+        raise ValueError("no cookie given")
+    return out
+
+
+class Auth:
+    """Credentials for the authenticated check. Either `cookies` (+ optional
+    extra `headers`) or `login` = {url, user_field, pass_field, username,
+    password}. repr() never shows a value."""
+    def __init__(self, cookies=None, headers=None, login=None):
+        self.cookies = dict(cookies or {})
+        self.headers = {}
+        for k, v in (headers or {}).items():
+            k, v = str(k).strip(), str(v).strip()
+            if not _TOKEN_RE.match(k) or k.lower() in _FORBIDDEN_HEADERS or "\r" in v or "\n" in v:
+                raise ValueError("header not allowed")
+            self.headers[k] = v
+        self.login = dict(login) if login else None
+        if self.login:
+            for f in ("url", "user_field", "pass_field", "username", "password"):
+                if not str(self.login.get(f) or ""):
+                    raise ValueError(f"login needs {f}")
+        if not self.cookies and not self.login:
+            raise ValueError("give a cookie or a login")
+
+    @property
+    def method(self):
+        return "login" if self.login else "cookie"
+
+    def secret_values(self) -> list:
+        vals = list(self.cookies.values()) + list(self.headers.values())
+        if self.login:
+            vals += [self.login["password"], self.login["username"]]
+        return [v for v in vals if v and len(v) >= 3]
+
+    def __repr__(self):
+        return f"<Auth {self.method} [redacted]>"
+    __str__ = __repr__
+
+
+def scrub(obj, secret_values):
+    """Replace every occurrence of a secret value in a JSON-like structure."""
+    vals = sorted({v for v in secret_values if v}, key=len, reverse=True)
+    if not vals:
+        return obj
+
+    def one(x):
+        if isinstance(x, str):
+            for v in vals:
+                if v in x:
+                    x = x.replace(v, "[redacted]")
+            return x
+        if isinstance(x, dict):
+            return {one(k): one(v) for k, v in x.items()}
+        if isinstance(x, (list, tuple)):
+            return [one(v) for v in x]
+        return x
+    return one(obj)
+
+
+def _origin(url):
+    p = urlsplit(url)
+    scheme = (p.scheme or "").lower()
+    try:
+        port = p.port
+    except ValueError:
+        port = -1
+    return (scheme, (p.hostname or "").lower(), port or (443 if scheme == "https" else 80))
+
+
 class BudgetExceeded(Exception):
+    pass
+
+
+class _Refused(Exception):
     pass
 
 
@@ -117,8 +249,22 @@ class _Session:
         self.count = 0
         self.start = time.monotonic()
         self.notes = []
+        self.origin = _origin(base_url)
+        self.auth = None          # an Auth, set only after ownership is verified
+        self.jar = {}
+        self._login_post = False
 
-    def _one(self, url, method):
+    def _one(self, url, method, data=None):
+        if self.auth is not None:
+            # credentials only ever go to the verified origin, read-only
+            if _origin(url) != self.origin:
+                raise _Refused("request to another origin refused while signed in")
+            if is_unsafe_url(url):
+                raise _Refused("skipped while signed in (logout or state-changing URL)")
+            if method not in ("GET", "HEAD") and not (method == "POST" and self._login_post):
+                raise _Refused("only GET/HEAD while signed in")
+        elif method not in ("GET", "HEAD"):
+            raise _Refused("only GET/HEAD")
         if self.count >= self.max_requests:
             raise BudgetExceeded("request cap reached")
         if time.monotonic() - self.start > TOTAL_TIME_CAP:
@@ -126,7 +272,25 @@ class _Session:
         if self.count and self.delay:
             time.sleep(self.delay)
         self.count += 1
-        return self.fetch(url, method=method, timeout=TIMEOUT, max_bytes=MAX_BYTES)
+        if self.auth is None:
+            return self.fetch(url, method=method, timeout=TIMEOUT, max_bytes=MAX_BYTES)
+        h = dict(self.auth.headers)
+        if self.jar:
+            h["Cookie"] = "; ".join(f"{k}={v}" for k, v in self.jar.items())
+        if data is not None:
+            h["Content-Type"] = "application/x-www-form-urlencoded"
+        r = self.fetch(url, method=method, timeout=TIMEOUT, max_bytes=MAX_BYTES, headers=h, data=data)
+        for sc in r.all("set-cookie"):           # same origin by construction
+            name, _, rest = sc.partition("=")
+            name, value = name.strip(), rest.split(";", 1)[0].strip()
+            if not _TOKEN_RE.match(name):
+                continue
+            low = sc.lower()
+            if not value or value == "deleted" or "max-age=0" in low or "01 jan 1970" in low:
+                self.jar.pop(name, None)
+            else:
+                self.jar[name] = value
+        return r
 
     def get(self, url, follow=True, method="GET"):
         """GET url, following <=3 same-host redirects. Returns Response or None."""
@@ -135,6 +299,12 @@ class _Session:
             hops = 0
             while follow and r.status in (301, 302, 303, 307, 308) and r.header("location"):
                 nxt = urljoin(r.url, r.header("location"))
+                if self.auth is not None and _origin(nxt) != self.origin:
+                    self.notes.append("signed in: redirect to another origin refused")
+                    return r
+                if self.auth is not None and is_unsafe_url(nxt):
+                    self.notes.append("signed in: redirect to a logout or state-changing URL not followed")
+                    return r
                 if (urlsplit(nxt).hostname or "").lower() != self.host:
                     self.notes.append(f"redirect to another host not followed: {urlsplit(nxt).hostname}")
                     return r
@@ -146,6 +316,9 @@ class _Session:
             return r
         except BudgetExceeded:
             raise
+        except _Refused as e:
+            self.notes.append(f"{urlsplit(url).path or '/'}: {e}")
+            return None
         except (OSError, http.client.HTTPException, ValueError) as e:
             self.notes.append(f"{urlsplit(url).path or '/'}: {type(e).__name__}")
             return None
@@ -705,6 +878,102 @@ def _run_active(sess, root, fp, feed, findings):
                                "Disable autoindex (Options -Indexes)."))
 
 
+_WP_ADMIN_VER_RE = re.compile(r'id=["\']footer-upgrade["\'][^>]*>\s*(?:<[^>]+>\s*)*Version\s+([\d.]+)', re.I)
+_WP_PLUGIN_ROW_RE = re.compile(r'<tr[^>]+data-slug=["\']([a-z0-9_\-.]+)["\'][^>]*>(.*?)</tr>', re.I | re.S)
+_WP_ROW_VER_RE = re.compile(r'Version\s+([\d][\w.\-]*)', re.I)
+
+
+def _login(sess, auth):
+    """One form POST to the login URL (same origin only); cookies from the
+    response go into the jar. Returns True when new cookies were set."""
+    lg = auth.login
+    url = lg["url"]
+    if _origin(url) != sess.origin:
+        sess.notes.append("login refused: the login URL is not on the verified site")
+        return False
+    if is_unsafe_url(url):
+        sess.notes.append("login refused: the login URL looks like a logout or state-changing URL")
+        return False
+    sess.get(url, follow=False)                        # pre-login cookies (GET)
+    form = {lg["user_field"]: lg["username"], lg["pass_field"]: lg["password"]}
+    if urlsplit(url).path.endswith("wp-login.php"):    # WordPress refuses logins without its test cookie
+        sess.jar.setdefault("wordpress_test_cookie", "WP%20Cookie%20check")
+        form.setdefault("testcookie", "1")
+    from urllib.parse import urlencode
+    before = dict(sess.jar)
+    sess._login_post = True
+    try:
+        r = sess._one(url, "POST", data=urlencode(form).encode())
+    except _Refused as e:
+        sess.notes.append(f"login: {e}")
+        return False
+    except (OSError, http.client.HTTPException, ValueError) as e:
+        sess.notes.append(f"login request failed: {type(e).__name__}")
+        return False
+    finally:
+        sess._login_post = False                      # never another POST
+    new = {k for k, v in sess.jar.items() if before.get(k) != v and k != "wordpress_test_cookie"}
+    if r.status >= 400 or not new:
+        sess.notes.append(f"login did not set a session cookie (HTTP {r.status}); signed-in checks skipped")
+        return False
+    return True
+
+
+def _run_authenticated(sess, url, root, fp, findings):
+    """Signed-in GETs: the homepage again, and on WordPress the dashboard and
+    the plugin list (both read-only pages). Returns the summary dict."""
+    info = {"used": True, "method": sess.auth.method, "signed_in": False, "pages": [], "seen_signed_in": []}
+    before = {"wordpress": fp["wordpress"], "php": fp["php"], "plugins": dict(fp["plugins"]),
+              "themes": dict(fp["themes"])}
+    r = sess.get(url)
+    if r is not None and r.status == 200:
+        info["pages"].append(urlsplit(r.url).path or "/")
+        _fingerprint_headers(r, fp)
+        _fingerprint_html(r.text, fp)
+    if "wordpress" in fp["frameworks"] or (sess.auth.login and "wp-login.php" in sess.auth.login["url"]):
+        r = sess.get(urljoin(root, "wp-admin/"))
+        if r is None or r.status != 200 or "wp-login.php" in (r.url or "") or 'id="loginform"' in r.text:
+            sess.notes.append("signed in: wp-admin/ did not accept the session (expired cookie or wrong login?)")
+        else:
+            info["signed_in"] = True
+            info["pages"].append("/wp-admin/")
+            _fingerprint_html(r.text, fp)
+            m = _WP_ADMIN_VER_RE.search(r.text)
+            if m and not fp["wordpress"]:
+                fp["wordpress"] = m.group(1)
+            r2 = sess.get(urljoin(root, "wp-admin/plugins.php"))
+            if r2 is not None and r2.status == 200 and "data-slug" in r2.text:
+                info["pages"].append("/wp-admin/plugins.php")
+                n = 0
+                for slug, row in _WP_PLUGIN_ROW_RE.findall(r2.text):
+                    vm = _WP_ROW_VER_RE.search(row)
+                    if vm and not fp["plugins"].get(slug.lower()):
+                        fp["plugins"][slug.lower()] = vm.group(1)
+                    n += 1
+                findings.append(_f("auth-account-can-list-plugins", "auth", "low",
+                                   "The test account can open the plugin list",
+                                   f"Signed in, /wp-admin/plugins.php listed {n} plugins. That page needs an "
+                                   f"administrator-level role; use a lower-privilege test account.",
+                                   urljoin(root, "wp-admin/plugins.php"),
+                                   "Give the live check an account with the lowest role that can sign in "
+                                   "(e.g. Subscriber)."))
+    elif r is not None and r.status == 200:
+        info["signed_in"] = True
+    for k in ("wordpress", "php"):
+        if fp[k] and not before[k]:
+            info["seen_signed_in"].append(f"{k} {fp[k]}")
+    for kind in ("plugins", "themes"):
+        for slug, v in fp[kind].items():
+            if v and not before[kind].get(slug):
+                info["seen_signed_in"].append(f"{kind[:-1]} {slug} {v}")
+    if info["seen_signed_in"]:
+        findings.append(_f("auth-versions-visible-signed-in", "auth", "info",
+                           "Versions visible only when signed in",
+                           "; ".join(info["seen_signed_in"][:20]), url,
+                           "Matched against the feed like any other version; nothing to fix by itself."))
+    return info
+
+
 def is_public_host(host) -> bool:
     """True when every address `host` resolves to is a public internet address.
 
@@ -752,9 +1021,11 @@ def local_token(host, home=None) -> str:
 
 
 def run_probe(url, *, token=None, active=None, feed=None, max_requests=60, delay=0.3,
-              fetch=None, tls_check=None):
+              fetch=None, tls_check=None, auth=None):
     """Probe `url`. active=None: active if ownership verifies; active=True: require
-    verification (refused otherwise); active=False: passive only."""
+    verification (refused otherwise); active=False: passive only.
+    auth: an `Auth`; used only after ownership verifies, after the anonymous
+    active checks. Its values are scrubbed from the result."""
     if "://" not in url:
         url = "https://" + url
     p = urlsplit(url)
@@ -766,6 +1037,7 @@ def run_probe(url, *, token=None, active=None, feed=None, max_requests=60, delay
     fp = {"php": None, "wordpress": None, "plugins": {}, "themes": {}, "frameworks": []}
     findings, ownership, mode = [], {"verified": False, "method": None}, "passive"
     incomplete = False
+    authinfo = {"used": False}
 
     try:
         # Passive: the single homepage GET, redirects NOT followed.
@@ -791,6 +1063,14 @@ def run_probe(url, *, token=None, active=None, feed=None, max_requests=60, delay
                     if h2 is not None:
                         _fingerprint_html(h2.text, fp)
                 _run_active(sess, root, fp, feed, findings)
+                if auth is not None:
+                    sess.auth = auth
+                    sess.jar = dict(auth.cookies)
+                    authinfo = {"used": True, "method": auth.method, "signed_in": False}
+                    if auth.login is None or _login(sess, auth):
+                        authinfo = _run_authenticated(sess, url, root, fp, findings)
+        if auth is not None and not ownership["verified"]:
+            sess.notes.append("signed-in check refused: ownership not verified")
         if active and not ownership["verified"]:
             sess.notes.append("active mode refused: ownership not verified")
     except BudgetExceeded as e:
@@ -808,13 +1088,18 @@ def run_probe(url, *, token=None, active=None, feed=None, max_requests=60, delay
     summary = {s: sum(1 for f in findings if f["severity"] == s) for s in SEV_ORDER}
     summary["exploited"] = sum(1 for f in findings if f.get("known_exploited"))
     summary["total"] = len(findings)
-    return {"tool": "phpwarden-probe", "version": __version__, "target": url, "mode": mode,
+    sess.auth, sess.jar = None, {}
+    result = {"tool": "phpwarden-probe", "version": __version__, "target": url, "mode": mode,
             "ownership": ownership, "requests_made": sess.count, "fingerprint": fp,
             "findings": findings, "summary": summary, "notes": sess.notes,
             # False when the request or time budget ran out before every check ran:
             # "nothing found" on an incomplete run is not a clean result.
             "complete": not incomplete,
-            "feed_version": getattr(feed, "feed_version", None)}
+            "feed_version": getattr(feed, "feed_version", None),
+            "authenticated": authinfo}
+    if auth is not None:
+        result = scrub(result, auth.secret_values())
+    return result
 
 
 # --------------------------------------------------------------------------- #
@@ -837,6 +1122,11 @@ def to_text(result):
         bits.append("frameworks: " + ", ".join(fp["frameworks"]))
     if bits:
         lines.append("fingerprint: " + "; ".join(bits))
+    a = result.get("authenticated") or {}
+    if a.get("used"):
+        lines.append(f"signed-in check ({a.get('method')}): "
+                     + ("signed in; pages: " + ", ".join(a.get("pages") or []) if a.get("signed_in")
+                        else "not signed in (see notes)"))
     lines.append("")
     # A version header such as "X-Powered-By: PHP/8.1.2" can match dozens of
     # engine CVEs, most only "possibly" (SAPI and OS are invisible from

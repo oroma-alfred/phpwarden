@@ -1,61 +1,48 @@
-# phpwarden shield: integration note (stage 1)
+# shield: design and integration notes
 
-Built and tested; **not wired into the CLI, dashboard or docs yet.** This note is
-for the next step.
+`phpwarden shield` is shipped: one PHP file (the agent) loaded before a site's
+own code, with a per-site policy that blocks exploit attempts against the
+exploited vulnerabilities that site actually has, scoped to their entry points.
+Every rule starts log-only and blocks only after it is promoted.
 
-## What exists
+## CLI
+
+```
+phpwarden shield policy [PATH] [--out FILE] [--php-version X.Y.Z] [--php-sapi fpm|cgi|cli]
+                        [--log FILE] [--no-limits] [--limit-path REGEX ...]
+                        [--trust-proxy CIDR ...] [--json]
+    # inventory from composer.lock / WordPress at PATH + feed -> policy JSON and a .php twin
+phpwarden shield install [--dest DIR]
+    # how to load the agent (auto_prepend_file, wp-config.php, public/index.php);
+    # --dest copies phpwarden-shield.php there. Never edits server files.
+phpwarden shield report LOG [--json]
+    # hits per rule, top paths and clients, noisy rules
+phpwarden shield promote POLICY --log LOG --i-understand-this-blocks-requests [--rule ID ...]
+    # log -> block after a clean 7-day burn-in; refuses noisy rules; needs the explicit flag
+```
+
+## Dashboard
+
+The project's **Shield** page (`saas/shieldui.py`) builds the policy from what
+the project already reported (composer.lock findings, the WordPress plugin's
+inventory, PHP version) and serves it with the agent as downloads. The agent's
+summary (`phpwarden shield report --json`) is posted to `POST /v1/shield/hits`
+with the project token and shown there. A Pro/Team owner can promote individual
+rules to blocking only after 7 days since the first policy download, only for
+rules the hits summary does not mark noisy, and only with an explicit
+confirmation; one button returns every rule to log-only.
+
+## Components
 
 | File | Role |
 |---|---|
 | `integrations/php-shield/phpwarden-shield.php` | The agent. One PHP file, PHP 7.4+, no extensions. Loaded with `auto_prepend_file`. Logs by default, blocks only promoted rules in an `enforce` policy, fails open on any error, kill switch file/env. |
-| `src/phpwarden/shield/library.py` | 33 rules: 3 engine, 13 Composer, 13 WordPress, 4 generic. Each has refs, an exploit-shape example and a near-miss. |
-| `src/phpwarden/shield/policy.py` | `build_policy(inventory, feed)`, `build_policy_for_path(path, feed)`, `promote(policy, stats, operator_ack=True)`, `write_policy(policy, path)` (JSON + `.php` twin for opcache). |
+| `src/phpwarden/shield/library.py` | The rule library. Each rule has refs, an exploit-shape example and a near-miss. |
+| `src/phpwarden/shield/policy.py` | `build_policy`, `build_policy_for_path`, `promote`, `write_policy` (JSON + `.php` twin for opcache). |
 | `src/phpwarden/shield/matcher.py` | Python mirror of the agent's matching (tests, benchmark, replay). |
-| `src/phpwarden/shield/report.py` | `summarize(log_lines)`, `to_text(summary)`: hits per rule, top paths/clients, noisy rules. |
-| `tests/test_shield_runtime.py` | 28 checks incl. the real agent under `php -S`. |
-| `bench/shield-2026-11/` | Benchmark: 0/14,291 benign matches, 39/39 exploit shapes, ~60 µs per request. |
-
-## Proposed CLI (cli.py)
-
-```
-phpwarden shield policy [PATH] [--php-version X.Y.Z] [--php-sapi fpm|cgi|cli] [--out policy.json]
-    # inventory from composer.lock / WordPress at PATH + feed -> policy.json and policy.php;
-    # prints included rules and why, and the skipped ones with the reason
-phpwarden shield install [--wordpress|--laravel|--php-ini]
-    # prints instructions (do not edit server files automatically):
-    #   php.ini / .user.ini:  auto_prepend_file=/path/phpwarden-shield.php
-    #   WordPress:            mu-plugin that requires the agent (runs before plugins)
-    #                         or `require` as the first line of wp-config.php (earlier, preferred)
-    #   Laravel:              require at the top of public/index.php
-    # and where to put phpwarden-shield.policy.php
-phpwarden shield report LOG [--json]          # report.summarize / to_text
-phpwarden shield promote POLICY --log LOG --i-understand-this-blocks-requests [--rule ID ...]
-    # promote(): refuses before 7 days, refuses noisy rules, needs the explicit flag
-phpwarden shield check POLICY --replay ACCESS_LOG
-    # matcher over an existing access log (GET only) to preview hits before installing
-```
-
-The agent file should ship in the wheel (package data) and be copied by
-`shield install`, or be downloadable from phpwarden.io like `phpwarden.pyz`.
-
-## Proposed dashboard
-
-- Project page "Shield" card: download the policy built from the latest reports
-  (composer + WordPress inventory are already stored) and the agent file;
-  install instructions per stack.
-- Weekly refresh: rebuild the policy when the feed or the inventory changes; a
-  newly exploited CVE on the site adds its rule in log mode; a verified fix drops it.
-- Hits view: the agent posts its log summary (`phpwarden shield report --report-to`)
-  or the WordPress plugin forwards it; show hits per rule, top clients.
-- Promote button per rule, enabled after 7 days without noise, with an explicit
-  confirmation. Demote / kill switch button that pushes a log-only policy.
-
-## Plan gating suggestion
-
-- Free: policy + agent in log mode (shows value: "these exploit attempts hit a
-  vulnerability you have").
-- Pro/Team: blocking (promotion), weekly automatic policy refresh, hits in the
-  dashboard and alerts on hits for exploited CVEs.
+| `src/phpwarden/shield/report.py` | `summarize(log_lines)`, `to_text(summary)`. |
+| `tests/test_shield_runtime.py` | Checks including the real agent under `php -S`. |
+| `bench/shield-2026-11/` | Benchmark: 0 of 14,291 benign requests matched, 39/39 exploit shapes blocked, about 0.1 ms per request. |
 
 ## Risks
 

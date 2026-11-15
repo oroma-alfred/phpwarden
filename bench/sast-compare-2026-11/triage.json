@@ -290,5 +290,145 @@
  "semgrep|wordpress|wp-links-opml.php:83|echoed-request": {
   "note": "value is escaped, internal, cast to int, or the match is on an unrelated call (e.g. wp_nonce_url, check_admin_referer)",
   "verdict": "false positive"
+ },
+ "snyk|laravel|src/Illuminate/Auth/SessionGuard.php:658|php/HardcodedNonCryptoSecret": {
+  "note": "the key is the app's hashKey; the literal is only a fallback when none is configured",
+  "verdict": "by design"
+ },
+ "snyk|laravel|src/Illuminate/Bus/Queueable.php:340|php/Deserialization": {
+  "note": "unserializes the job chain the framework itself serialized into the queued job; queue payloads are trusted by design",
+  "verdict": "by design"
+ },
+ "snyk|laravel|src/Illuminate/Events/QueuedClosure.php:164|php/Deserialization": {
+  "note": "no unserialize here: the line dispatches a listener wrapping a SerializableClosure",
+  "verdict": "false positive"
+ },
+ "snyk|laravel|src/Illuminate/Foundation/Console/ConfigPublishCommand.php:79|php/PT": {
+  "note": "artisan console command; the name is a developer's CLI argument checked against the framework's config files",
+  "verdict": "false positive"
+ },
+ "snyk|laravel|src/Illuminate/Support/Composer.php:218|php/CommandInjection": {
+  "note": "Process gets an argument array (no shell); packages come from a console command",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|github/build-packages.php:29|php/CommandInjection": {
+  "note": "CI build script; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|github/build-packages.php:56|php/CommandInjection": {
+  "note": "CI build script; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|github/build-packages.php:66|php/PT": {
+  "note": "CI build script fetching a fixed packagist URL for a package name read from the repo's composer.json",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Bridge/PhpUnit/DeprecationErrorHandler/Configuration.php:129|php/reDOS": {
+  "note": "patterns come from the developer's own deprecation ignore file, not remote data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Bridge/PhpUnit/bin/simple-phpunit.php:399|php/CommandInjection": {
+  "note": "test runner; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data; component is escapeshellarg'd",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Bridge/PhpUnit/bin/simple-phpunit.php:426|php/PT": {
+  "note": "test runner reading its own phpunit.stdout/stderr; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Bridge/PhpUnit/bin/simple-phpunit.php:426|php/Ssrf": {
+  "note": "test runner reading its own local output files; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Bridge/PhpUnit/bin/simple-phpunit.php:432|php/XSS": {
+  "note": "terminal output of a CLI test runner, no HTML page",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Bridge/PhpUnit/bin/simple-phpunit.php:435|php/CommandInjection": {
+  "note": "PID formatted with %d",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Component/Intl/Resources/bin/update-data.php:115|php/PT": {
+  "note": "ICU data update script; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Component/Intl/Resources/bin/update-data.php:126|php/PT": {
+  "note": "ICU data update script; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Component/Intl/Resources/bin/update-data.php:140|php/PT": {
+  "note": "ICU data update script; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Component/Intl/Resources/bin/update-data.php:154|php/XSS": {
+  "note": "ICU data update script with terminal output, no HTML; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Component/Intl/Resources/bin/update-data.php:167|php/XSS": {
+  "note": "ICU data update script with terminal output, no HTML; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|symfony|src/Symfony/Component/Translation/Resources/bin/translation-status.php:88|php/Ssrf": {
+  "note": "CLI-only script (exits unless PHP_SAPI is cli) reading local translation files; CLI maintenance script run by a developer; $_SERVER['argv'] is the operator's own input, not HTTP data",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/async-upload.php:175|php/XSS": {
+  "note": "$_REQUEST['type'] only picks the hook name; the echoed value is the integer attachment ID",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/includes/ajax-actions.php:4086|php/Ssrf": {
+  "note": "wp_delete_file on the path wp_crop_image just created (crop details absint'd); no URL request",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/includes/class-file-upload-upgrader.php:153|php/PT": {
+  "note": "filename passed through sanitize_file_name and checked to be inside the uploads dir with realpath",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/includes/class-wp-plugin-install-list-table.php:685|php/XSS": {
+  "note": "description comes from the wordpress.org plugins API with strip_tags, not from the request",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/includes/plugin-install.php:623|php/XSS": {
+  "note": "$_tab is esc_attr'd; plugin name comes from the wordpress.org API response, not from the request URI",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/includes/plugin-install.php:675|php/XSS": {
+  "note": "$api->tested is passed through wp_kses at line 587",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/network/sites.php:119|php/XSS": {
+  "note": "wp_nonce_field escapes its output; action2 is checked against an allow-list first",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/network/sites.php:424|php/XSS": {
+  "note": "$msg is a fixed translated string chosen by a switch (or a filter), wrapped by wp_get_admin_notice",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/theme-editor.php:359|php/XSS": {
+  "note": "wp_nonce_field hashes the action and escapes the field; no request data is echoed",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-admin/widgets-form.php:361|php/XSS": {
+  "note": "wp_nonce_field hashes the action and escapes the field; no request data is echoed",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-includes/blocks/legacy-widget.php:142|php/XSS": {
+  "note": "behind current_user_can('edit_theme_options'); the GET array is block attributes rendered by the widget, instance data is hash-verified",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-includes/pluggable.php:2813|php/HardcodedNonCryptoSecret": {
+  "note": "'wp-sha384' is a documented domain-separation constant for pre-hashing long passwords, not a secret",
+  "verdict": "by design"
+ },
+ "snyk|wordpress|wp-signup.php:140|php/XSS": {
+  "note": "error message is a fixed translated string from wpmu_validate_blog_signup, not user input",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-signup.php:173|php/XSS": {
+  "note": "error message is a fixed translated string from wpmu_validate_blog_signup, not user input",
+  "verdict": "false positive"
+ },
+ "snyk|wordpress|wp-signup.php:289|php/XSS": {
+  "note": "error message is a fixed translated string from wpmu_validate_user_signup, not user input",
+  "verdict": "false positive"
  }
 }

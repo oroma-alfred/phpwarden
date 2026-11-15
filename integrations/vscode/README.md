@@ -18,14 +18,13 @@ PHP vulnerabilities, ranked by real-world exploitation. This extension runs the 
 
 ## Install the extension
 
-It is not on the Marketplace yet. Build the `.vsix` from this folder and install it:
+From the Marketplace (search "phpwarden" in the Extensions view), or:
 
 ```sh
-cd integrations/vscode
-npm install && npm run compile
-npx @vscode/vsce package --no-dependencies
-code --install-extension phpwarden-0.1.0.vsix
+code --install-extension phpwarden.phpwarden
 ```
+
+To build it yourself: `npm install && npm run compile && npx @vscode/vsce package --no-dependencies` in this folder.
 
 ## Install the CLI first
 

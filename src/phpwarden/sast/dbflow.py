@@ -7,7 +7,14 @@ by persist, WordPress post/comment inserts) are recorded in the first pass as
 eng.stored[("db", table, column)] = (file, line, kinds, raw). In the second
 pass reads of the same table.column (SELECT + fetched rows, Eloquent models,
 DB::table()->first()/value(), Doctrine getters) are sources carrying the kinds
-the written value had. Dynamic table or column names: nothing.
+the written value had. Table names are resolved statically where they can be:
+literals, class constants (self::T, Foo::T), global constants (const/define),
+Laravel config('file.key') from config/*.php, Symfony parameters from
+config/services.yaml, concatenation/interpolation of resolvable parts,
+$wpdb->prefix (dissolved, so prefix + 'name' matches 'wp_name'), $wpdb->posts
+and the other core tables, and an Eloquent $table property (literal or
+constant). Anything else (request data, function results, env()) stays
+unmatched: no guessing.
 
 Callbacks: values passed to array_map / array_filter / usort / call_user_func /
 preg_replace_callback / iterator_apply / apply_filters reach the callback's
@@ -15,6 +22,7 @@ parameters, and its return flows back where PHP returns it.
 """
 from __future__ import annotations
 
+import os
 import re
 
 EMPTY = {}
@@ -71,6 +79,82 @@ _CALLBACKS = {
     "iterator_apply": (1, "spread2", None),
     "register_shutdown_function": (0, "rest", None),
 }
+
+
+# $wpdb-><prop> -> core table
+_WP_CORE_TABLES = frozenset((
+    "posts", "postmeta", "comments", "commentmeta", "options", "users", "usermeta", "terms",
+    "term_taxonomy", "term_relationships", "termmeta", "links", "blogs", "blogmeta", "site",
+    "sitemeta", "signups", "registration_log"))
+_PREFIX_PROPS = ("prefix", "base_prefix")
+_PREFIX_VARS = ("table_prefix", "prefix")
+_STATIC_KINDS = ("PropFetch", "Var", "Name", "ClassConst", "Call", "MethodCall", "Interp", "BinOp")
+
+
+def _php_array_lookup(node, keys, resolve):
+    """Walk a literal PHP array node down `keys`; the leaf resolved by `resolve`."""
+    cur = node
+    for k in keys:
+        if cur is None or cur.kind != "Array":
+            return None
+        nxt = None
+        for it in cur.items or []:
+            if it is not None and it.key is not None and it.key.kind == "String" and it.key.value == k:
+                nxt = it.value
+        cur = nxt
+    return resolve(cur) if cur is not None else None
+
+
+def load_laravel_config(root, parse_file):
+    """{file stem: returned array node} for config/*.php under root."""
+    out = {}
+    d = os.path.join(root, "config")
+    if not os.path.isdir(d):
+        return out
+    for fn in sorted(os.listdir(d)):
+        if not fn.endswith(".php"):
+            continue
+        try:
+            r = parse_file(os.path.join(d, fn))
+        except Exception:
+            continue
+        for st in getattr(r, "stmts", None) or []:
+            ex = st.get("expr") if hasattr(st, "get") else None
+            if st.kind == "Return" and ex is not None and ex.kind == "Array":
+                out[fn[:-4]] = ex
+    return out
+
+
+_YAML_PARAM = re.compile(r"\s*([\w.\-]+)\s*:\s*(?:'([^'%]*)'|\"([^\"%\\$]*)\"|([A-Za-z0-9_.\-]+))\s*(?:#.*)?")
+
+
+def load_symfony_params(root):
+    """Scalar entries of the top-level `parameters:` map in config/services.yaml."""
+    out = {}
+    for fn in ("services.yaml", "services.yml", "parameters.yaml", "parameters.yml"):
+        try:
+            with open(os.path.join(root, "config", fn), encoding="utf-8", errors="replace") as fh:
+                lines = fh.read().splitlines()
+        except OSError:
+            continue
+        inside, ind = False, None
+        for ln in lines:
+            if not ln.strip() or ln.lstrip().startswith("#"):
+                continue
+            if not ln[0].isspace():
+                inside, ind = ln.strip() == "parameters:", None
+                continue
+            if not inside:
+                continue
+            cur = len(ln) - len(ln.lstrip())
+            if ind is None:
+                ind = cur
+            if cur != ind:
+                continue
+            m = _YAML_PARAM.fullmatch(ln)
+            if m:
+                out[m.group(1)] = next(g for g in m.groups()[1:] if g is not None)
+    return out
 
 
 def norm_table(t):
@@ -180,7 +264,13 @@ class DbFlowMixin:
                 parts = [value]
             self.strvals[name] = parts
         else:
-            self.strvals.pop(name, None)
+            # a constant / config value / parameter: kept as its literal text
+            v = self._static_str(value, None, 0, False) if k in ("Name", "ClassConst", "Call", "MethodCall",
+                                                                  "PropFetch") else None
+            if v is not None:
+                self.strvals[name] = [_Lit(v)]
+            else:
+                self.strvals.pop(name, None)
         if k in ("Closure", "ArrowFn") or (k == "String" and re.fullmatch(r"[\w\\:]+", value.value or "")) \
                 or (k in ("Call", "MethodCall", "StaticCall") and value.get("callable")) \
                 or (k == "Array" and len(value.items or []) == 2):
@@ -267,9 +357,9 @@ class DbFlowMixin:
             if p.kind == "String" or isinstance(p, _Lit):
                 text += p.value or ""
                 continue
-            if p.kind == "PropFetch" and isinstance(p.name, str) and p.name in ("prefix", "base_prefix"):
-                continue
-            if p.kind == "Var" and p.name in ("table_prefix", "prefix"):
+            v = self._static_str(p, None, 0, False) if p.kind in _STATIC_KINDS else None
+            if v is not None:
+                text += v
                 continue
             taints.append(self.expr_quiet(p, env, tenv))
             text += _PH % (len(taints) - 1)
@@ -335,20 +425,143 @@ class DbFlowMixin:
             self._db_record(table, it.key.value, self.expr_quiet(it.value, env, tenv), node, sanitised_xss)
 
     def _table_arg(self, e):
-        if e is None:
+        v = self._static_str(e)
+        return norm_table(v) if v else None
+
+    # ------------------------------------------------- static strings
+    def _static_str(self, e, ctx=None, depth=0, local=True):
+        """The string value of `e` when it is fixed at analysis time, else None.
+        Table prefixes ($wpdb->prefix, $table_prefix) resolve to ''. `local`:
+        variables may resolve through the query-building string tracker."""
+        if e is None or depth > 8:
             return None
-        if e.kind == "String":
-            return norm_table(e.value or "")
-        if e.kind == "BinOp" and e.op == "." and e.right.kind == "String":
-            if e.left.kind == "PropFetch" and e.left.name in ("prefix", "base_prefix"):
-                return norm_table(e.right.value)
+        if ctx is None:
+            ctx = getattr(self, "ctx", None)
+        k = e.kind
+        if k == "String" or isinstance(e, _Lit):
+            return e.value or ""
+        if k == "Interp":
+            out = ""
+            for p in e.parts:
+                v = self._static_str(p, ctx, depth + 1, local)
+                if v is None:
+                    return None
+                out += v
+            return out
+        if k == "BinOp" and e.op == ".":
+            a = self._static_str(e.left, ctx, depth + 1, local)
+            if a is None:
+                return None
+            b = self._static_str(e.right, ctx, depth + 1, local)
+            return None if b is None else a + b
+        if k == "PropFetch" and isinstance(e.name, str):
+            o = e.obj
+            on = o.name if o.kind == "Var" and isinstance(o.name, str) else \
+                o.name if o.kind == "PropFetch" and isinstance(o.name, str) and o.obj.kind == "Var" \
+                and o.obj.name == "this" else None
+            if e.name in _PREFIX_PROPS:
+                return ""
+            if on == "wpdb" and e.name in _WP_CORE_TABLES:
+                return e.name
             return None
-        if e.kind == "Interp":
-            lits = [p for p in e.parts if p.kind == "String"]
-            dyn = [p for p in e.parts if p.kind != "String"]
-            if len(lits) == 1 and all(p.kind == "PropFetch" and p.name in ("prefix", "base_prefix") for p in dyn):
-                return norm_table(lits[0].value)
+        if k == "Var" and isinstance(e.name, str):
+            if e.name in _PREFIX_VARS:
+                return ""
+            parts = getattr(self, "strvals", {}).get(e.name) if local else None
+            if parts is None:
+                return None
+            out = ""
+            for p in parts:
+                if p.kind == "Var" and p.name == e.name:
+                    return None
+                v = self._static_str(p, ctx, depth + 1, local)
+                if v is None:
+                    return None
+                out += v
+            return out
+        if k == "Name" and isinstance(e.name, str):
+            return self._const_str(e.name, ctx, depth)
+        if k == "ClassConst" and isinstance(e.name, str) and e.cls is not None and e.cls.kind == "Name":
+            return self._class_const_str(e.cls.name, e.name, ctx, depth)
+        if k == "Call" and e.func.kind == "Name" and len(e.args) == 1:
+            fn = e.func.name.lower().lstrip("\\")
+            if fn == "config":
+                key = self._static_str(e.args[0].value, ctx, depth + 1, local)
+                return self._laravel_config(key) if key else None
+            if fn == "constant":
+                nm = self._static_str(e.args[0].value, ctx, depth + 1, local)
+                if nm and "::" in nm:
+                    c, n = nm.split("::", 1)
+                    return self._class_const_str(c, n, ctx, depth)
+                return self._const_str(nm, None, depth) if nm else None
+            return None
+        if k == "MethodCall" and isinstance(e.name, str) and e.name.lower() == "getparameter" and len(e.args) == 1:
+            key = self._static_str(e.args[0].value, ctx, depth + 1, local)
+            return self._symfony_param(key) if key else None
         return None
+
+    def _const_str(self, name, ctx, depth):
+        if name.lower().lstrip("\\") in ("true", "false", "null"):
+            return None
+        cands = []
+        if ctx is not None and getattr(ctx, "namespace", None) and not name.startswith("\\") and "\\" not in name:
+            cands.append(ctx.namespace + "\\" + name)
+        cands.append(name.lstrip("\\"))
+        for nm in cands:
+            defs = self.p.const_values(nm)
+            if not defs:
+                continue
+            vals = {self._static_str(v, dctx, depth + 1, False) for v, _fi, dctx in defs}
+            # every definition has to agree: conditional defines with different values stay unresolved
+            return vals.pop() if len(vals) == 1 and None not in vals else None
+        return None
+
+    def _class_const_str(self, cname, name, ctx, depth):
+        low = cname.lower().lstrip("\\")
+        if low in ("self", "static"):
+            fq = getattr(ctx, "cls", None)
+        elif low == "parent":
+            cur = self.p.get_class(getattr(ctx, "cls", None))
+            fq = cur.parent if cur is not None else None
+        else:
+            fq = self.p.resolve_class(cname, ctx) if ctx is not None else cname.lstrip("\\")
+        seen = 0
+        while fq and seen < 8:
+            cs = self.p.get_class(fq)
+            if cs is None:
+                return None
+            if name in cs.consts:
+                return self._static_str(cs.consts[name], cs.ctx, depth + 1, False)
+            for itf in cs.interfaces or []:
+                ic = self.p.get_class(itf)
+                if ic is not None and name in ic.consts:
+                    return self._static_str(ic.consts[name], ic.ctx, depth + 1, False)
+            fq = cs.parent
+            seen += 1
+        return None
+
+    def _laravel_config(self, key):
+        if "." not in key:
+            return None
+        cfg = getattr(self.p, "_df_laravel_cfg", None)
+        if cfg is None:
+            from .parser import parse_file
+            cfg = load_laravel_config(self.p.root, parse_file)
+            self.p._df_laravel_cfg = cfg
+        bits = key.split(".")
+        node = cfg.get(bits[0])
+        if node is None:
+            return None
+        # env('X', 'default') and other calls in config files stay unresolved
+        return _php_array_lookup(node, bits[1:], lambda n: self._static_str(n, None, 6, False)
+                                 if n.kind in ("String", "BinOp", "ClassConst", "Name", "Interp") else None)
+
+    def _symfony_param(self, key):
+        prm = getattr(self.p, "_df_sf_params", None)
+        if prm is None:
+            prm = load_symfony_params(self.p.root)
+            self.p._df_sf_params = prm
+        return prm.get(key)
 
     def _model_table(self, fq):
         """Table of an Eloquent model class (its $table, else the pluralised name)."""
@@ -365,11 +578,20 @@ class DbFlowMixin:
             seen += 1
         if not is_model:
             return None
-        ps = cs.props.get("table") if hasattr(cs, "props") else None
-        dv = getattr(ps, "node", None)
-        dv = dv.get("default") if dv is not None and hasattr(dv, "get") else None
-        if dv is not None and getattr(dv, "kind", None) == "String":
-            return norm_table(dv.value)
+        cur, seen = cs, 0
+        while cur is not None and seen < 8:
+            ps = cur.props.get("table") if hasattr(cur, "props") else None
+            dv = getattr(ps, "node", None)
+            dv = dv.get("default") if dv is not None and hasattr(dv, "get") else None
+            if dv is not None:
+                v = self._static_str(dv, cur.ctx, 1, False)
+                # a $table we cannot resolve: the table is unknown, not the pluralised name
+                return norm_table(v) if v else None
+            par = (cur.parent or "").lower()
+            if par.endswith(("eloquent\\model", "\\pivot")) or par in ("model", "eloquent"):
+                break
+            cur = self.p.get_class(cur.parent) if cur.parent else None
+            seen += 1
         return norm_table(plural(fq.rsplit("\\", 1)[-1]))
 
     def _is_entity(self, fq):
@@ -474,10 +696,9 @@ class DbFlowMixin:
         for i, p in enumerate(parts):
             if p.kind == "String" or isinstance(p, _Lit):
                 text += p.value or ""
-            elif p.kind == "PropFetch" and p.name in ("prefix", "base_prefix"):
-                continue
             else:
-                text += _PH % i
+                v = self._static_str(p, None, 0, False) if p.kind in _STATIC_KINDS else None
+                text += v if v is not None else _PH % i
         return text, []
 
     def _db_read(self, shape, col, node):
