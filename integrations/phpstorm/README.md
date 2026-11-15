@@ -4,7 +4,7 @@ There is no phpwarden plugin for PhpStorm or other JetBrains IDEs yet. Until
 there is, you can run the CLI from inside the IDE as an External Tool. This
 needs phpwarden installed first (`pipx install phpwarden`, or
 `composer require --dev phpwarden/phpwarden` and use `vendor/bin/phpwarden`).
-The `code` command is in phpwarden 2.2.0 and newer.
+The `code` command is in phpwarden 2.2.0 and newer; the whole-program engine (89 rules) is the default from 2.3.0.
 
 ## Run it as an External Tool
 

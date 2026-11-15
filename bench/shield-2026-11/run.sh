@@ -14,3 +14,4 @@ if [ ! -f "$W/out/benign.log" ]; then
   python3 -I "$REPO/bench/waf-2026-11/corpus.py" "$W/wordpress" "$W/out" >/dev/null
 fi
 python3 -I "$HERE/bench.py" "$REPO" "$W/out/benign.log" "$W/shield"
+python3 -I "$HERE/limits.py" "$REPO" "$W/out/benign.log" "$W/shield"

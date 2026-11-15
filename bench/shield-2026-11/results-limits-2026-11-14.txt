@@ -1,0 +1,14 @@
+== Benign corpus through the agent with 8 limits, 300 clients: 6000 requests, 0 limit trip(s)
+
+== Abuse scenarios, one client (log mode: trips logged; promoted: first 429 at request #)
+  login brute force (40 POST /wp-login.php)            logged  30 (limit:wp-login); promoted: first 429 at #11, 30 x 429
+  xmlrpc flood (60 POST /xmlrpc.php)                   logged  30 (limit:xmlrpc); promoted: first 429 at #31, 30 x 429
+  system.multicall (6 POSTs)                           logged   3 (limit:xmlrpc-multicall); promoted: first 429 at #4, 3 x 429
+  password-reset spam (12 POSTs)                       logged   9 (limit:wp-login, limit:wp-password-reset); promoted: first 429 at #6, 7 x 429
+  Laravel login brute force (30 POST /login)           logged  20 (limit:laravel-login); promoted: first 429 at #11, 20 x 429
+  burst on a vulnerable path (40 GET eval-stdin.php)   logged  20 (limit:rule-path-burst); promoted: first 429 at #21, 20 x 429
+
+== Latency, 2,000 login POSTs from 300 clients (php -S)
+  no shield              p50 0.102 ms  p95 0.112 ms
+  shield, limits only    p50 0.170 ms  p95 0.249 ms
+  added: p50 +0.068 ms, p95 +0.137 ms

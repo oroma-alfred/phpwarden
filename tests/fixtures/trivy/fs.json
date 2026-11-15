@@ -1,0 +1,48 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-11-14T12:00:00Z",
+  "ArtifactName": "shop",
+  "ArtifactType": "filesystem",
+  "Results": [
+    {
+      "Target": "package-lock.json",
+      "Class": "lang-pkgs",
+      "Type": "npm",
+      "Packages": [
+        {"ID": "lodash@4.17.15", "Name": "lodash", "Version": "4.17.15"},
+        {"ID": "minimist@1.2.5", "Name": "minimist", "Version": "1.2.5", "Dev": true}
+      ],
+      "Vulnerabilities": [
+        {"VulnerabilityID": "CVE-2021-23337", "PkgID": "lodash@4.17.15", "PkgName": "lodash",
+         "PkgIdentifier": {"PURL": "pkg:npm/lodash@4.17.15", "UID": "lodash@4.17.15"},
+         "InstalledVersion": "4.17.15", "FixedVersion": "4.17.21", "Severity": "HIGH",
+         "Title": "lodash: command injection via template", "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-23337",
+         "CVSS": {"nvd": {"V3Score": 7.2}, "ghsa": {"V3Score": 7.2}}},
+        {"VulnerabilityID": "CVE-2021-44906", "PkgID": "minimist@1.2.5", "PkgName": "minimist",
+         "PkgIdentifier": {"UID": "minimist@1.2.5"},
+         "InstalledVersion": "1.2.5", "FixedVersion": "1.2.6, 0.2.4", "Severity": "CRITICAL",
+         "Title": "minimist: prototype pollution", "CVSS": {"nvd": {"V3Score": 9.8}}},
+        {"VulnerabilityID": "GHSA-xxxx-yyyy-zzzz", "PkgID": "lodash@4.17.15", "PkgName": "lodash",
+         "InstalledVersion": "4.17.15", "FixedVersion": "", "Severity": "LOW", "Title": "lodash: low issue without CVE"}
+      ]
+    },
+    {
+      "Target": "composer.lock",
+      "Class": "lang-pkgs",
+      "Type": "composer",
+      "Vulnerabilities": [
+        {"VulnerabilityID": "CVE-2016-10033", "PkgName": "phpmailer/phpmailer", "InstalledVersion": "5.2.16",
+         "FixedVersion": "5.2.18", "Severity": "CRITICAL", "Title": "PHPMailer RCE"}
+      ]
+    },
+    {
+      "Target": ".env.production",
+      "Class": "secret",
+      "Secrets": [
+        {"RuleID": "aws-access-key-id", "Category": "AWS", "Severity": "CRITICAL", "Title": "AWS Access Key ID",
+         "StartLine": 3, "EndLine": 3, "Match": "AWS_ACCESS_KEY_ID=AKIAFIXTURENOTREAL01",
+         "Code": {"Lines": [{"Number": 3, "Content": "AWS_ACCESS_KEY_ID=AKIAFIXTURENOTREAL01"}]}}
+      ]
+    }
+  ]
+}

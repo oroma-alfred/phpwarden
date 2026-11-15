@@ -16,12 +16,17 @@ likely to be (EPSS >= 0.5). Upgrading the component past the fix drops the rule
 on the next build. Generic rules are always included, except the serialized-
 object rule, which needs a package with a known gadget chain.
 
+Rate limits (policy "limits", see limits_for()) are added for WordPress and
+Laravel sites unless limits=False, plus a burst guard on the paths the rules
+cover. Like rules they start in mode "log" and are promoted the same way.
+
 Every rule starts in mode "log". promote() is the only way to "block", and it
 refuses without an explicit operator acknowledgement and a clean burn-in.
 """
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
 
@@ -114,7 +119,45 @@ def rule_status(entry, inventory, feed):
     return False, "no advisory for this component in the feed"
 
 
-def build_policy(inventory, feed, site="", mode="log", log_path=None, max_log_bytes=5_000_000):
+WP_LOGIN = {"name": "wp-login", "method": ["POST"], "path": r"/wp-login\.php$", "max": 10, "window_s": 300}
+WP_RESET = {"name": "wp-password-reset", "method": ["POST"], "path": r"/wp-login\.php$",
+            "all": [{"in": "query", "re": r"action=(lostpassword|retrievepassword|resetpass|rp)\b"}], "max": 5, "window_s": 900}
+WP_JWT = {"name": "wp-jwt-auth", "method": ["POST"], "path": r"/wp-json/jwt-auth/", "max": 10, "window_s": 300}
+WP_XMLRPC = {"name": "xmlrpc", "method": ["POST"], "path": r"/xmlrpc\.php$", "max": 30, "window_s": 60}
+WP_MULTICALL = {"name": "xmlrpc-multicall", "method": ["POST"], "path": r"/xmlrpc\.php$",
+                "all": [{"in": "body", "re": r"system\.multicall"}], "max": 3, "window_s": 60}
+LARAVEL_LOGIN = {"name": "laravel-login", "method": ["POST"], "path": r"^/login/?$", "max": 10, "window_s": 300}
+LARAVEL_RESET = {"name": "laravel-password-reset", "method": ["POST"], "path": r"^/(forgot-password|password/(email|reset))/?$",
+                 "max": 5, "window_s": 900}
+BURST_MAX, BURST_WINDOW = 20, 60
+WRITE_MAX, WRITE_WINDOW = 60, 60
+
+
+def limits_for(inventory, rules=(), extra_paths=()):
+    """Default limits for this site. All mode "log"."""
+    out = []
+    wp = inventory.get("wordpress") or {}
+    if wp.get("core") or wp.get("plugins"):
+        out += [WP_LOGIN, WP_RESET, WP_JWT, WP_XMLRPC, WP_MULTICALL]
+    if "laravel/framework" in (inventory.get("composer") or {}):
+        out += [LARAVEL_LOGIN, LARAVEL_RESET]
+    # AJAX / REST writes of components that have rules in this policy
+    slugs = sorted({r["component"].split(" ", 1)[1] for r in rules if r.get("component", "").startswith(("plugin ", "theme "))})
+    if slugs:
+        alt = "|".join(re.escape(x) for x in slugs)
+        out.append({"name": "component-writes", "kind": "client", "method": ["POST", "PUT", "PATCH", "DELETE"],
+                    "path": rf"/(wp-json/({alt})|wp-admin/admin-ajax\.php)", "max": WRITE_MAX, "window_s": WRITE_WINDOW})
+    paths = sorted({r["path"] for r in rules if r.get("path")})
+    if paths:
+        out.append({"name": "rule-path-burst", "kind": "burst", "path": "(" + ")|(".join(paths) + ")",
+                    "max": BURST_MAX, "window_s": BURST_WINDOW})
+    for i, pth in enumerate(extra_paths):
+        out.append({"name": f"custom-{i + 1}", "method": ["POST"], "path": pth, "max": 10, "window_s": 300})
+    return [{"kind": "client", **d, "mode": "log"} for d in out]
+
+
+def build_policy(inventory, feed, site="", mode="log", log_path=None, max_log_bytes=5_000_000,
+                 limits=True, limit_paths=(), trust_proxy=None, limits_store=None):
     rules, skipped = [], []
     for e in LIBRARY:
         ok, why = rule_status(e, inventory, feed)
@@ -130,8 +173,10 @@ def build_policy(inventory, feed, site="", mode="log", log_path=None, max_log_by
             "created": int(time.time()), "site": site, "mode": "log" if mode != "enforce" else "enforce",
             "feed_version": getattr(feed, "feed_version", None),
             "log": {"path": log_path, "max_bytes": int(max_log_bytes)},
-            "budget_ms": 5, "trust_proxy": False,
-            "rules": rules, "skipped": skipped}
+            "budget_ms": 5, "trust_proxy": list(trust_proxy or []),
+            "rules": rules, "skipped": skipped,
+            "limits": limits_for(inventory, rules, limit_paths) if limits else [],
+            "limits_store": dict(limits_store or {})}
 
 
 def _component_label(t):
@@ -174,22 +219,23 @@ def promote(policy, stats, operator_ack=False, rule_ids=None, now=None, min_days
     ordinary-looking paths). Never called automatically."""
     now = int(now or time.time())
     report = {"promoted": [], "refused": []}
+    items = [(r["id"], r) for r in policy.get("rules", [])] + [("limit:" + l["name"], l) for l in policy.get("limits", [])]
     if not operator_ack:
-        report["refused"] = [{"id": r["id"], "reason": "operator acknowledgement required"} for r in policy["rules"]]
+        report["refused"] = [{"id": i, "reason": "operator acknowledgement required"} for i, _ in items]
         return policy, report
     age_days = (now - int(policy.get("created") or now)) / 86400
     noisy = set((stats or {}).get("noisy_rules", []))
-    for r in policy["rules"]:
-        if rule_ids and r["id"] not in rule_ids:
+    for rid, r in items:
+        if rule_ids and rid not in rule_ids and r.get("id", r.get("name")) not in rule_ids:
             continue
         if age_days < min_days:
-            report["refused"].append({"id": r["id"], "reason": f"burn-in {age_days:.1f} of {min_days} days"})
-        elif r["id"] in noisy:
-            report["refused"].append({"id": r["id"], "reason": "noisy during burn-in; review its hits"})
+            report["refused"].append({"id": rid, "reason": f"burn-in {age_days:.1f} of {min_days} days"})
+        elif rid in noisy:
+            report["refused"].append({"id": rid, "reason": "noisy during burn-in; review its hits"})
         else:
             r["mode"] = "block"
             r["promoted_at"] = now
-            report["promoted"].append(r["id"])
+            report["promoted"].append(rid)
     if report["promoted"]:
         policy["mode"] = "enforce"
     return policy, report

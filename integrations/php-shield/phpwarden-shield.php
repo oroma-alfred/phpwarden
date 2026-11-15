@@ -19,6 +19,12 @@
  *   - kill switch: a file named phpwarden-shield.off next to this file, or the
  *     environment variable PHPWARDEN_SHIELD=off, turns it off immediately.
  *
+ *   - rate limits (policy "limits"): per-client sliding windows on login,
+ *     xmlrpc, password-reset and other sensitive endpoints, plus a burst guard
+ *     on rule-scoped paths. Same modes as rules: logged by default, 429 only
+ *     when the policy enforces and the limit was promoted. Counters live in
+ *     APCu or a small file store; if neither works, limits switch off (fail open).
+ *
  * Policy location: env PHPWARDEN_SHIELD_POLICY, else phpwarden-shield.policy.php
  * (preferred: cached by opcache) or phpwarden-shield.policy.json next to this file.
  *
@@ -35,7 +41,12 @@ function phpwarden_shield_run()
     }
     $t0 = microtime(true);
     $policy = phpwarden_shield_policy($dir);
-    if (!is_array($policy) || empty($policy['rules']) || !is_array($policy['rules'])) {
+    if (!is_array($policy)) {
+        return;
+    }
+    $rules = isset($policy['rules']) && is_array($policy['rules']) ? $policy['rules'] : array();
+    $limits = isset($policy['limits']) && is_array($policy['limits']) ? $policy['limits'] : array();
+    if (!$rules && !$limits) {
         return;
     }
     $budget = (isset($policy['budget_ms']) ? (float)$policy['budget_ms'] : 5.0) / 1000.0;
@@ -43,7 +54,7 @@ function phpwarden_shield_run()
     $enforce = isset($policy['mode']) && $policy['mode'] === 'enforce';
     $hits = array();
     $block = null;
-    foreach ($policy['rules'] as $rule) {
+    foreach ($rules as $rule) {
         if ((microtime(true) - $t0) > $budget) {
             $hits[] = array('rule' => '_budget', 'cve' => null, 'where' => '', 'excerpt' => '', 'action' => 'skip');
             break;                                            // fail open: out of time
@@ -60,8 +71,22 @@ function phpwarden_shield_run()
             break;
         }
     }
+    $limited = null;
+    if ($block === null && $limits && (microtime(true) - $t0) <= $budget) {
+        $limited = phpwarden_shield_limits($policy, $limits, $dir, $req, $enforce, $hits);
+    }
     if ($hits) {
         phpwarden_shield_log($policy, $dir, $req, $hits);
+    }
+    if ($limited !== null) {
+        if (!headers_sent()) {
+            http_response_code(429);
+            header('Retry-After: ' . (int)$limited);
+            header('Content-Type: text/plain; charset=utf-8');
+            header('Cache-Control: no-store');
+        }
+        echo "Too many requests. Please wait and try again.\n";
+        exit;
     }
     if ($block !== null) {
         if (!headers_sent()) {
@@ -115,17 +140,222 @@ function phpwarden_shield_request($policy)
     if (isset($_SERVER['CONTENT_TYPE'])) {
         $headers['content-type'] = (string)$_SERVER['CONTENT_TYPE'];
     }
-    $ip = isset($_SERVER['REMOTE_ADDR']) ? (string)$_SERVER['REMOTE_ADDR'] : '';
-    if (!empty($policy['trust_proxy']) && isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $parts = explode(',', (string)$_SERVER['HTTP_X_FORWARDED_FOR']);
-        $ip = trim(end($parts));
-    }
+    $ip = phpwarden_shield_client_ip($policy);
     return array(
         'method' => isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string)$_SERVER['REQUEST_METHOD']) : 'GET',
         'path' => $path, 'query' => $query, 'params' => $params, 'names' => $names,
         'cookies' => is_array($_COOKIE) ? $_COOKIE : array(), 'headers' => $headers, 'ip' => $ip,
         'body' => null,                                        // read lazily, only if a rule needs it
     );
+}
+
+/**
+ * Client IP. REMOTE_ADDR, unless the peer is inside a CIDR listed in
+ * policy "trust_proxy" (a list; a bare true trusts nothing). Then
+ * CF-Connecting-IP, else the right-most X-Forwarded-For entry that is not
+ * itself a trusted proxy. Spoofed headers from anyone else are ignored.
+ */
+function phpwarden_shield_client_ip($policy)
+{
+    $ip = isset($_SERVER['REMOTE_ADDR']) ? (string)$_SERVER['REMOTE_ADDR'] : '';
+    $trusted = isset($policy['trust_proxy']) && is_array($policy['trust_proxy']) ? $policy['trust_proxy'] : array();
+    if (!$trusted || !phpwarden_shield_in_cidrs($ip, $trusted)) {
+        return $ip;
+    }
+    if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        $cf = trim((string)$_SERVER['HTTP_CF_CONNECTING_IP']);
+        if (@inet_pton($cf) !== false) {
+            return $cf;
+        }
+    }
+    if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $parts = array_reverse(explode(',', (string)$_SERVER['HTTP_X_FORWARDED_FOR']));
+        foreach ($parts as $p) {
+            $p = trim($p);
+            if (@inet_pton($p) === false) {
+                break;
+            }
+            $ip = $p;
+            if (!phpwarden_shield_in_cidrs($p, $trusted)) {
+                break;
+            }
+        }
+    }
+    return $ip;
+}
+
+function phpwarden_shield_in_cidrs($ip, $cidrs)
+{
+    $bin = @inet_pton($ip);
+    if ($bin === false) {
+        return false;
+    }
+    foreach ($cidrs as $c) {
+        $c = (string)$c;
+        $slash = strpos($c, '/');
+        $net = @inet_pton($slash === false ? $c : substr($c, 0, $slash));
+        if ($net === false || strlen($net) !== strlen($bin)) {
+            continue;
+        }
+        $bits = $slash === false ? strlen($bin) * 8 : (int)substr($c, $slash + 1);
+        $bytes = intdiv($bits, 8);
+        if (substr($bin, 0, $bytes) !== substr($net, 0, $bytes)) {
+            continue;
+        }
+        $rem = $bits % 8;
+        if ($rem === 0) {
+            return true;
+        }
+        $mask = (0xff << (8 - $rem)) & 0xff;
+        if ((ord($bin[$bytes]) & $mask) === (ord($net[$bytes]) & $mask)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Rate limits. Each limit: name, method[], path (regex), all[] (same conditions
+ * as rules), max, window_s, kind ("client": per IP; "burst": per IP and path),
+ * mode ("log" | "block"). Sliding window approximated with two fixed buckets.
+ * Returns Retry-After seconds when a promoted limit is exceeded in enforce
+ * mode, else null. Appends log entries to $hits (counts, never bodies).
+ */
+function phpwarden_shield_limits($policy, $limits, $dir, &$req, $enforce, &$hits)
+{
+    if ($req['ip'] === '') {
+        return null;
+    }
+    $store = phpwarden_shield_store($policy, $dir);
+    if ($store === null) {
+        return null;                                          // fail open
+    }
+    $now = time();
+    $retry = null;
+    foreach ($limits as $lim) {
+        if (!is_array($lim) || empty($lim['name']) || phpwarden_shield_match($lim, $req) === null) {
+            continue;
+        }
+        $max = isset($lim['max']) ? max(1, (int)$lim['max']) : 10;
+        $win = isset($lim['window_s']) ? max(1, (int)$lim['window_s']) : 60;
+        $key = $lim['name'] . '|' . $req['ip'] . ((isset($lim['kind']) && $lim['kind'] === 'burst') ? '|' . $req['path'] : '');
+        $n = phpwarden_shield_count($store, $key, $win, $now);
+        if ($n === null) {
+            return null;
+        }
+        if ($n[0] <= $max) {
+            continue;
+        }
+        $action = ($enforce && isset($lim['mode']) && $lim['mode'] === 'block') ? 'block' : 'log';
+        $hits[] = array('rule' => 'limit:' . $lim['name'], 'cve' => null, 'where' => 'rate',
+                        'excerpt' => $n[0] . ' in ' . $win . 's (max ' . $max . ')', 'action' => $action);
+        if ($action === 'block') {
+            $retry = max(1, $n[1]);
+            break;
+        }
+    }
+    return $retry;
+}
+
+/** Returns ['apcu'] or ['file', dir, max_files], or null when no store works (logged once). */
+function phpwarden_shield_store($policy, $dir)
+{
+    $cfg = isset($policy['limits_store']) && is_array($policy['limits_store']) ? $policy['limits_store'] : array();
+    $want = isset($cfg['backend']) ? (string)$cfg['backend'] : 'auto';
+    if ($want !== 'file' && function_exists('apcu_enabled') && apcu_enabled()) {
+        return array('apcu');
+    }
+    $d = isset($cfg['dir']) && $cfg['dir'] ? (string)$cfg['dir'] : $dir . '/phpwarden-shield.limits';
+    if (!is_dir($d)) {
+        @mkdir($d, 0700, true);
+    }
+    if (is_dir($d) && is_writable($d)) {
+        return array('file', $d, isset($cfg['max_files']) ? max(100, (int)$cfg['max_files']) : 20000);
+    }
+    $logf = isset($policy['log']['path']) && $policy['log']['path'] ? $policy['log']['path'] : $dir . '/phpwarden-shield.log';
+    $mark = $logf . '.nostore';
+    if (!is_file($mark)) {
+        @touch($mark);
+        @file_put_contents($logf, json_encode(array('ts' => gmdate('Y-m-d\TH:i:s\Z'), 'rule' => 'limit:_store_unavailable',
+            'cve' => null, 'action' => 'skip', 'method' => '', 'path' => '', 'where' => '', 'excerpt' => 'limits disabled: no APCu and store dir not writable', 'ip' => ''),
+            JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+    }
+    return null;
+}
+
+/** Increment and return [estimated count in the sliding window, seconds until it frees up]. */
+function phpwarden_shield_count($store, $key, $win, $now)
+{
+    $start = $now - ($now % $win);
+    $k = 'pwsl:' . sha1($key);
+    if ($store[0] === 'apcu') {
+        $v = apcu_fetch($k);
+        $st = phpwarden_shield_bump(is_array($v) ? $v : null, $start, $win);
+        apcu_store($k, $st, 2 * $win + 1);
+    } else {
+        $f = $store[1] . '/' . substr($k, 5, 40);
+        $h = @fopen($f, 'c+');
+        if ($h === false) {
+            return null;
+        }
+        if (!@flock($h, LOCK_EX)) {
+            fclose($h);
+            return null;
+        }
+        $raw = stream_get_contents($h);
+        $v = $raw ? array_map('intval', explode(' ', trim($raw))) : null;
+        $st = phpwarden_shield_bump(is_array($v) && count($v) === 3 ? $v : null, $start, $win);
+        ftruncate($h, 0);
+        rewind($h);
+        fwrite($h, implode(' ', $st));
+        flock($h, LOCK_UN);
+        fclose($h);
+        if (mt_rand(1, 200) === 1) {
+            phpwarden_shield_prune($store[1], $store[2], $now);
+        }
+    }
+    $elapsed = $now - $start;
+    $est = (int)floor($st[2] * (($win - $elapsed) / $win)) + $st[1];
+    return array($est, $win - $elapsed);
+}
+
+/** State [bucket_start, current, previous]. */
+function phpwarden_shield_bump($v, $start, $win)
+{
+    if ($v === null || $v[0] < $start - $win) {
+        return array($start, 1, 0);
+    }
+    if ($v[0] < $start) {
+        return array($start, 1, $v[1]);
+    }
+    return array($v[0], $v[1] + 1, $v[2]);
+}
+
+/** Bound the file store: drop counters untouched for an hour, then the oldest past max_files. */
+function phpwarden_shield_prune($d, $maxFiles, $now)
+{
+    $files = @scandir($d);
+    if (!is_array($files)) {
+        return;
+    }
+    $keep = array();
+    foreach ($files as $f) {
+        if (strlen($f) !== 40) {
+            continue;
+        }
+        $m = @filemtime($d . '/' . $f);
+        if ($m !== false && $m < $now - 3600) {
+            @unlink($d . '/' . $f);
+        } elseif ($m !== false) {
+            $keep[$f] = $m;
+        }
+    }
+    if (count($keep) > $maxFiles) {
+        asort($keep);
+        foreach (array_slice(array_keys($keep), 0, count($keep) - $maxFiles) as $f) {
+            @unlink($d . '/' . $f);
+        }
+    }
 }
 
 function phpwarden_shield_flatten($arr, $prefix, &$params, &$names, $depth)

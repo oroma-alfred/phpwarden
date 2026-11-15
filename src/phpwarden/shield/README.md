@@ -68,7 +68,44 @@ The agent file should ship in the wheel (package data) and be copied by
 - **Pure-PHP prepend runs after the web server.** Requests to static files and
   to PHP files outside the prepend scope are not seen (e.g. if a plugin file is
   served by a different pool or `auto_prepend_file` is overridden by `.user.ini`).
-- **Not an edge WAF**: no DDoS, bots, TLS or rate limiting; say so wherever it
-  is sold.
-- `trust_proxy` is off by default; behind a proxy the logged client IP is the
-  proxy unless the policy turns it on.
+- **Not an edge WAF**: no volumetric DDoS, TLS, CAPTCHA or JavaScript
+  challenges; say so wherever it is sold. It does have per-client rate limits
+  on sensitive endpoints (below), which slow brute force but cannot absorb a
+  flood: every request still reaches PHP. See [EDGE.md](EDGE.md) for pairing it
+  with Cloudflare or nginx.
+- `trust_proxy` is an empty list by default: the client IP is `REMOTE_ADDR`.
+  Behind a proxy, list the proxy's CIDRs; forwarded headers from any other peer
+  are ignored. A bare `true` (older policies) trusts nothing.
+
+## Rate limits
+
+`build_policy(..., limits=True)` (the default; CLI `--no-limits` to skip) adds:
+
+| limit | applies to | default |
+|---|---|---|
+| `wp-login` | POST /wp-login.php | 10 per client per 5 min |
+| `wp-password-reset` | POST /wp-login.php?action=lostpassword/rp/resetpass | 5 per 15 min |
+| `wp-jwt-auth` | POST /wp-json/jwt-auth/ | 10 per 5 min |
+| `xmlrpc` | POST /xmlrpc.php | 30 per min |
+| `xmlrpc-multicall` | POST /xmlrpc.php with system.multicall | 3 per min |
+| `laravel-login` | POST /login (laravel/framework installed) | 10 per 5 min |
+| `laravel-password-reset` | POST /forgot-password, /password/email, /password/reset | 5 per 15 min |
+| `component-writes` | POST/PUT/PATCH/DELETE to admin-ajax.php and the REST routes of plugins/themes with rules | 60 per min |
+| `rule-path-burst` | any path a rule is scoped to, counted per client and path | 20 per min |
+| `custom-N` | operator paths (`limit_paths=`) | 10 per 5 min |
+
+Each starts in mode `log`; hits are logged as rule `limit:<name>` with a count
+(never the body). `promote` treats them exactly like rules (7-day burn-in,
+operator acknowledgement, not noisy). A limit is noisy when it tripped for 10 or
+more different clients: the threshold is probably too low for the site, or many
+users share an address. Promoted and exceeded in an enforcing policy: `429`,
+`Retry-After`, a one-line body.
+
+Counters: APCu when enabled (per server; not shared across PHP-FPM hosts), else
+a file store, `limits_store.dir` (default `phpwarden-shield.limits/` next to the
+agent): one small file per client and limit, `flock`ed, files idle for an hour
+pruned, capped at `max_files` (20,000). If neither works, limits switch off for
+the request (fail open) and `limit:_store_unavailable` is logged once (marker
+file `<log>.nostore`; delete it to re-arm). The window is two fixed buckets
+weighted into a sliding estimate; windows longer than 30 minutes are not
+supported by the file store pruning.

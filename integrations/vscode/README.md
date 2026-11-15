@@ -12,7 +12,7 @@ PHP vulnerabilities, ranked by real-world exploitation. This extension runs the 
   - **Information**: everything else
 - **Quick fix**: "Copy upgrade command" copies `composer require vendor/pkg:^<fixed>` to the clipboard,
   using the lowest fixed version above the one you have installed.
-- **PHP code** (phpwarden ≥ 2.2): when you save a `.php` file it runs `phpwarden code <file> --format sarif`
+- **PHP code** (phpwarden ≥ 2.2; whole-program engine from 2.3.0): when you save a `.php` file it runs `phpwarden code <file> --format sarif`
   and shows the results. With an older CLI, the status bar says so and the rest keeps working.
 - **Status bar**: `phpwarden: N exploited / M total`. Click it to open Problems.
 

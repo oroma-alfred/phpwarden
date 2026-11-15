@@ -16,6 +16,9 @@ from collections import Counter, defaultdict
 NOISY_MIN_HITS = 20
 NOISY_MIN_PATHS = 10
 NOISY_MIN_CLIENTS = 10
+# A limit that trips for many different clients is probably set too low for this
+# site's real traffic (or clients share an address): review before it can 429.
+NOISY_LIMIT_CLIENTS = 10
 
 
 def summarize(lines, top=10):
@@ -23,6 +26,7 @@ def summarize(lines, top=10):
                                    "first": None, "last": None})
     paths, ips = Counter(), Counter()
     total = bad = skipped_budget = 0
+    store_unavailable = False
     for line in lines:
         line = line.strip()
         if not line:
@@ -34,6 +38,9 @@ def summarize(lines, top=10):
             continue
         if e.get("rule") == "_budget":
             skipped_budget += 1
+            continue
+        if e.get("rule") == "limit:_store_unavailable":
+            store_unavailable = True
             continue
         total += 1
         r = by_rule[e.get("rule", "?")]
@@ -49,8 +56,11 @@ def summarize(lines, top=10):
         ips[e.get("ip", "")] += 1
     rules, noisy = [], []
     for rid, r in sorted(by_rule.items(), key=lambda kv: -kv[1]["hits"]):
-        is_noisy = (r["hits"] >= NOISY_MIN_HITS and len(r["paths"]) >= NOISY_MIN_PATHS
-                    and len(r["ips"]) >= NOISY_MIN_CLIENTS)
+        if str(rid).startswith("limit:"):
+            is_noisy = len(r["ips"]) >= NOISY_LIMIT_CLIENTS
+        else:
+            is_noisy = (r["hits"] >= NOISY_MIN_HITS and len(r["paths"]) >= NOISY_MIN_PATHS
+                        and len(r["ips"]) >= NOISY_MIN_CLIENTS)
         if is_noisy:
             noisy.append(rid)
         rules.append({"rule": rid, "cve": r["cve"], "hits": r["hits"], "blocked": r["blocked"],
@@ -58,7 +68,11 @@ def summarize(lines, top=10):
                       "top_paths": r["paths"].most_common(3), "first": r["first"], "last": r["last"],
                       "noisy": is_noisy})
     return {"hits": total, "unreadable_lines": bad, "budget_exceeded": skipped_budget, "rules": rules,
-            "top_paths": paths.most_common(top), "top_clients": ips.most_common(top), "noisy_rules": noisy}
+            "top_paths": paths.most_common(top), "top_clients": ips.most_common(top), "noisy_rules": noisy,
+            "limits": [{"limit": r["rule"][6:], "hits": r["hits"], "blocked": r["blocked"],
+                        "distinct_clients": r["distinct_clients"], "noisy": r["noisy"]}
+                       for r in rules if r["rule"].startswith("limit:")],
+            "limits_store_unavailable": store_unavailable}
 
 
 def to_text(s):
@@ -68,6 +82,8 @@ def to_text(s):
         out.append(f"  {r['rule']} {r['cve'] or ''}: {r['hits']} hit(s), {r['blocked']} blocked, "
                    f"{r['distinct_paths']} path(s), {r['distinct_clients']} client(s)"
                    + ("  NOISY: review before blocking" if r["noisy"] else ""))
+    if s.get("limits_store_unavailable"):
+        out.append("  rate limits were OFF: no APCu and the limits store directory is not writable")
     if s["top_clients"]:
         out.append("  top clients: " + ", ".join(f"{ip} ({n})" for ip, n in s["top_clients"][:5]))
     return "\n".join(out)

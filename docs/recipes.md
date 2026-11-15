@@ -31,10 +31,12 @@ Subcommands used below and their flags, as implemented in the CLI:
 `deps LOCKFILE [--project DIR] [--no-reachability] [--json]`,
 `wordpress PATH [--host LABEL] [--json]`, `detect LOGFILE [--json]`,
 `report FILES... [--out HTML]`. `--report-to URL --report-token TOKEN` is
-accepted by `scan`, `deps`, `wordpress` and `detect`. The last three recipes
+accepted by `scan`, `deps`, `wordpress` and `detect`. The later recipes
 also use `probe URL [--passive] [--max-requests N]`,
 `rules [--format nginx|modsecurity] [--dry-run] [--replay ACCESS_LOG]`,
-`code PATH` and `--format sarif` (all new in 2.2.0).
+`code PATH` and `--format sarif` (new in 2.2.0), and
+`shield policy|install|report|promote` (new in 2.3.0; rate limits in 2.4.0),
+and `trivy-import` / `assess --trivy` (new in 2.4.0).
 
 ---
 
@@ -259,15 +261,15 @@ is the hostname).
 
 ## Alongside Trivy (containers, OS packages, JavaScript)
 
-phpwarden covers PHP: the engine, Composer packages and WordPress. It does not
-scan container images, OS packages, npm dependencies or infrastructure files.
+phpwarden covers PHP: the engine, Composer packages, WordPress and your own PHP
+code. It does not scan container images, OS packages, npm dependencies or infrastructure files.
 [Trivy](https://trivy.dev) does. Run both and upload both SARIF files (GitHub
 Actions; the job needs `permissions: security-events: write`):
 
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - run: pip install "phpwarden>=2.2,<3"
+  - run: pip install "phpwarden>=2.3,<3"
   - run: phpwarden deps composer.lock --format sarif > phpwarden.sarif || true
   - run: phpwarden code . --format sarif > phpwarden-code.sarif || true
   # install Trivy first (see trivy.dev), then:
@@ -285,6 +287,18 @@ For a built image use `trivy image --format sarif --output trivy-image.sarif you
 Trivy also reads `composer.lock`, so some PHP packages appear in both reports;
 use phpwarden's order (known exploited, then EPSS) to decide what to fix first
 in PHP.
+
+With 2.4.0 you can also put Trivy's findings in phpwarden's ranked list instead
+of reading two reports:
+
+```yaml
+  - run: trivy fs --format json --output trivy.json .
+  - run: curl -fsSLo kev.json https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+  - run: phpwarden assess . --trivy trivy.json --kev kev.json
+```
+
+Composer results in the Trivy report are skipped (phpwarden covers them), and
+secrets are listed by file and line without the matched value.
 
 ## A client site you can only reach by URL
 

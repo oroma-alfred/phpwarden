@@ -1,0 +1,17 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "alpine:3.12",
+  "ArtifactType": "container_image",
+  "Results": [
+    {
+      "Target": "alpine:3.12 (alpine 3.12.12)",
+      "Class": "os-pkgs",
+      "Type": "alpine",
+      "Vulnerabilities": [
+        {"VulnerabilityID": "CVE-2022-37434", "PkgID": "zlib@1.2.12-r1", "PkgName": "zlib", "InstalledVersion": "1.2.12-r1",
+         "FixedVersion": "1.2.12-r2", "Severity": "CRITICAL", "Title": "zlib: heap-based buffer over-read",
+         "CVSS": {"nvd": {"V3Score": 9.8}}}
+      ]
+    }
+  ]
+}

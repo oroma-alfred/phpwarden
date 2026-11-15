@@ -28,6 +28,7 @@ from .models import php_builtins as B
 from .models import symfony as SF
 from .models import wordpress as WP
 from .types import Types, join as tjoin
+from .dbflow import DbFlowMixin
 
 ALLK = B.ALL
 SRC_KINDS = ALLK
@@ -215,6 +216,7 @@ class TaintEngine:
         self.ajax_hooks = []         # ("nopriv"|"priv"|"adminpost", callback keys, file, line, action)
         self.stored = {}             # (store, key) -> (file, line): request data written to an option/meta
         self.stored_sources = None   # second pass: reads of those keys are sources (second-order)
+        self.hook_cbs = {}           # WordPress hook name -> callback unit keys (add_filter/add_action)
         self.units = {}
         self.analyses = 0
         self.closure_env = {}        # closure key -> {captured var: taint} (real origins, from the parent)
@@ -273,6 +275,7 @@ class TaintEngine:
     # ------------------------------------------------------------- findings
     def report(self, rule, oid, fi, node, steps, note):
         root = oid
+        db_writes = []
         while self.origins[root].parent is not None:
             root = self.origins[root].parent
         if self.origins[root].desc.startswith("stored session "):
@@ -280,6 +283,18 @@ class TaintEngine:
                 return
             m = re.search(r"written from request data at (\S+):(\d+)", self.origins[root].desc)
             note = "%s (stored in session at %s:%s)" % (note, m.group(1), m.group(2)) if m else note
+        elif self.origins[root].desc.startswith("stored db "):
+            if self.stored_sources is None:
+                return
+            m = re.match(r"stored db (\S+)( raw)? \(written from request data at (\S+):(\d+)\)", self.origins[root].desc)
+            if m:
+                note = "%s (stored in %s at %s:%s%s)" % (note, m.group(1), m.group(3), m.group(4),
+                                                        "; unsanitised" if m.group(2) else "")
+                tb, _, col = m.group(1).partition(".")
+                w = self.stored_sources.get(("db", tb, col))
+                if w is not None and len(w) > 4:
+                    db_writes = [{"file": f, "line": ln, "column": cl,
+                                  "note": "request data written to %s" % m.group(1)} for f, ln, cl in w[4]]
         elif self.origins[root].desc.startswith("stored "):
             if self.stored_sources is None:
                 return
@@ -305,7 +320,7 @@ class TaintEngine:
         key = (rule, file, line)
         if key in self.findings:
             return
-        trace = [{"file": o.file, "line": o.line, "column": o.col, "note": "source: " + o.desc}]
+        trace = list(db_writes) + [{"file": o.file, "line": o.line, "column": o.col, "note": "source: " + o.desc}]
         for h in o.hops:
             trace.append({"file": h[1], "line": h[2], "column": h[3], "note": h[0]})
         for h in steps:
@@ -623,8 +638,9 @@ class _FakeFile:
 
 
 # ===================================================================== walker
-class _Walker:
+class _Walker(DbFlowMixin):
     def __init__(self, eng, rec):
+        self._df_init()
         self.e = eng
         self.p = eng.p
         self.rec = rec
@@ -885,6 +901,7 @@ class _Walker:
             self.assign_target(s.key, st, e1, t1, s)
         if s.value is not None:
             self.assign_target(s.value, st, e1, t1, s)
+        self._df_foreach(s)
         self.block(s.body, e1, t1)
         merged = env_join(env, e1)
         if merged != env:
@@ -1168,6 +1185,7 @@ class _Walker:
                 self.closed_arrays.add(tgt.name)
             if value is not None:
                 self.types.assign(tgt, value, tenv)
+                self._df_assign(tgt.name, value, env, tenv)
                 if self._safe_list(value) and value.kind == "Array":
                     self.lit_arrays.add(tgt.name)
                     self._lit_array_nodes[tgt.name] = value
@@ -1201,6 +1219,7 @@ class _Walker:
                 self.assign_target(root, t_union(self.expr_quiet(root, env, tenv), t), env, tenv, node)
             return
         if k == "PropFetch" and isinstance(tgt.name, str):
+            self._df_prop_write(tgt, t, tenv, node)
             if tgt.obj.kind == "Var" and tgt.obj.name == "this":
                 env["this->" + tgt.name] = t
                 self._prop_written[tgt.name] = True
@@ -1439,6 +1458,8 @@ class _Walker:
             self.assign_target(tgt, t, env, tenv, a, a.value)
             return t
         if op == ".=":
+            if tgt.kind == "Var" and isinstance(tgt.name, str):
+                self._df_append(tgt.name, a.value)
             new = self.concat([a.value], env, tenv)
             old = self.expr(tgt, env, tenv) if self.key(tgt) else EMPTY
             t = t_union(old, new)
@@ -1484,6 +1505,10 @@ class _Walker:
             if name in B.SUPERGLOBALS:
                 label = "$%s[%s]" % (name, repr(dim.value) if dim is not None and dim.kind == "String" else "...")
                 return self.source(label, e)
+            if name in self.dbvars and self.e.stored_sources is not None:
+                st = self._df_array_dim(e)
+                if st is not None:
+                    return t_union(st, env.get(name, EMPTY))
             kk = self.key(e)
             if kk and kk in env:
                 return env[kk]
@@ -1495,6 +1520,10 @@ class _Walker:
             return whole
         # chained: $_GET['a']['b'], $row['x']['y'], $this->data['k']
         t = self.expr(base, env, tenv)
+        if self.e.stored_sources is not None:
+            st = self._df_array_dim(e)
+            if st is not None:
+                return t_union(st, t)
         return t
 
     def prop_fetch(self, e, env, tenv):
@@ -1513,6 +1542,10 @@ class _Walker:
         if name is None:
             return self.expr(obj, env, tenv)
         t = self.expr(obj, env, tenv)
+        if self.e.stored_sources is not None:
+            st = self._df_prop(e, tenv)
+            if st is not None:
+                return t_union(st, t)
         return t
 
     # ------------------------------------------------------------ sources
@@ -1600,7 +1633,8 @@ class _Walker:
             if fn.kind == "Var" and isinstance(fn.name, str):
                 ft = env.get(fn.name, EMPTY)
                 self.sink(ft, "code", B.VARFUNC_RULE, c, "$%s()" % fn.name)
-                return EMPTY
+                r = self._df_dynamic(fn, ats, c, tenv)
+                return r if r is not None else EMPTY
             if fn.kind in ("Closure", "ArrowFn"):
                 key = self.p.function_key_for_node(fn)
                 return self.apply_summary(key, ats, c, "closure", None)
@@ -1621,6 +1655,13 @@ class _Walker:
             return ret
         self.check_fn_sinks(short, c, ats)
         self._fn_models(short, c, ats, env, tenv)
+        self._df_call(short, c, env, tenv)
+        self._df_hook_register(short, c, tenv)
+        r = self._df_callback(short, c, ats, env, tenv)
+        if r is None:
+            r = self._df_hook_apply(short, c, ats)
+        if r is not None:
+            return r
         return self.builtin(short, c, ats, env, tenv)
 
     def _stored_read(self, name, c):
@@ -1981,6 +2022,11 @@ class _Walker:
             return EMPTY
         if lname in _ORM_WRITE_METHODS:
             self.summary.ormw.append(("->%s()" % name, self.fi.rel, c.line))
+        self._df_method(lname, c, obj, env, tenv)
+        if self.e.stored_sources is not None:
+            st = self._df_value(lname, c, obj) or self._df_getter(lname, obj, c, tenv)
+            if st is not None:
+                return st
         # --- sanitizing methods ($wpdb->prepare, $pdo->quote, ->escape_string)
         recv_name = _recv_name(obj)
         recv_types = {t.lower() for t in self.types.infer(obj, tenv)}
@@ -2157,6 +2203,7 @@ class _Walker:
             cs = self.p.get_class(self.cls)
             fq = cs.parent if cs is not None and cs.parent else fq
         short = _short(fq) if low not in ("self", "static", "parent") else low
+        self._df_static(short.lower(), lname, fq, c, env, tenv)
         if lname in _ORM_STATIC_WRITES and short.lower() not in ("route", "gate", "auth", "cache", "session",
                                                                  "log", "event", "config", "storage", "mail"):
             self.summary.ormw.append(("%s::%s()" % (short, name), self.fi.rel, c.line))

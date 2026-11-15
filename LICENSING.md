@@ -1,9 +1,7 @@
 # Licensing
 
-phpwarden is **open-core**: the scanner engine is open source, the hosted
-service and maintained feed are commercial. This mirrors how comparable tools
-are licensed (Snyk CLI, Trivy, Grype, Semgrep, OWASP Dependency-Check all use
-Apache-2.0 for the scanner and keep the data feed / platform proprietary).
+phpwarden is **open-core**: the engine and bundled community feed are
+Apache-2.0; the hosted service and the maintained feed are commercial.
 
 ## Apache License 2.0 — open source
 

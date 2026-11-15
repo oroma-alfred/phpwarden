@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "phpwarden"
-version = "2.3.0"
-description = "PHP vulnerability scanner for the PHP engine, Composer, WordPress, your own code and the live site. Ranked by real-world exploitation (CISA KEV, then EPSS), not CVSS. Offline, zero dependencies."
+version = "2.4.0"
+description = "PHP vulnerability scanner for the PHP engine, Composer, WordPress, your own code and the live site. Ranked by real-world exploitation (CISA KEV, then EPSS), not CVSS; blocks exploits inside PHP (shield). Offline, zero dependencies."
 readme = "README.md"
 requires-python = ">=3.8"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{ name = "oroma-alfred" }]
-keywords = ["php", "composer", "wordpress", "php-fpm", "security", "vulnerability", "cve", "kev", "epss", "sca", "scanner"]
+keywords = ["php", "composer", "wordpress", "php-fpm", "security", "vulnerability", "cve", "kev", "epss", "sca", "sast", "waf", "scanner"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -39,4 +39,4 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-phpwarden = ["data/*.json", "shield/agent/*.php"]
+phpwarden = ["data/*.json", "shield/agent/*.php", "shield/*.md"]

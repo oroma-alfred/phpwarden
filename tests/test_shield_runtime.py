@@ -221,5 +221,160 @@ else:
     many = [json.dumps({"rule": "r1", "path": f"/page{i}", "ip": f"203.0.113.{i}", "action": "log"}) for i in range(30)]
     check("report: a rule spread across many paths and clients is flagged noisy", report.summarize(many)["noisy_rules"] == ["r1"])
 
+    # ---- rate limits
+    def send_h(port, req):
+        c = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+        body = (req.get("body") or "").encode()
+        c.putrequest(req.get("method", "GET"), req["uri"], skip_accept_encoding=True)
+        for k, v in (req.get("headers") or {}).items():
+            c.putheader(k, v)
+        if body:
+            c.putheader("Content-Type", "application/x-www-form-urlencoded"); c.putheader("Content-Length", str(len(body)))
+        c.endheaders(body or None)
+        r = c.getresponse(); d = r.read().decode(); c.close()
+        return r.status, r.getheader("Retry-After"), d
+
+    store = tmp / "lstore"
+    login = {"method": "POST", "uri": "/wp-login.php", "body": "log=admin&pwd=x"}
+    def lpol(mode="log", lmode="log", window=2, extra=None):
+        return {"version": 1, "mode": mode, "budget_ms": 50, "rules": [],
+                "limits": [{"name": "wp-login", "kind": "client", "method": ["POST"], "path": r"/wp-login\.php$",
+                            "max": 3, "window_s": window, "mode": lmode}],
+                "limits_store": {"backend": "file", "dir": str(store)}, **(extra or {})}
+
+    wp_lim = [l["name"] for l in pol.build_policy({"wordpress": {"core": "6.4.2"}}, feed)["limits"]]
+    lv_lim = [l["name"] for l in pol.build_policy({"composer": {"laravel/framework": "10.0.0"}}, feed)["limits"]]
+    check("limits: WordPress gets login/xmlrpc/reset limits, Laravel gets login; all mode log",
+          {"wp-login", "xmlrpc", "xmlrpc-multicall", "wp-password-reset"} <= set(wp_lim) and "laravel-login" in lv_lim
+          and all(l["mode"] == "log" for l in pol.build_policy({"wordpress": {"core": "6.4.2"}}, feed)["limits"]))
+    check("limits: build_policy(limits=False) adds none", pol.build_policy({"wordpress": {"core": "6.4.2"}}, feed, limits=False)["limits"] == [])
+    bp = pol.build_policy(inv, feed)
+    check("limits: burst guard covers the rule-scoped paths", any(l["kind"] == "burst" and "eval-stdin" in l["path"] for l in bp["limits"]))
+
+    logf.unlink(missing_ok=True); shutil.rmtree(store, ignore_errors=True)
+    proc, port = start(lpol(mode="log"))
+    try:
+        st = [send_h(port, login)[0] for _ in range(8)]
+        check("limits: log mode never blocks (8 login POSTs over a max of 3 all 200)", st == [200] * 8)
+        check("limits: log mode records limit:wp-login with a count, not the body",
+              any(x["rule"] == "limit:wp-login" and "max 3" in x["excerpt"] and "pwd" not in json.dumps(x) for x in log_lines()))
+        check("limits: file store works without APCu", store.is_dir() and any(store.iterdir()))
+    finally:
+        proc.terminate(); proc.wait()
+
+    shutil.rmtree(store, ignore_errors=True)
+    proc, port = start(lpol(mode="enforce", lmode="block"))
+    try:
+        st = [send_h(port, login) for _ in range(5)]
+        check("limits: promoted limit returns 429 with Retry-After after the threshold",
+              [x[0] for x in st[:3]] == [200] * 3 and st[3][0] == 429 and st[3][1] and int(st[3][1]) >= 1
+              and "Too many requests" in st[3][2])
+        check("limits: GETs to the same path are not counted", send_h(port, {"uri": "/wp-login.php"})[0] == 200)
+        time.sleep(4.2)
+        check("limits: the limit resets after the window", send_h(port, login)[0] == 200)
+    finally:
+        proc.terminate(); proc.wait()
+
+    bad_store = tmp / "ro"; bad_store.mkdir(exist_ok=True); os.chmod(bad_store, 0o500)
+    logf.unlink(missing_ok=True); Path(str(logf) + ".nostore").unlink(missing_ok=True)
+    rp = lpol(mode="enforce", lmode="block"); rp["limits_store"] = {"backend": "file", "dir": str(bad_store / "x")}
+    proc, port = start(rp)
+    try:
+        st = [send_h(port, login)[0] for _ in range(6)]
+        un = [x for x in log_lines() if x["rule"] == "limit:_store_unavailable"]
+        check("limits: unwritable store disables limits, requests pass, logged once", st == [200] * 6 and len(un) == 1)
+        check("report: store-unavailable surfaced", report.summarize(logf.read_text().splitlines())["limits_store_unavailable"])
+    finally:
+        proc.terminate(); proc.wait(); os.chmod(bad_store, 0o700)
+
+    for cidrs, want in ((["10.0.0.0/8"], "127.0.0.1"), (["127.0.0.0/8"], "198.51.100.7"), (["::1/128", "127.0.0.1/32"], "198.51.100.7")):
+        logf.unlink(missing_ok=True); shutil.rmtree(store, ignore_errors=True)
+        proc, port = start(lpol(extra={"trust_proxy": cidrs}))
+        try:
+            for _ in range(4):
+                send_h(port, dict(login, headers={"X-Forwarded-For": "203.0.113.9, 198.51.100.7"}))
+            ips = {x["ip"] for x in log_lines()}
+        finally:
+            proc.terminate(); proc.wait()
+        check(f"trust_proxy {cidrs}: client IP is {want}", ips == {want})
+    logf.unlink(missing_ok=True); shutil.rmtree(store, ignore_errors=True)
+    proc, port = start(lpol(extra={"trust_proxy": True}))
+    try:
+        for _ in range(4):
+            send_h(port, dict(login, headers={"X-Forwarded-For": "198.51.100.7", "CF-Connecting-IP": "198.51.100.8"}))
+        check("trust_proxy true (not a CIDR list) trusts nothing: spoofed XFF ignored", {x["ip"] for x in log_lines()} == {"127.0.0.1"})
+    finally:
+        proc.terminate(); proc.wait()
+    logf.unlink(missing_ok=True); shutil.rmtree(store, ignore_errors=True)
+    proc, port = start(lpol(extra={"trust_proxy": ["127.0.0.0/8"]}))
+    try:
+        for _ in range(4):
+            send_h(port, dict(login, headers={"CF-Connecting-IP": "198.51.100.8", "X-Forwarded-For": "1.2.3.4"}))
+        check("trust_proxy: CF-Connecting-IP preferred from a trusted peer", {x["ip"] for x in log_lines()} == {"198.51.100.8"})
+    finally:
+        proc.terminate(); proc.wait()
+
+    shutil.rmtree(store, ignore_errors=True)
+    proc, port = start(lpol(mode="enforce", lmode="block"), {"PHPWARDEN_SHIELD": "off"})
+    try:
+        check("limits: kill switch disables limits", [send_h(port, login)[0] for _ in range(6)] == [200] * 6)
+    finally:
+        proc.terminate(); proc.wait()
+
+    burst = {"version": 1, "mode": "enforce", "budget_ms": 50, "rules": [],
+             "limits": [{"name": "rule-path-burst", "kind": "burst", "path": r"/vendor/x\.php$|/y\.php$", "max": 20, "window_s": 60, "mode": "block"}],
+             "limits_store": {"backend": "file", "dir": str(store)}}
+    shutil.rmtree(store, ignore_errors=True)
+    proc, port = start(burst)
+    try:
+        a = [send_h(port, {"uri": "/vendor/x.php"})[0] for _ in range(22)]
+        b = send_h(port, {"uri": "/y.php"})[0]
+        check("limits: burst guard trips on >20/min to one scoped path, per path", a[:20] == [200] * 20 and a[21] == 429 and b == 200)
+    finally:
+        proc.terminate(); proc.wait()
+
+    # latency with limits (file store)
+    lat = {"version": 1, "mode": "log", "budget_ms": 50, "rules": full["rules"],
+           "limits": pol.build_policy({"wordpress": {"core": "6.4.2"}}, feed)["limits"],
+           "limits_store": {"backend": "file", "dir": str(store)}}
+    def timed(policy_obj, n=300):
+        proc, port = start(policy_obj) if policy_obj else (None, None)
+        if policy_obj is None:
+            port = free_port()
+            proc = subprocess.Popen([php, "-S", f"127.0.0.1:{port}", str(ROUTER)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            time.sleep(0.4)
+        try:
+            ts = []
+            for i in range(n):
+                t = time.perf_counter(); send_h(port, {"method": "POST", "uri": "/wp-login.php", "body": f"log=u{i}&pwd=x"}); ts.append(time.perf_counter() - t)
+            ts.sort(); return ts[n // 2] * 1000, ts[int(n * .95)] * 1000
+        finally:
+            proc.terminate(); proc.wait()
+    base = timed(None); withl = timed(lat)
+    print(f"  latency login POST, php -S: no shield p50 {base[0]:.2f} ms p95 {base[1]:.2f} ms; "
+          f"shield+limits p50 {withl[0]:.2f} ms p95 {withl[1]:.2f} ms")
+    check("limits: added p50 latency under 5 ms", withl[0] - base[0] < 5)
+
+    lim_lines = [json.dumps({"rule": "limit:wp-login", "path": "/wp-login.php", "ip": f"203.0.113.{i}", "action": "log"}) for i in range(12)]
+    one = [json.dumps({"rule": "limit:xmlrpc", "path": "/xmlrpc.php", "ip": "198.51.100.1", "action": "log"})] * 50
+    sm = report.summarize(lim_lines + one)
+    check("report: limits listed with distinct clients; a limit tripping for many clients is noisy, one hammering client is not",
+          {l["limit"]: l["distinct_clients"] for l in sm["limits"]} == {"wp-login": 12, "xmlrpc": 1}
+          and "limit:wp-login" in sm["noisy_rules"] and "limit:xmlrpc" not in sm["noisy_rules"])
+    pl = pol.build_policy({"wordpress": {"core": "6.4.2"}}, feed)
+    _, rep = pol.promote(pl, sm, operator_ack=True, now=pl["created"] + 8 * 86400)
+    check("promote: limits promoted the same way; noisy limit refused",
+          "limit:xmlrpc" in rep["promoted"] and any(r["id"] == "limit:wp-login" for r in rep["refused"])
+          and next(l for l in pl["limits"] if l["name"] == "xmlrpc")["mode"] == "block")
+
+    # lint on other PHP versions
+    if shutil.which("docker"):
+        for v in ("7.4", "8.0", "8.3"):
+            r = subprocess.run(["docker", "run", "--rm", "-v", f"{AGENT.parent}:/a:ro", f"php:{v}-cli", "php", "-l", "/a/phpwarden-shield.php"],
+                               capture_output=True, text=True, timeout=300)
+            check(f"lint php:{v}", r.returncode == 0 and "No syntax errors" in r.stdout)
+    else:
+        print("SKIP docker not available: lint on 7.4/8.0/8.3 not run")
+
 print("\nRESULT:", "ALL PASS" if ok else "FAILURES")
 sys.exit(0 if ok else 1)

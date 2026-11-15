@@ -20,6 +20,8 @@ Rerun with `sh bench/shield-2026-11/run.sh`; this run's output is in
 | Exploit-shape requests logged by the right rule (real agent) | **39 of 39** |
 | Agent cost per request, 50-rule policy (CLI micro-benchmark) | **about 60 µs** (0.06 ms) |
 | Added latency over HTTP, 50-rule policy (`php -S`, 2,000 requests) | **+0.07 ms p50, +0.10 ms p95** |
+| Rate limits: benign requests that tripped a limit (300 clients) | **0 of 6,000** |
+| Rate limits: abuse scenarios that tripped the right limit | **6 of 6** |
 
 The performance budget was under 0.5 ms per request; the measured cost is about
 a tenth of that.
@@ -72,10 +74,38 @@ caught (see below).
   warm-up: p50 0.098 → 0.171 ms, p95 0.130 → 0.226 ms. A real application takes
   tens of milliseconds per request, so the shield's share is small.
 
+## 4. Rate limits
+
+`limits.py` (run by `run.sh`; output in `results-limits-2026-11-14.txt`). The
+policy holds every default WordPress and Laravel limit plus a burst guard over
+every library rule path (8 limits), file store, `trust_proxy` set to the local
+peer so each request can carry its own client address.
+
+- **Benign traffic:** 6,000 requests (4,000 sampled GETs + all 2,000 POSTs,
+  including 200 logins) spread over 300 clients: **0 limit trips**. The replay
+  runs at machine speed, so per-client rates, not wall-clock rates, are what is
+  realistic here (each client sends about 20 requests, under 1 login).
+- **Abuse from one client** (log mode logs; promoted limit's first 429):
+
+| scenario | limit | first 429 at |
+|---|---|---|
+| 40 POST /wp-login.php | wp-login | #11 |
+| 60 POST /xmlrpc.php | xmlrpc | #31 |
+| 6 system.multicall POSTs | xmlrpc-multicall | #4 |
+| 12 password-reset POSTs | wp-password-reset | #6 |
+| 30 POST /login (Laravel) | laravel-login | #11 |
+| 40 GET to a rule-scoped path (eval-stdin.php) | rule-path-burst | #21 |
+
+- **Latency:** 2,000 login POSTs from 300 clients, `php -S`: p50 0.102 → 0.170
+  ms, p95 0.112 → 0.249 ms (+0.07 / +0.14 ms), file store. APCu was not
+  installed on the test machine, so the APCu path is linted but not benchmarked.
+
 ## What this does not show, and what the shield does not do
 
-- **It is not an edge WAF.** No DDoS or bot protection, no TLS, no rate limiting.
-  Keep Cloudflare or your host's edge protection; the shield sits behind it.
+- **It is not an edge WAF.** No volumetric DDoS protection, no TLS, no CAPTCHA or
+  JavaScript challenges. Its rate limits slow brute force on login, xmlrpc and
+  password reset, but every request still reaches PHP. Keep Cloudflare or your
+  host's edge protection in front (`src/phpwarden/shield/EDGE.md`).
 - **It only protects vulnerabilities in the policy.** A site gets rules for the
   exploited vulnerabilities phpwarden finds installed on it, plus four generic
   checks. Anything else is not covered.

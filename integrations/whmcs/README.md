@@ -91,7 +91,7 @@ there first). The partner key, site tokens and widget links are masked.
 |---|---|
 | "No partner key set on the phpwarden server" | Password and Access Hash are both empty on the server record, or the product has no server assigned. |
 | "phpwarden rejected the partner key" | The key is wrong or was revoked. Create a new one under Settings → Partner API and update the server record. |
-| "phpwarden plan limit reached" | Your plan's project allowance is used up. Upgrade, or terminate unused services. |
+| "phpwarden plan limit reached" | The partner key's account is not on the Team plan (the partner API is a Team feature), or it has reached the partner API's cap of 2,000 projects. Upgrade to Team, use a key from a Team account, or terminate unused services. |
 | "phpwarden project not found" | The stored project id no longer exists in your account (deleted in the dashboard, or the key belongs to another account). Clear the Project ID field and run Create. |
 | "No phpwarden project exists for this service; run Create first" | The service was never provisioned. Use the Create module command. |
 | "Could not save the phpwarden custom fields in WHMCS" | WHMCS refused the update; check the two custom fields exist on this product. |

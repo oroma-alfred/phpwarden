@@ -34,6 +34,7 @@ miss on our side, not a brush-off.
 - The Composer packages `phpwarden/phpwarden` and `phpwarden/laravel`
 - The GitHub Action `oroma-alfred/phpwarden-action`
 - The WordPress plugin, WHMCS module and VS Code extension under `integrations/`
+- The shield agent (`integrations/php-shield/phpwarden-shield.php`, shipped in the package) and its policies: a way to bypass a rule, make the agent fail closed, or make it slow a site down is in scope
 - The Docker image `phpwarden/phpwarden` and the Homebrew tap `oroma-alfred/tap`
 
 Out of scope: denial-of-service, volumetric or rate-limit testing against the hosted service;

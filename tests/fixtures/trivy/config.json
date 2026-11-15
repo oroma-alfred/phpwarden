@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "shop",
+  "ArtifactType": "filesystem",
+  "Results": [
+    {
+      "Target": "Dockerfile",
+      "Class": "config",
+      "Type": "dockerfile",
+      "Misconfigurations": [
+        {"Type": "Dockerfile Security Check", "ID": "DS002", "AVDID": "AVD-DS-0002", "Title": "Image user should not be 'root'",
+         "Severity": "HIGH", "Resolution": "Add 'USER <non root user name>' line to the Dockerfile", "Status": "FAIL",
+         "PrimaryURL": "https://avd.aquasec.com/misconfig/ds002"},
+        {"Type": "Dockerfile Security Check", "ID": "DS026", "AVDID": "AVD-DS-0026", "Title": "No HEALTHCHECK defined",
+         "Severity": "LOW", "Resolution": "Add HEALTHCHECK instruction", "Status": "PASS"}
+      ]
+    }
+  ]
+}

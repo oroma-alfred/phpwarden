@@ -6,8 +6,9 @@ exploited (CISA KEV, as of 2026-11-14). phpwarden puts those first, then sorts
 by EPSS probability, then CVSS — so a `composer.lock` with 30 findings tells
 you which one to fix today.
 
-It scans the PHP engine/FPM version, Composer dependencies and WordPress
-installs against one bundled, offline advisory feed. Zero runtime dependencies
+It scans the PHP engine/FPM version, Composer dependencies, WordPress installs
+and your own PHP code, checks live sites from outside, and can block exploits
+inside PHP, against one bundled, offline advisory feed. Zero runtime dependencies
 (Python 3.8+), Apache-2.0.
 
 **Reproducible benchmark:** on four real PHP stacks, phpwarden found 295 of 295
@@ -122,7 +123,26 @@ error, `5` `--report-to` upload failed on an otherwise clean run, `64` usage
 error. Full table: `phpwarden --help`.
 
 
-## New in 2.3.0 and 2.2
+## New in 2.4.0, 2.3.0 and 2.2
+
+- **2.4.0: `phpwarden code` follows data through the database and callbacks.**
+  Request data saved with raw SQL, `$wpdb`, Eloquent, the query builder or
+  Doctrine and read back from the same table is traced to where it is printed
+  or queried (stored XSS, second-order SQL injection), and callbacks passed to
+  `array_map`, `usort`, `preg_replace_callback`, `add_filter` and the like,
+  `$f()` and first-class callables are followed. DVWA: 8/8/7 of 8 types under
+  the comparison's scorer (was 7/7/6); clean-code counts unchanged.
+- **2.4.0: shield rate limits.** Per-client limits on WordPress login, password
+  reset, xmlrpc and `system.multicall`, Laravel login and reset, component
+  writes, and a burst guard. Log-only until promoted, then 429; APCu or file
+  store; fails open. `--trust-proxy CIDR`, `--no-limits`, `--limit-path REGEX`.
+  0 trips on 6,000 ordinary requests; 6 of 6 abuse scenarios caught. Pairing
+  with Cloudflare or nginx: [EDGE.md](src/phpwarden/shield/EDGE.md).
+- **2.4.0: `phpwarden trivy-import` and `assess --trivy FILE` / `--run-trivy`.**
+  Trivy's JSON (npm/JS, OS packages, images, IaC, secrets) in the same ranked
+  list as PHP findings: KEV, then EPSS (`--kev`, `--epss`), then severity.
+  Secrets by file and line only. Never downloads Trivy. See
+  [src/phpwarden/thirdparty/README.md](src/phpwarden/thirdparty/README.md).
 
 - **`phpwarden probe URL`**: a live check of a running site using GET and HEAD
   requests only. It looks for exposed files (`.env`, `.git`, backups), open debug
@@ -139,7 +159,6 @@ error. Full table: `phpwarden --help`.
   Follows data stored in the session or WordPress options (second-order).
   89 rules. On the same pinned apps it found more than Semgrep and Psalm with far
   fewer findings on clean framework code ([comparison](https://github.com/oroma-alfred/phpwarden/tree/main/bench/sast-compare-2026-11)).
-  Data that round-trips through the database is not followed.
 - **`phpwarden shield`**: one PHP file loaded before your app that blocks exploit
   attempts against the exploited vulnerabilities this site actually has, scoped
   to their entry points. Logs until you promote rules (7-day burn-in, explicit
@@ -226,7 +245,7 @@ see [phpwarden/laravel](https://packagist.org/packages/phpwarden/laravel).
 ```yaml
 repos:
   - repo: https://github.com/oroma-alfred/phpwarden
-    rev: v2.3.0        # pin to a tag with `pre-commit autoupdate`
+    rev: v2.4.0        # pin to a tag with `pre-commit autoupdate`
     hooks:
       - id: phpwarden-deps
         # args: ["--no-reachability"]   # faster: skip the reachability pass
@@ -237,14 +256,14 @@ timer recipes are in [`docs/recipes.md`](docs/recipes.md).
 
 ## The feed
 
-The bundled community feed (2026.11.13.3 in this release) works forever, offline:
+The bundled community feed (2026.11.14.2 in this release) works forever, offline:
 
 - **~21,300 advisories**: ~8,800 Composer (from [OSV.dev](https://osv.dev) and
   [FriendsOfPHP](https://github.com/FriendsOfPHP/security-advisories)),
   ~12,300 WordPress (from [NVD](https://nvd.nist.gov): plugin, core and theme),
-  and 145 PHP engine/FPM CVEs, including hand-curated entries with per-branch
-  fixed versions, exposure conditions and detection signatures. About 19,700 carry an
-  EPSS score; 41 distinct vulnerabilities were in KEV when this feed was built.
+  and 146 PHP engine/FPM CVEs, including hand-curated entries with per-branch
+  fixed versions, exposure conditions and detection signatures. About 19,800 carry an
+  EPSS score; 54 distinct vulnerabilities were in KEV when this feed was built.
 - **License-independent by construction.** Every source is open or
   public-domain (OSV, NVD, FriendsOfPHP, php-src release notes, CISA KEV, FIRST EPSS). No commercial
   vendor's feed is used, so coverage cannot be revoked or priced away.

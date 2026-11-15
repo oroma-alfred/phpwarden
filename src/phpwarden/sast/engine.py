@@ -26,6 +26,8 @@ TAINT_RULES = frozenset({s["rule"] for s in TAINT_SINKS} | {s["rule"] for s in B
 
 _TEST_FILE = re.compile(r"Test\.php$")
 _VIA = re.compile(r"^call (?:[\w\\]*::)?(\w+)\(\) \((.+):(\d+)\)$")
+_STORED = re.compile(r"\(stored in (\S+) at (\S+:\d+)(; unsanitised)?\)")
+_RAW_RULES = frozenset({"xss-echo", "sql-injection", "xss-response", "blade-raw", "twig-raw"})
 _LOWER = {"critical": "high", "high": "medium", "medium": "low", "low": "low"}
 
 
@@ -49,7 +51,7 @@ def analyse(root, include_tests=False, enabled=None):
     # back elsewhere and used in a sink. A second pass treats those reads as
     # sources and reports only the flows that start from them.
     if eng.stored and (enabled is None or "second-order-injection" in enabled
-                       or any(k[0] == "session" for k in eng.stored)):
+                       or any(k[0] in ("session", "db") for k in eng.stored)):
         eng2 = TaintEngine(p, enabled=enabled, skip=skip)
         eng2.stored_sources = dict(eng.stored)
         raw2 = eng2.run()
@@ -58,7 +60,8 @@ def analyse(root, include_tests=False, enabled=None):
                 f.unit = f.unit if f.unit in eng.units else None
         # option/meta flows are reported as second-order-injection; session flows
         # keep the sink's rule (e.g. SQL injection) with a "stored in session" note
-        raw = list(raw) + [f for f in raw2 if f.rule == "second-order-injection" or "stored in session at" in (f.message or "")]
+        raw = list(raw) + [f for f in raw2 if f.rule == "second-order-injection"
+                           or _STORED.search(f.message or "")]
     from . import authz
     raw = list(raw) + authz.check(eng, enabled)
     gadgets = _gadget_packages(root)
@@ -91,9 +94,13 @@ def analyse(root, include_tests=False, enabled=None):
                     msg = "%s (via %s() in %s:%s)" % (msg.rstrip("."), m.group(1).lower(), m.group(2), m.group(3))
                     break
         sev, ctx = r["severity"], []
-        _m = re.search(r"stored in session at (\S+:\d+)", f.message or "")
+        _m = _STORED.search(f.message or "")
         if _m:
-            ctx = ["stored in session at " + _m.group(1)]
+            ctx = ["stored in %s at %s" % (_m.group(1), _m.group(2))]
+            # a database round trip: one level lower unless the write stored the
+            # value entirely unsanitised and the read reaches an XSS / SQL sink
+            if _m.group(1) != "session" and not (_m.group(3) and (f.rule in _RAW_RULES or f.rule.startswith(("sql-", "xss-")))):
+                sev = _LOWER.get(sev, sev)
         if f.rule == "unserialize-tainted" and gadgets:
             sev, ctx = "critical", ["gadget-chain: " + gadgets[0]]
         # Request data that only reaches the sink after a capability /

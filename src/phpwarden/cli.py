@@ -546,8 +546,29 @@ def _assess(args):
         if any("homepage unreachable" in n for n in probe_result.get("notes", [])):
             sys.stderr.write(f"error: could not reach {url}\n")
             return 4
+    trivy_fs, trivy_note = None, None
+    if args.trivy or args.run_trivy:
+        from phpwarden.thirdparty import trivy as tv
+        try:
+            kev, epss = tv.load_kev(args.kev), tv.load_epss(args.epss)
+            docs = [tv.load_report(f) for f in (args.trivy or [])]
+        except (OSError, ValueError) as e:
+            sys.stderr.write(f"error: {e}\n")
+            return 4
+        if args.run_trivy and args.path:
+            doc, msg = tv.run_trivy_fs(args.path)
+            if doc is not None:
+                docs.append(doc)
+            else:
+                trivy_note = msg
+                sys.stderr.write(msg + "\n")
+        trivy_fs = [f for d in docs for f in tv.findings(d, kev, epss)]
+        if docs and not (args.kev or args.epss):
+            trivy_note = (trivy_note + "; " if trivy_note else "") + \
+                "non-PHP findings ranked by severity only (pass --kev and --epss for exploitation data)"
     try:
-        res = vd.assess(args.path, probe_result=probe_result, logfile=args.log, run_code=not args.no_code)
+        res = vd.assess(args.path, probe_result=probe_result, logfile=args.log, run_code=not args.no_code,
+                        trivy_findings=trivy_fs, trivy_note=trivy_note)
     except OSError as e:                      # unreadable access log
         sys.stderr.write(f"error: {e}\n")
         return 4
@@ -563,6 +584,31 @@ def _assess(args):
     return vd.exit_code(res)
 
 
+def _trivy_import(args):
+    from phpwarden.thirdparty import trivy as tv
+    try:
+        kev, epss = tv.load_kev(args.kev), tv.load_epss(args.epss)
+        fs = [f for p in args.files for f in tv.findings(tv.load_report(p), kev, epss)]
+    except (OSError, ValueError) as e:
+        sys.stderr.write(f"error: {e}\n")
+        return 4
+    doc = tv.to_report_doc(fs, args.files)
+    if args.json:
+        print(json.dumps(doc, indent=2))
+    else:
+        kev_n = sum(1 for f in fs if f["known_exploited"])
+        print(f"{len(fs)} finding(s) from {len(args.files)} Trivy report(s); {kev_n} known exploited. "
+              f"Ranked by exploitation{'' if (args.kev or args.epss) else ' (no --kev/--epss: by severity)'}:")
+        for f in fs[:50]:
+            tag = " [KEV]" if f["known_exploited"] else (f" [EPSS {f['epss'] * 100:.0f}%]" if f.get("epss") else "")
+            dev = " (dev)" if f["dev"] else ""
+            print(f"  {f['severity']:<8} {tv.ident(f)}{tag}{dev}  {f['title'][:90]}")
+        if len(fs) > 50:
+            print(f"  ... and {len(fs) - 50} more; use --json for all")
+    rc = 1 if any(f["known_exploited"] or f["severity"] in ("critical", "high") for f in fs) else 0
+    return _combine(rc, _maybe_report(args, doc))
+
+
 def _shield(args):
     from pathlib import Path as _P
     from phpwarden.shield import policy as sp, report as sr
@@ -572,7 +618,9 @@ def _shield(args):
             sys.stderr.write(f"error: not a directory: {args.path}\n")
             return 4
         pol = sp.build_policy_for_path(str(root), FeedManager().current(), php_version=args.php_version,
-                                       php_sapi=args.php_sapi, log_path=args.log)
+                                       php_sapi=args.php_sapi, log_path=args.log,
+                                       limits=not args.no_limits, limit_paths=args.limit_path or [],
+                                       trust_proxy=args.trust_proxy or [])
         out = args.out or "phpwarden-shield.policy.json"
         j, php = sp.write_policy(pol, out)
         if args.json:
@@ -754,6 +802,15 @@ def main(argv=None):
     _report_args(wpc)
     wpc.set_defaults(func=_wordpress)
 
+    tvi = sub.add_parser("trivy-import", help="read Trivy JSON reports (npm/JS, OS packages, images, IaC), "
+                                              "rank them by exploitation, optionally send them to the dashboard")
+    tvi.add_argument("files", nargs="+", metavar="TRIVY_JSON", help="output of trivy fs/image/config --format json")
+    tvi.add_argument("--kev", metavar="FILE", help="CISA KEV catalogue JSON")
+    tvi.add_argument("--epss", metavar="FILE", help="FIRST EPSS CSV (.csv or .csv.gz)")
+    tvi.add_argument("--json", action="store_true", help="machine-readable JSON output")
+    _report_args(tvi)
+    tvi.set_defaults(func=_trivy_import)
+
     sh = sub.add_parser("shield", help="protection inside PHP: block exploits of the vulnerabilities this site "
                                        "actually has (log-only until you promote rules)")
     shs = sh.add_subparsers(dest="shield_cmd", required=True, parser_class=_Parser)
@@ -763,6 +820,12 @@ def main(argv=None):
     shp.add_argument("--php-version", help="the production PHP version, for engine CVE rules")
     shp.add_argument("--php-sapi", choices=["fpm", "cgi", "cli"], help="the production SAPI")
     shp.add_argument("--log", help="where the agent should write its log (default: next to the agent)")
+    shp.add_argument("--no-limits", action="store_true",
+                     help="leave out the rate limits (login, password reset, xmlrpc, burst guard)")
+    shp.add_argument("--limit-path", action="append", metavar="REGEX",
+                     help="also rate-limit requests to this path (repeatable)")
+    shp.add_argument("--trust-proxy", action="append", metavar="CIDR",
+                     help="trust forwarded client IPs only from this proxy range, e.g. your CDN (repeatable)")
     shp.add_argument("--json", action="store_true", help="print the policy as JSON")
     shi = shs.add_parser("install", help="show how to load the agent (and copy it with --dest)")
     shi.add_argument("--dest", metavar="DIR", help="copy phpwarden-shield.php into this folder")
@@ -789,6 +852,12 @@ def main(argv=None):
     asx.add_argument("--baseline", metavar="FILE",
                      help="an earlier --out file: report what is fixed and verified, still open, and new")
     asx.add_argument("--json", action="store_true", help="machine-readable JSON output")
+    asx.add_argument("--trivy", metavar="FILE", action="append",
+                     help="add a Trivy JSON report (npm/JS, OS packages, images, IaC); repeatable")
+    asx.add_argument("--run-trivy", action="store_true",
+                     help="run `trivy fs` on the path if Trivy is installed (never downloads it)")
+    asx.add_argument("--kev", metavar="FILE", help="CISA KEV catalogue JSON, to rank non-PHP CVEs by exploitation")
+    asx.add_argument("--epss", metavar="FILE", help="FIRST EPSS CSV (.csv or .csv.gz) for non-PHP CVEs")
     asx.set_defaults(func=_assess)
 
     cd = sub.add_parser("code", help="scan your own PHP code for high-signal security bugs "

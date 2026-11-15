@@ -1,0 +1,53 @@
+tools: phpwarden-auto
+
+== 1. DVWA: found per vulnerability type and level (low / medium / high), wrong flags on impossible ==
+type                phpwarden-auto
+sqli                           xxx
+sqli_blind                     xxx
+exec                           xxx
+fi                             xxx
+xss_r                          xxx
+xss_s                          xxx
+upload                         xx.
+open_redirect                  xxx
+found (of 8)         8/8/7        
+wrong flags                      0
+
+== 2. Mutillidae: 11 documented vulnerable pages ==
+page                                        phpwarden-auto
+user-info.php                                        found
+includes/process-login-attempt.php                   found
+add-to-your-blog.php                                 found
+dns-lookup.php                                       found
+echo.php                                             found
+index.php                                            found
+source-viewer.php                                    found
+text-file-viewer.php                                 found
+xml-validator.php                                    found
+upload-file.php                                      found
+redirectandlog.php                                   found
+found (of 11)                                           11
+
+== 3. Clean code: high/critical findings (presumed noise), per 100k lines ==
+target         lines        phpwarden-auto
+wordpress     671441        7 (  1.0/100k)  
+laravel       284473        0 (  0.0/100k)  
+symfony      1617127        0 (  0.0/100k)  
+
+   triaged samples (true positive / false positive / by design):
+   wordpress  phpwarden-auto    sampled  7: by design 5, false positive 2
+
+== 4. Runtime (wall seconds, exit code) ==
+target         phpwarden-auto
+dvwa                        -
+mutillidae                  -
+wordpress                   -
+laravel                     -
+symfony                     -
+
+== 5. Findings by category (all severities) ==
+  dvwa: phpwarden-auto cmdi=7,include=3,other=26,path=8,redirect=4,sqli=19,upload=2,xss=30
+  mutillidae: phpwarden-auto cmdi=6,include=1,other=7,path=2,redirect=1,sqli=55,ssrf=1,upload=1,xss=48,xxe=2
+  wordpress: phpwarden-auto deser=1,other=12,path=1,redirect=12,xss=89
+  laravel: phpwarden-auto other=2
+  symfony: phpwarden-auto other=2

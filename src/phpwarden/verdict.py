@@ -181,12 +181,15 @@ def _why_vuln(it, attack, live, views) -> list:
     return why
 
 
-def assess(path=None, *, feed=None, probe_result=None, logfile=None, run_code=True) -> dict:
+def assess(path=None, *, feed=None, probe_result=None, logfile=None, run_code=True,
+           trivy_findings=None, trivy_note=None) -> dict:
     """Build the combined verdict.
 
     path          project / site root (composer.lock, WordPress, PHP code); optional
     probe_result  a dict from probe.run_probe (the outside view); optional
     logfile       an access log (the attacked view); optional
+    trivy_findings  findings from phpwarden.thirdparty.trivy (npm/JS, OS packages,
+                  images, IaC): the "other" view; optional
     """
     if feed is None:
         from phpwarden.feed import FeedManager
@@ -322,6 +325,49 @@ def assess(path=None, *, feed=None, probe_result=None, logfile=None, run_code=Tr
                                   "visible_from_outside": None, "attacked": None},
                       "why": why, "fix": f.get("fix") or "", "line": f["line"], "rule": f["rule"]})
 
+    # Dependencies outside PHP, from Trivy (npm/JS, OS packages, images, IaC).
+    if trivy_findings is not None:
+        views["other"] = {"findings": len(trivy_findings), "note": trivy_note}
+    for f in trivy_findings or []:
+        sev = f["severity"]
+        hot = _hot(f["known_exploited"], f.get("epss"))
+        attack = attack_for(f.get("cve"))
+        if f["kind"] == "trivy-secret":
+            tier = "act-now" if sev in ("critical", "high") else "this-week"
+        elif hot or attack:
+            tier = "this-week" if f["dev"] else "act-now"
+        elif _SEV_RANK.get(sev, 3) <= 1:
+            tier = "scheduled" if f["dev"] else "this-week"
+        elif sev == "medium":
+            tier = "scheduled"
+        else:
+            tier = "watch"
+        label = {"trivy-vuln": f"{f['package']} {f['installed']}".strip(),
+                 "trivy-misconfig": f["target"], "trivy-secret": f["target"]}[f["kind"]]
+        why = [{"trivy-vuln": f"installed ({f['type'] or 'package'}): {label}, in {f['target']}",
+                "trivy-misconfig": f"configuration ({f['type']}): {f['target']}",
+                "trivy-secret": f"secret in {f['target']}" + (f", line {f['line']}" if f.get("line") else "")
+                }[f["kind"]]]
+        if f["known_exploited"]:
+            why.append("exploited in the wild: on CISA's Known Exploited Vulnerabilities list")
+        elif isinstance(f.get("epss"), (int, float)) and f["epss"] >= EPSS_HOT:
+            why.append(f"likely to be exploited: EPSS {_pct(f['epss'])}")
+        if f["dev"]:
+            why.append("development dependency only: not shipped to production")
+        if attack:
+            why.append(f"being attacked: {attack['requests']} matching request(s) in the access log")
+        why.append("found by Trivy")
+        fix = (("Upgrade to " + " / ".join(f["fixed"][:3])) if f["fixed"] else
+               (f.get("fix") or "No fixed version published; remove or replace it."))
+        items.append({"id": f"other:{f['kind']}:{f['target']}:{f['package']}:{f['id']}", "tier": tier,
+                      "kind": f["kind"], "component": (f["package"] or label) if f["kind"] == "trivy-vuln" else label,
+                      "version": f.get("installed") or None,
+                      "cve": f.get("cve"), "title": f["title"], "severity": sev,
+                      "signals": {"installed": True, "known_exploited": f["known_exploited"], "epss": f.get("epss"),
+                                  "reach": "dev-only" if f["dev"] else None, "visible_from_outside": None,
+                                  "attacked": attack},
+                      "why": why, "fix": fix})
+
     # Attacks against CVEs that are NOT present: worth one line, not an alarm.
     noise = []
     if log is not None:
@@ -338,7 +384,7 @@ def assess(path=None, *, feed=None, probe_result=None, logfile=None, run_code=Tr
     summary = {t: sum(1 for i in items if i["tier"] == t) for t in TIERS}
     summary["total"] = len(items)
     views.pop("attacked_cves_with_sigs", None)
-    for name in ("installed", "code", "outside", "attacked"):
+    for name in ("installed", "code", "outside", "attacked", "other"):
         views.setdefault(name, None)            # None = this view was not supplied
     return {"tool": "phpwarden-assess", "version": __version__,
             "feed_version": getattr(feed, "feed_version", None),
@@ -350,7 +396,8 @@ def assess(path=None, *, feed=None, probe_result=None, logfile=None, run_code=Tr
 # --------------------------------------------------------------------------- #
 # Proof of fix
 # --------------------------------------------------------------------------- #
-_VIEW_OF = {"dependency": "installed", "wordpress": "installed", "code": "code"}
+_VIEW_OF = {"dependency": "installed", "wordpress": "installed", "code": "code",
+            "trivy-vuln": "other", "trivy-misconfig": "other", "trivy-secret": "other"}
 
 
 def _view_of(item) -> str:
@@ -386,7 +433,8 @@ def compare(before: dict, after: dict) -> dict:
             new.append(it)
     how = {"installed": "the installed version is no longer in the affected range",
            "code": "the code scanner no longer finds it",
-           "outside": "re-checked from outside: no longer visible on the live site"}
+           "outside": "re-checked from outside: no longer visible on the live site",
+           "other": "Trivy no longer reports it"}
     return {
         "fixed": [{"id": i["id"], "title": i["title"], "cve": i.get("cve"), "was_tier": i["tier"],
                    "verified_by": how[_view_of(i)]} for i in fixed],
@@ -408,11 +456,15 @@ def to_text(res: dict, diff: dict = None, max_watch: int = 5) -> str:
     v = res["views"]
     seen = [n for n in ("installed", "code", "outside", "attacked") if v.get(n) is not None]
     missing = [n for n in ("installed", "code", "outside", "attacked") if v.get(n) is None]
+    if v.get("other") is not None:
+        seen.append("outside PHP (Trivy)")
     s = res["summary"]
     out = [f"phpwarden assess {res['version']}  target={res['target']}  feed={res['feed_version']}",
            f"  views used: {', '.join(seen) or 'none'}"
            + (f"   (not checked: {', '.join(missing)})" if missing else ""),
            f"  {s['act-now']} act now, {s['this-week']} this week, {s['scheduled']} scheduled, {s['watch']} watch"]
+    if (v.get("other") or {}).get("note"):
+        out.append(f"  note: {v['other']['note']}")
     if diff is not None:
         out.append("")
         out.append(f"Since the baseline: {len(diff['fixed'])} fixed and verified, {len(diff['still_open'])} still open, "

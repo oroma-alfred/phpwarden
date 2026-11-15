@@ -29,6 +29,31 @@ three DVWA misses remain: DVWA includes its `low.php` through a path built from
 a variable, which the scanner does not resolve, and this benchmark scores
 findings in `low.php` itself while the sink is in another file.
 
+## Fourth run: through the database and through callbacks
+
+`results-2026-11-14-db-callbacks.txt` (2026-11-14, uncommitted working tree on
+top of `140a4d1`) adds second-order taint through literal database tables and
+columns, and run-time callbacks (`array_map`, `call_user_func`,
+`preg_replace_callback`, `add_filter`/`apply_filters`, `usort`, `$f()`).
+
+| | Before (same day, `140a4d1`) | After |
+|---|---|---|
+| DVWA `low.php` found (of 8, this scorer) | 7 | 7 |
+| DVWA `impossible.php` wrongly flagged | 0 | 0 |
+| DVWA stored XSS, low/medium/high (sink in `xss_s/index.php`, writes in the level files) | missed | found (`xss-echo`, "stored in guestbook.name") |
+| Mutillidae II pages found (of 11) | 11 | 11 |
+| WordPress / Laravel / Symfony high+critical | 7 / 0 / 0 | 7 / 0 / 0 |
+| WordPress / Laravel / Symfony all findings | 115 / 2 / 2 | 115 / 2 / 2 |
+| Wall time, WordPress / Laravel / Symfony | 7.4 / 2.6 / 8.6 s | 7.6 / 2.7 / 8.4 s |
+
+This scorer counts DVWA findings in the level file only, so stored XSS (sink
+in `index.php`) still reads `-` in section 1; `bench/sast-compare-2026-11`
+credits a level file that appears in the trace and reads 8/8/7. New DVWA
+findings outside the scored types: the `users.first_name`/`last_name` columns
+written by `authbypass/change_user_details.php` and echoed by the SQL injection
+page, and `bac_log.target_id` echoed by the access-control page: both real
+round trips. The numbers in the table above this section are from older runs.
+
 ## Targets (pinned by commit)
 
 | Target | Version | Commit |

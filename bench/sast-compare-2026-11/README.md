@@ -6,14 +6,18 @@ reproducible with `sh bench/sast-compare-2026-11/run.sh` and the raw output of
 that run is in `results-2026-11-14.txt`. The phpwarden rows were rerun the
 same day after fixing what the first run exposed; the first run (phpwarden at
 commit `4140209`) is kept in `results-2026-11-14-at-4140209.txt`, and its
-weaknesses are listed under "Fixed since the first run". We make phpwarden, so read our numbers
+weaknesses are listed under "Fixed since the first run". The phpwarden
+whole-program rows were rerun once more on the uncommitted working tree on top
+of `140a4d1` after adding taint through the database and run-time callbacks;
+that output is in `results-2026-11-14-phpwarden-db-callbacks.txt` (the other
+tools' rows are unchanged). We make phpwarden, so read our numbers
 with that in mind: the scripts, the category mapping and every hand-triage
 verdict (`triage.json`) are published so you can check them.
 
 **Short version.**
 
 - On the two deliberately vulnerable apps, phpwarden found the most: all 11
-  documented Mutillidae vulnerabilities (Psalm 8, Semgrep 4) and 7/7/6 of the 8
+  documented Mutillidae vulnerabilities (Psalm 8, Semgrep 4) and 8/8/7 of the 8
   in-scope DVWA types at low/medium/high with its default whole-program engine
   (Psalm 5/3/4, Semgrep 3/2/3), with no wrong flag on DVWA's fixed versions
   (Semgrep 1, Psalm 2).
@@ -24,9 +28,11 @@ verdict (`triage.json`) are published so you can check them.
   sampled one was a false positive or intended behaviour.
 - phpwarden was the fastest tool on DVWA, Mutillidae and WordPress. On Laravel
   (7.1 s against 4.3 s) and Symfony (15.1 s against 9.4 s) Semgrep was faster.
-- **Where phpwarden loses:** no tool, phpwarden included, finds DVWA's stored
-  XSS (it goes through the database), and phpwarden misses DVWA's `high` upload
-  level and one `high` filter case. Details below.
+- phpwarden is the only tool here that finds DVWA's stored XSS at all three
+  levels: the input is written to the `guestbook` table and printed from a
+  `SELECT` in another file, and phpwarden follows request data through literal
+  table columns.
+- **Where phpwarden loses:** it misses DVWA's `high` upload level. Details below.
 - **Snyk Code is not in this comparison.** It needs an account and a logged-in
   CLI, so we could not run it. The script supports it (see "Running Snyk Code").
 
@@ -102,17 +108,20 @@ the fixed version:
 | command injection | xxx | xxx | xxx, **wrong flag** | xxx, **wrong flag** |
 | file inclusion | ... | xxx | ..x | ... |
 | reflected XSS | ... | xxx | ... | ... |
-| stored XSS | ... | ... | ... | ... |
+| stored XSS | ... | xxx | ... | ... |
 | upload | xx. | xx. | ... | xxx, **wrong flag** |
 | open redirect | xxx | xxx | ... | xxx |
-| **found (of 8)** | 5 / 5 / 3 | **7 / 7 / 6** | 3 / 2 / 3 | 5 / 3 / 4 |
+| **found (of 8)** | 5 / 5 / 3 | **8 / 8 / 7** | 3 / 2 / 3 | 5 / 3 / 4 |
 | **wrong flags (of 8)** | **0** | **0** | 1 | 2 |
 
 The two benchmarks score DVWA differently: this one counts a level when a finding
 of the matching category is in that level's file, `bench/code-2026-11` counts
 relevant rule ids on the level file with its own list of in-scope types. That is
 why the first run disagreed (6/5/4 here, 7/6/5 there); after the fixes both read
-7/7/6.
+7/7/6. Stored XSS is where they differ now: the sink is in
+`vulnerabilities/xss_s/index.php` and the level files only write to the table.
+This benchmark credits a level whose file is in the finding's trace (8/8/7);
+`bench/code-2026-11` only counts findings in the level file itself (7/7/6).
 
 Mutillidae, documented vulnerable pages found:
 
@@ -174,9 +183,6 @@ Psalm's times exclude installing dependencies.
 
 ## Where phpwarden loses
 
-- **DVWA stored XSS: missed** (so is every other tool). The input is written to
-  the database in one request and printed from a `SELECT` in another
-  (`dvwaGuestbook()`); phpwarden does not treat database rows as sources.
 - **DVWA upload, `high`: missed.** The level checks the extension taken from the
   client file name against `jpg`/`jpeg`/`png` and runs `getimagesize()` on the
   upload. phpwarden accepts that as validation; DVWA's attack for this level is
@@ -185,6 +191,21 @@ Psalm's times exclude installing dependencies.
   1.6 times Semgrep, and slower than Semgrep on Laravel.
 
 ### Fixed since the first run (phpwarden at `4140209`)
+
+- **DVWA stored XSS, missed at every level:** request data written to a literal
+  table and column (raw `INSERT`/`UPDATE`, `$wpdb->insert()`, Eloquent,
+  `DB::table()`, Doctrine setters plus `persist()`) makes reads of the same
+  column a source (`SELECT` + fetched rows, models, getters). Reported with the
+  sink's rule and "stored in table.column at file:line", one severity level
+  lower unless the write was entirely unsanitised; the trace starts at every
+  write. Dynamic table or column names are not followed. Clean-code findings did
+  not change (WordPress 7 high, Laravel and Symfony 0).
+- **Callbacks:** values passed to `array_map`, `array_filter`, `usort`,
+  `call_user_func(_array)`, `preg_replace_callback`, `iterator_apply` and
+  `apply_filters`/`do_action` (to callbacks registered with `add_filter`/
+  `add_action`) reach the callback's parameters and its return comes back;
+  `$f()` is followed when `$f` holds a known function name, closure or
+  first-class callable.
 
 - **DVWA file inclusion, fixed version, wrongly flagged:** a non-strict
   `in_array()` against a literal list of non-numeric names is now an allow-list.
