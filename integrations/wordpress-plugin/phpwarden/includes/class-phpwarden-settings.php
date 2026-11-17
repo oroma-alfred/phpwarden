@@ -16,11 +16,10 @@ class PHPWarden_Settings {
 
 	const OPT_TOKEN   = 'phpwarden_token';
 	const OPT_API     = 'phpwarden_api_base';
-	const OPT_REMOTE  = 'phpwarden_remote_updates';
+	const OPT_REMOTE  = 'phpwarden_remote_updates'; // older versions only; removed on uninstall
 	const OPT_STATUS  = 'phpwarden_status';
-	const OPT_LOG     = 'phpwarden_log';
+	const OPT_LOG     = 'phpwarden_log'; // older versions only; removed on uninstall
 	const DEFAULT_API = 'https://app.phpwarden.io';
-	const LOG_MAX     = 50;
 
 	/**
 	 * All option names (used by uninstall).
@@ -197,39 +196,7 @@ class PHPWarden_Settings {
 		update_option( self::OPT_API, $base, false );
 	}
 
-	/* ---------- remote updates ---------- */
-
-	/**
-	 * Whether the remote-updates switch comes from wp-config.php.
-	 *
-	 * @return bool
-	 */
-	public static function remote_is_constant() {
-		return defined( 'PHPWARDEN_REMOTE_UPDATES' );
-	}
-
-	/**
-	 * Whether the site owner allowed remote updates. Off unless explicitly enabled.
-	 *
-	 * @return bool
-	 */
-	public static function remote_updates_enabled() {
-		if ( self::remote_is_constant() ) {
-			return true === constant( 'PHPWARDEN_REMOTE_UPDATES' );
-		}
-		return '1' === (string) get_option( self::OPT_REMOTE, '0' );
-	}
-
-	/**
-	 * Store the remote-updates switch.
-	 *
-	 * @param bool $enabled Enabled.
-	 */
-	public static function set_remote_updates( $enabled ) {
-		update_option( self::OPT_REMOTE, $enabled ? '1' : '0', false );
-	}
-
-	/* ---------- status + log ---------- */
+	/* ---------- status ---------- */
 
 	/**
 	 * Last sync status.
@@ -248,26 +215,5 @@ class PHPWarden_Settings {
 	 */
 	public static function set_status( array $status ) {
 		update_option( self::OPT_STATUS, $status, false );
-	}
-
-	/**
-	 * Command log, newest first.
-	 *
-	 * @return array[]
-	 */
-	public static function get_log() {
-		$log = get_option( self::OPT_LOG, array() );
-		return is_array( $log ) ? array_values( $log ) : array();
-	}
-
-	/**
-	 * Prepend an entry to the command log and cap it.
-	 *
-	 * @param array $entry Keys: time, action, slug, ok, message, from, to.
-	 */
-	public static function add_log( array $entry ) {
-		$log = self::get_log();
-		array_unshift( $log, $entry );
-		update_option( self::OPT_LOG, array_slice( $log, 0, self::LOG_MAX ), false );
 	}
 }

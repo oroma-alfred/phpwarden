@@ -105,10 +105,6 @@ class PHPWarden_Admin {
 			PHPWarden_Settings::set_api_base( $api );
 		}
 
-		if ( ! PHPWarden_Settings::remote_is_constant() ) {
-			PHPWarden_Settings::set_remote_updates( ! empty( $_POST['phpwarden_remote_updates'] ) );
-		}
-
 		PHPWarden_Plugin::ensure_schedule();
 		wp_safe_redirect( self::page_url( 'saved' ) );
 		exit;
@@ -135,10 +131,7 @@ class PHPWarden_Admin {
 		$token       = PHPWarden_Settings::get_token();
 		$token_const = PHPWarden_Settings::token_is_constant();
 		$api_const   = PHPWarden_Settings::api_is_constant();
-		$rem_const   = PHPWarden_Settings::remote_is_constant();
-		$remote      = PHPWarden_Settings::remote_updates_enabled();
 		$status      = PHPWarden_Settings::get_status();
-		$log         = PHPWarden_Settings::get_log();
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only flag.
 		$notice      = isset( $_GET['phpwarden_notice'] ) ? sanitize_key( wp_unslash( $_GET['phpwarden_notice'] ) ) : '';
 		$const_note  = __( 'Set in wp-config.php.', 'phpwarden' );
@@ -196,21 +189,6 @@ class PHPWarden_Admin {
 							<?php endif; ?>
 						</td>
 					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Remote updates', 'phpwarden' ); ?></th>
-						<td>
-							<label for="phpwarden_remote_updates">
-								<input type="checkbox" id="phpwarden_remote_updates" name="phpwarden_remote_updates" value="1" <?php checked( $remote ); ?> <?php disabled( $rem_const ); ?> />
-								<?php esc_html_e( 'Allow the phpwarden dashboard to update plugins and themes on this site', 'phpwarden' ); ?>
-							</label>
-							<p class="description">
-								<?php esc_html_e( 'Off by default. When enabled, the dashboard can ask this site to update an installed plugin or theme to the version WordPress.org offers, or to deactivate a plugin. Nothing else.', 'phpwarden' ); ?>
-								<?php if ( $rem_const ) : ?>
-									<br /><?php echo esc_html( $const_note ); ?> (<code>PHPWARDEN_REMOTE_UPDATES</code>)
-								<?php endif; ?>
-							</p>
-						</td>
-					</tr>
 				</table>
 				<?php submit_button( __( 'Save settings', 'phpwarden' ) ); ?>
 			</form>
@@ -257,43 +235,6 @@ class PHPWarden_Admin {
 				</form>
 			</div>
 
-			<h2><?php esc_html_e( 'Remote command log', 'phpwarden' ); ?></h2>
-			<?php if ( empty( $log ) ) : ?>
-				<p><?php esc_html_e( 'No remote commands have been run on this site.', 'phpwarden' ); ?></p>
-			<?php else : ?>
-				<table class="widefat striped">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Time', 'phpwarden' ); ?></th>
-							<th><?php esc_html_e( 'Action', 'phpwarden' ); ?></th>
-							<th><?php esc_html_e( 'Component', 'phpwarden' ); ?></th>
-							<th><?php esc_html_e( 'Result', 'phpwarden' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $log as $entry ) : ?>
-							<?php
-							if ( ! is_array( $entry ) ) {
-								continue;
-							}
-							$result = ! empty( $entry['ok'] ) ? __( 'OK', 'phpwarden' ) : __( 'Failed', 'phpwarden' );
-							if ( ! empty( $entry['from'] ) && ! empty( $entry['to'] ) && $entry['from'] !== $entry['to'] ) {
-								$result .= ' (' . $entry['from'] . ' → ' . $entry['to'] . ')';
-							}
-							if ( ! empty( $entry['message'] ) ) {
-								$result .= ': ' . $entry['message'];
-							}
-							?>
-							<tr>
-								<td><?php echo esc_html( self::format_time( isset( $entry['time'] ) ? $entry['time'] : 0 ) ); ?></td>
-								<td><code><?php echo esc_html( isset( $entry['action'] ) ? $entry['action'] : '' ); ?></code></td>
-								<td><?php echo esc_html( isset( $entry['slug'] ) ? $entry['slug'] : '' ); ?></td>
-								<td><?php echo esc_html( $result ); ?></td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-			<?php endif; ?>
 		</div>
 		<?php
 	}

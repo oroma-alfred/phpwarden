@@ -22,6 +22,7 @@ dependencies {
         bundledPlugin("com.jetbrains.php")
         instrumentationTools()
         pluginVerifier()
+        zipSigner()
         testFramework(TestFrameworkType.Platform)
     }
     testImplementation("junit:junit:4.13.2")

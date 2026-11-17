@@ -323,6 +323,24 @@ def _risk(known, epss, pct, ransomware=False):
     return "  [" + ", ".join(parts) + "]" if parts else ""
 
 
+DASHBOARD_HINT = ("Track this result over time, with an alert when something here becomes exploited: "
+                  "free dashboard at https://app.phpwarden.io/signup?from=cli")
+
+
+def _dashboard_hint(args) -> None:
+    """One line on stderr after an interactive text run that isn't reporting anywhere.
+    Never in JSON/SARIF output, pipes, CI, or when PHPWARDEN_NO_HINT is set."""
+    import os
+    if _fmt(args) != "text" or os.environ.get("PHPWARDEN_NO_HINT") or os.environ.get("CI"):
+        return
+    try:
+        if not (sys.stdout.isatty() and sys.stderr.isatty()):
+            return
+    except (AttributeError, ValueError):
+        return
+    print(f"\n{DASHBOARD_HINT}  (hide: PHPWARDEN_NO_HINT=1)", file=sys.stderr)
+
+
 def _maybe_report(args, doc) -> bool:
     """POST this result to a phpwarden SaaS, if --report-to is set.
 
@@ -334,6 +352,7 @@ def _maybe_report(args, doc) -> bool:
     url = getattr(args, "report_to", None) or os.environ.get("PHPWARDEN_REPORT_URL")
     token = getattr(args, "report_token", None) or os.environ.get("PHPWARDEN_REPORT_TOKEN")
     if not url:
+        _dashboard_hint(args)
         return True
     body = json.dumps(doc).encode()
     req = urllib.request.Request(url, data=body, method="POST",
@@ -458,7 +477,7 @@ def _probe(args):
     auth = None
     if args.cookie or args.cookie_file or args.header:
         if args.passive:
-            sys.stderr.write("error: --cookie/--cookie-file need the active checks; drop --passive\n")
+            sys.stderr.write("error: --cookie/--cookie-file/--header need the active checks; drop --passive\n")
             return 4
         try:
             raw = list(args.cookie or [])

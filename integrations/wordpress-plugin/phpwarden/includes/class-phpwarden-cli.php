@@ -22,13 +22,9 @@ class PHPWarden_CLI {
 	 * <token>
 	 * : The project ingest token from your phpwarden dashboard.
 	 *
-	 * [--[no-]remote-updates]
-	 * : Also allow the phpwarden dashboard to update plugins and themes on this site.
-	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp phpwarden activate TOKEN
-	 *     wp phpwarden activate TOKEN --remote-updates
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Flags.
@@ -40,16 +36,6 @@ class PHPWarden_CLI {
 			WP_CLI::warning( 'PHPWARDEN_TOKEN is defined in wp-config.php; the token argument was ignored.' );
 		} elseif ( ! PHPWarden_Settings::set_token( isset( $args[0] ) ? $args[0] : '' ) ) {
 			WP_CLI::error( 'That does not look like a valid token.' );
-		}
-
-		// --remote-updates turns them on, --no-remote-updates turns them off;
-		// with neither flag the current setting is left alone.
-		if ( array_key_exists( 'remote-updates', $assoc_args ) ) {
-			if ( PHPWarden_Settings::remote_is_constant() ) {
-				WP_CLI::warning( 'PHPWARDEN_REMOTE_UPDATES is defined in wp-config.php; the flag was ignored.' );
-			} else {
-				PHPWarden_Settings::set_remote_updates( ! empty( $assoc_args['remote-updates'] ) );
-			}
 		}
 
 		PHPWarden_Plugin::ensure_schedule();
@@ -74,7 +60,6 @@ class PHPWarden_CLI {
 
 		WP_CLI::line( 'Token:          ' . ( '' === $token ? '(not set)' : PHPWarden_Settings::mask_token( $token ) ) . ( PHPWarden_Settings::token_is_constant() ? ' (wp-config.php)' : '' ) );
 		WP_CLI::line( 'API:            ' . PHPWarden_Settings::get_api_base() );
-		WP_CLI::line( 'Remote updates: ' . ( PHPWarden_Settings::remote_updates_enabled() ? 'enabled' : 'disabled' ) . ( PHPWarden_Settings::remote_is_constant() ? ' (wp-config.php)' : '' ) );
 		WP_CLI::line( 'Next report:    ' . ( $next ? gmdate( 'Y-m-d H:i:s', $next ) . ' UTC' : '(not scheduled)' ) );
 		if ( empty( $status['time'] ) ) {
 			WP_CLI::line( 'Last sync:      never' );

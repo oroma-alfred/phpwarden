@@ -17,7 +17,7 @@ class PHPWarden_Client {
 	const LOCK = 'phpwarden_sync_lock';
 
 	/**
-	 * Send the inventory and, when the owner allowed it, run returned commands.
+	 * Send the inventory. Report only: anything else in the response is ignored.
 	 *
 	 * @param string $trigger cron|change|manual|cli (informational, stored in status).
 	 * @return array Status as stored in the status option.
@@ -32,8 +32,7 @@ class PHPWarden_Client {
 		}
 		set_transient( self::LOCK, 1, 10 * MINUTE_IN_SECONDS );
 
-		$remote = PHPWarden_Settings::remote_updates_enabled();
-		$body   = PHPWarden_Inventory::encode( PHPWarden_Inventory::collect( $remote ) );
+		$body = PHPWarden_Inventory::encode( PHPWarden_Inventory::collect() );
 		if ( false === $body ) {
 			delete_transient( self::LOCK );
 			return self::finish( $trigger, false, 0, __( 'Inventory is too large to send.', 'phpwarden' ) );
@@ -52,63 +51,8 @@ class PHPWarden_Client {
 		);
 		$status = self::finish( $trigger, true, 200, '', true, $extra );
 
-		// Commands are ignored entirely unless the owner enabled remote updates.
-		$commands = PHPWarden_Commands::select( isset( $data['commands'] ) ? $data['commands'] : array(), $remote );
-		if ( ! empty( $commands ) ) {
-			self::run_commands( $commands, $token );
-		}
-
 		delete_transient( self::LOCK );
 		return $status;
-	}
-
-	/**
-	 * Validate, execute, log and report commands.
-	 *
-	 * @param array  $commands Commands from PHPWarden_Commands::select().
-	 * @param string $token    Project token.
-	 */
-	private static function run_commands( array $commands, $token ) {
-		if ( ! function_exists( 'get_plugins' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-		$self = plugin_basename( PHPWARDEN_PLUGIN_FILE );
-
-		foreach ( $commands as $command ) {
-			// Re-read on every iteration: an earlier command may have changed things.
-			$enabled = PHPWarden_Settings::remote_updates_enabled();
-			$cmd     = PHPWarden_Commands::validate(
-				$command,
-				$enabled,
-				array_keys( get_plugins() ),
-				array_keys( wp_get_themes() ),
-				$self
-			);
-			if ( ! $enabled ) {
-				return;
-			}
-			if ( $cmd['valid'] ) {
-				$result = PHPWarden_Commands::execute( $cmd );
-			} else {
-				$result = PHPWarden_Commands::result( false, '', '', 'rejected: ' . $cmd['reason'] );
-			}
-
-			PHPWarden_Settings::add_log(
-				array(
-					'time'    => time(),
-					'action'  => '' !== $cmd['action'] ? $cmd['action'] : 'unknown',
-					'slug'    => '' !== $cmd['slug'] ? $cmd['slug'] : '-',
-					'ok'      => $result['ok'],
-					'from'    => $result['from'],
-					'to'      => $result['to'],
-					'message' => $result['message'],
-				)
-			);
-
-			if ( '' !== $cmd['id'] ) {
-				self::post( '/v1/commands/' . rawurlencode( $cmd['id'] ) . '/result', wp_json_encode( $result ), $token );
-			}
-		}
 	}
 
 	/**

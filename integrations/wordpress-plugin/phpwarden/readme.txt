@@ -1,10 +1,10 @@
 === phpwarden ===
 Contributors: phpwarden
-Tags: security, vulnerabilities, updates, monitoring, inventory
+Tags: security, vulnerabilities, monitoring, inventory, cve
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,7 +20,7 @@ The plugin reports which components are installed. Your phpwarden dashboard matc
 
 * Sends an inventory report twice a day, shortly after a plugin or theme is installed, updated, activated, deactivated or deleted, and when you press "Send report now".
 * Shows the result of the last report on the settings page: time, status, and the number of exposed components and KEV-listed vulnerabilities.
-* Optionally (off by default) lets you update plugins and themes from the phpwarden dashboard.
+* Report only: it never makes changes to your site on behalf of the service, and ignores any instruction in the service's response.
 
 = What it is not =
 
@@ -36,31 +36,19 @@ Each report contains exactly this, and nothing else:
 * The WordPress core version.
 * For every installed plugin: slug (directory name), main file path relative to the plugins directory, name, version, whether it is active, and the newer version WordPress knows of, if any.
 * For every installed theme: slug (directory name), name, version, whether it is active, and the newer version WordPress knows of, if any.
-* Whether you have enabled remote updates (true or false).
 
 The project token is sent in the `Authorization` header to identify your project. No user accounts, e-mail addresses, post content, visitor data, file contents, database contents or secrets are sent. The plugin loads no external assets and contains no tracking.
-
-= Remote updates (off by default) =
-
-If, and only if, you tick "Allow the phpwarden dashboard to update plugins and themes on this site" (or set `PHPWARDEN_REMOTE_UPDATES` to `true` in `wp-config.php`), the dashboard can ask the site to do one of three things:
-
-* update an installed plugin,
-* update an installed theme,
-* deactivate an installed plugin.
-
-Updates are performed by WordPress's own updater and install exactly the version WordPress.org offers for that plugin or theme. The plugin never downloads anything from an address supplied by phpwarden, ignores any other instruction, only acts on plugins and themes that are already installed, runs at most five commands per report, and never deactivates itself. Every command is recorded in a log shown on the settings page. While remote updates are disabled, any command returned by the service is ignored.
 
 = Configuration in wp-config.php =
 
     define( 'PHPWARDEN_TOKEN', 'your-project-token' );
-    define( 'PHPWARDEN_REMOTE_UPDATES', false );
     define( 'PHPWARDEN_API', 'https://app.phpwarden.io' );
 
 Constants take precedence over the settings page and make the corresponding field read-only.
 
 = WP-CLI =
 
-    wp phpwarden activate <token> [--remote-updates]
+    wp phpwarden activate <token>
     wp phpwarden sync
     wp phpwarden status
 
@@ -72,11 +60,9 @@ The plugin can be network-activated. It reports once for the whole network, from
 
 This plugin connects to the phpwarden service at `https://app.phpwarden.io` (or the API base URL you configure). It is required for the plugin to do anything useful: the service matches your inventory against vulnerability data and shows the result in your dashboard.
 
-* **What is sent and when:** the inventory listed under "Data sent" above, together with your project token, twice a day, about a minute after plugin or theme changes, and when you press "Send report now". When remote updates are enabled, the result of each requested update (success or failure, the version before and after, and an error message if any) is also sent.
+* **What is sent and when:** the inventory listed under "Data sent" above, together with your project token, twice a day, about a minute after plugin or theme changes, and when you press "Send report now".
 * **Nothing is sent** until you have entered a project token.
 * Service provider: phpwarden. [Terms of service](https://phpwarden.io/terms), [privacy policy](https://phpwarden.io/privacy).
-
-During a remote update WordPress itself contacts WordPress.org to check for and download the update, exactly as it does for an update started from the Plugins screen.
 
 == Installation ==
 
@@ -97,7 +83,7 @@ No. This plugin is not a firewall or malware scanner. It tells you which install
 
 = Can phpwarden change my site? =
 
-Not unless you allow it. Remote updates are off by default. When you enable them, phpwarden can only update installed plugins and themes to the version WordPress.org offers, or deactivate a plugin. See "Remote updates" above.
+No. The plugin only sends the report described above. It never installs, updates, activates or deactivates anything, never creates or changes user accounts, and never runs instructions from the service. You make every change yourself, in WordPress.
 
 = Where is the token stored? =
 
@@ -113,9 +99,12 @@ No. Reports are sent in the background by WP-Cron, not during visitor page loads
 
 = What is removed on uninstall? =
 
-All plugin options (token, settings, status, command log) and its scheduled events.
+All plugin options (token, settings, status) and its scheduled events.
 
 == Changelog ==
+
+= 1.1.0 =
+* Report only. Removed the optional remote updates: the plugin never acts on the site for the service.
 
 = 1.0.0 =
 * Initial release: inventory reports, status box, optional remote updates, WP-CLI commands.

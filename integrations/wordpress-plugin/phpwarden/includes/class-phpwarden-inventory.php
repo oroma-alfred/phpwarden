@@ -119,7 +119,6 @@ class PHPWarden_Inventory {
 	/**
 	 * Collect the full inventory from this WordPress install.
 	 *
-	 * @param bool $remote_updates Whether the owner enabled remote updates.
 	 * @return array Payload for POST /v1/inventory.
 	 */
 	/**
@@ -163,7 +162,7 @@ class PHPWarden_Inventory {
 		return get_site_transient( $name );
 	}
 
-	public static function collect( $remote_updates ) {
+	public static function collect() {
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
@@ -189,7 +188,7 @@ class PHPWarden_Inventory {
 					self::fresh_updates( 'update_themes' )
 				),
 			),
-			'remote_updates' => (bool) $remote_updates,
+			'remote_updates' => false, // report-only plugin: never runs commands
 		);
 	}
 

@@ -84,7 +84,7 @@ class T_Theme {
 	}
 }
 
-$base = dirname( __DIR__ ) . '/phpwarden/includes/';
+$base = dirname( __DIR__ ) . '/phpwarden-agency/includes/';
 require $base . 'class-phpwarden-settings.php';
 require $base . 'class-phpwarden-inventory.php';
 require $base . 'class-phpwarden-commands.php';
