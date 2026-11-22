@@ -7,6 +7,7 @@ same signatures power `phpwarden detect` (observe) and these rules (block).
 from __future__ import annotations
 
 import re
+import zlib
 from typing import List
 
 from phpwarden.vulndb import Feed
@@ -65,7 +66,7 @@ def signature_regex(pat: str) -> str:
     return re.escape(p)
 
 
-def _modsec_lines(entries, rid_base=RULE_ID_BASE, dry_run=False):
+def _modsec_lines(entries, rid_base=RULE_ID_BASE, dry_run=False, ids=None):
     """entries: [(cve_id, pattern, note), ...] -> ModSecurity SecRule lines.
 
     dry_run: the rule logs the match (error log + audit log) and lets the
@@ -73,7 +74,9 @@ def _modsec_lines(entries, rid_base=RULE_ID_BASE, dry_run=False):
     action = "pass,log,auditlog" if dry_run else "deny,status:403"
     label = "phpwarden DRY-RUN (would block)" if dry_run else "phpwarden"
     out, rid = [], rid_base
-    for cve_id, pat, note in entries:
+    for i, (cve_id, pat, note) in enumerate(entries):
+        if ids:
+            rid = ids[i]
         rx = signature_regex(pat)
         # (?i): @rx is case-sensitive and real probes use "%AD"/"%0A".
         # REQUEST_URI_RAW only: the signatures are written against the raw,
@@ -236,24 +239,58 @@ def guard_policy(cve_id: str) -> str:
 
 def virtual_patch(feed: Feed, cve_id: str, fmt: str = "nginx", observed=None) -> dict:
     """Build a one-CVE virtual patch. Returns {text, has_waf, kind}."""
+    from phpwarden.shield import waf  # local: keeps the shield package optional for rules users
     entries = _cve_entries(feed, cve_id, observed)
+    shield_lines, covered, skipped = waf.waf_for_cve(cve_id, "nginx" if fmt == "nginx" else "modsecurity")
     header = [
         f"# phpwarden virtual patch — {cve_id}",
         f"# feed {feed.feed_version}. Contain this CVE now; remove once you've upgraded.",
         "",
     ]
-    if entries:
-        body = _nginx_lines(entries) if fmt == "nginx" else _modsec_lines(entries)
+    # the guard policy is JSON for a different tool: comment it out so the file
+    # can be included as-is (raw "{" lines make nginx and ModSecurity refuse to load)
+    guard = [ln if ln.startswith("#") else "#   " + ln for ln in guard_policy(cve_id).splitlines()]
+    if entries or shield_lines:
         where = ("Include inside the server/location that proxies to PHP-FPM."
-                 if fmt == "nginx" else "Place in your CRS custom rules; tune IDs to avoid clashes.")
-        text = "\n".join(header + [f"# {where}", ""] + body + ["",
-               "# Runtime containment (defense in depth):", ""] + guard_policy(cve_id).splitlines())
+                 if fmt == "nginx" else
+                 "Place in your custom rules (needs SecRequestBodyAccess On); tune IDs to avoid clashes.")
+        body = []
+        if shield_lines:
+            body += ["# Exploit request shapes for this CVE (the same rules the phpwarden shield uses):", ""] + shield_lines
+        if skipped and fmt == "nginx":
+            body += [f"# Not expressible in nginx (needs the request body or decoded parameters): {', '.join(skipped)}.",
+                     "# Use the ModSecurity download or the phpwarden shield for those.", ""]
+        if entries:
+            # per-CVE downloads get ids from the CVE and pattern, so installing several never clashes
+            ids = [9200000 + zlib.crc32(f"{c}|{p}".encode()) % 790000 for c, p, _ in entries]
+            body += (_nginx_lines(entries) if fmt == "nginx" else _modsec_lines(entries, ids=ids)) + [""]
+        text = "\n".join(header + [f"# {where}", ""] + body +
+                         ["# Runtime containment (defense in depth), for guard.json, not this file:", ""] + guard)
         return {"text": text + "\n", "has_waf": True, "kind": fmt}
-    # no signature and nothing observed yet -> guard policy only
+    if skipped:                       # the library has it, but not in a form nginx can enforce
+        text = "\n".join(header + [
+            f"# nginx cannot enforce the exploit rule for this CVE ({', '.join(skipped)}): it needs the",
+            "# request body or decoded parameters, which nginx does not inspect.",
+            "# Use the ModSecurity download, or block it inside PHP with the phpwarden shield.",
+            "",
+            "# Runtime containment, for guard.json, not this file:", ""] + guard)
+        return {"text": text + "\n", "has_waf": False, "kind": "guard"}
+    known = waf.NO_RULE.get(cve_id)
+    if known and known[0] == "patch":   # no request rule can work, and the guard does not apply
+        text = "\n".join(header + [
+            "# No WAF rule for this CVE, on purpose: " + known[1] + ".",
+            "# Upgrade to the fixed version; that is the only reliable fix.",
+        ])
+        return {"text": text + "\n", "has_waf": False, "kind": "patch"}
+    if known:                         # engine memory corruption: the runtime guard is the containment
+        text = "\n".join(header + ["# No WAF rule for this CVE: " + known[1] + ".", "",
+                                    "# Runtime containment, for guard.json, not this file:", ""] + guard)
+        return {"text": text + "\n", "has_waf": False, "kind": "guard"}
+    # no signature, no library rule and nothing observed yet -> guard policy only
     text = "\n".join(header + [
         "# No request-signature is available for this CVE, and nothing matching it",
         "# has been seen in your logs yet, so an edge WAF rule can't target it precisely.",
         "# Contain it at runtime instead — the guard recycles a poisoned PHP-FPM worker:",
         "",
-    ] + guard_policy(cve_id).splitlines())
+    ] + guard)
     return {"text": text + "\n", "has_waf": False, "kind": "guard"}

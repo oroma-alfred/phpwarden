@@ -46,8 +46,12 @@ def parse_request(req):
     params = [(k, v[:MAX_VALUE_LEN]) for k, v in params[:MAX_VALUES]]
     headers = {k.lower(): v for k, v in (req.get("headers") or {}).items()}
     cookies = {k: v for k, v in (req.get("cookies") or {}).items()}
+    files = [str(f[1]) for f in (req.get("files") or []) if len(f) > 1 and f[1]]
+    if files:                                       # multipart: other fields are form params, body is not text
+        params += [(_php_key(k), v) for k, v in parse_qsl(req.get("body") or "", keep_blank_values=True)]
+        body = ""
     return {"method": (req.get("method") or "GET").upper(), "path": path, "query": query,
-            "params": params, "headers": headers, "cookies": cookies,
+            "params": params, "headers": headers, "cookies": cookies, "files": files[:50],
             "body": body if not ctype.startswith("multipart/") else ""}
 
 
@@ -85,6 +89,8 @@ def _cond(c, r):
                 return False
             vals = [r["cookies"][name]]
         return True if rx is None else any(rx.search(v) for v in vals)
+    if loc == "file_name":
+        return any(rx.search(f) for f in r.get("files", [])) if rx else bool(r.get("files"))
     if loc == "header":
         v = r["headers"].get((name or "").lower())
         if v is None:
@@ -117,3 +123,22 @@ def evaluate(policy, req):
         if match_rule(rule, r):
             out.append((rule["id"], "block" if enforce and rule.get("mode") == "block" else "log"))
     return out
+
+
+def wire(req, boundary="----phpwardenTestBoundary7MA4YWxk"):
+    """(body_bytes, content_type) to send an example request for real. With files,
+    a multipart/form-data body: the urlencoded `body` fields, then each file."""
+    files = req.get("files") or []
+    if not files:
+        body = (req.get("body") or "").encode("utf-8", "surrogateescape")
+        return body, (req.get("ctype") or ("application/octet-stream" if body else ""))
+    parts = []
+    for k, v in parse_qsl(req.get("body") or "", keep_blank_values=True):
+        parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
+    for f in files:
+        field, name = f[0], f[1]
+        content = f[2] if len(f) > 2 else "GIF89a placeholder"
+        parts.append((f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"; filename="{name}"\r\n'
+                      f'Content-Type: application/octet-stream\r\n\r\n').encode("utf-8", "surrogateescape")
+                     + content.encode() + b"\r\n")
+    return b"".join(parts) + f"--{boundary}--\r\n".encode(), f"multipart/form-data; boundary={boundary}"

@@ -117,11 +117,6 @@ class PHPWarden_Inventory {
 	}
 
 	/**
-	 * Collect the full inventory from this WordPress install.
-	 *
-	 * @return array Payload for POST /v1/inventory.
-	 */
-	/**
 	 * Whether WordPress's cached update list can be trusted as-is.
 	 *
 	 * WordPress deletes the `update_plugins` / `update_themes` transient whenever a
@@ -143,12 +138,19 @@ class PHPWarden_Inventory {
 	/**
 	 * The update list, refreshed from wordpress.org first when it is missing or stale.
 	 *
+	 * The refresh is skipped, and the cached list used as it is, while WordPress is
+	 * installing or when the site has turned off WordPress's own update checks.
+	 *
 	 * @param string $name `update_plugins` or `update_themes`.
 	 * @return mixed
 	 */
 	public static function fresh_updates( $name ) {
 		$transient = get_site_transient( $name );
 		if ( self::updates_are_fresh( $transient, time() ) ) {
+			return $transient;
+		}
+		$check = ( 'update_plugins' === $name ) ? 'wp_update_plugins' : 'wp_update_themes';
+		if ( wp_installing() || ! has_action( $check, $check ) ) {
 			return $transient;
 		}
 		if ( ! function_exists( 'wp_update_plugins' ) ) {
@@ -162,6 +164,11 @@ class PHPWarden_Inventory {
 		return get_site_transient( $name );
 	}
 
+	/**
+	 * Collect the full inventory from this WordPress install.
+	 *
+	 * @return array Payload for POST /v1/inventory.
+	 */
 	public static function collect() {
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -188,7 +195,7 @@ class PHPWarden_Inventory {
 					self::fresh_updates( 'update_themes' )
 				),
 			),
-			'remote_updates' => false, // report-only plugin: never runs commands
+			'remote_updates' => false, // report-only plugin: never runs commands.
 		);
 	}
 

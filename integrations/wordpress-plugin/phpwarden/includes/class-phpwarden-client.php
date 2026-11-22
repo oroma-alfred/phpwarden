@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Talks to the phpwarden API (POST /v1/inventory, POST /v1/commands/<id>/result).
+ * Talks to the phpwarden API (POST /v1/inventory only).
  */
 class PHPWarden_Client {
 
@@ -23,6 +23,9 @@ class PHPWarden_Client {
 	 * @return array Status as stored in the status option.
 	 */
 	public static function sync( $trigger = 'cron' ) {
+		if ( ! PHPWarden_Settings::has_consent() ) {
+			return self::finish( $trigger, false, 0, __( 'Reports are off: an administrator has not agreed to send them (Settings > phpwarden).', 'phpwarden' ) );
+		}
 		$token = PHPWarden_Settings::get_token();
 		if ( '' === $token ) {
 			return self::finish( $trigger, false, 0, __( 'No project token configured.', 'phpwarden' ) );

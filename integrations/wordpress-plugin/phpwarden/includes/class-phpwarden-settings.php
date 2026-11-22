@@ -1,6 +1,6 @@
 <?php
 /**
- * Stored settings, status and command log.
+ * Stored settings, consent and status.
  *
  * @package PHPWarden
  */
@@ -16,9 +16,10 @@ class PHPWarden_Settings {
 
 	const OPT_TOKEN   = 'phpwarden_token';
 	const OPT_API     = 'phpwarden_api_base';
-	const OPT_REMOTE  = 'phpwarden_remote_updates'; // older versions only; removed on uninstall
+	const OPT_REMOTE  = 'phpwarden_remote_updates'; // older versions only; removed on uninstall.
 	const OPT_STATUS  = 'phpwarden_status';
-	const OPT_LOG     = 'phpwarden_log'; // older versions only; removed on uninstall
+	const OPT_CONSENT = 'phpwarden_consent';
+	const OPT_LOG     = 'phpwarden_log'; // older versions only; removed on uninstall.
 	const DEFAULT_API = 'https://app.phpwarden.io';
 
 	/**
@@ -27,7 +28,32 @@ class PHPWarden_Settings {
 	 * @return string[]
 	 */
 	public static function option_names() {
-		return array( self::OPT_TOKEN, self::OPT_API, self::OPT_REMOTE, self::OPT_STATUS, self::OPT_LOG );
+		return array( self::OPT_TOKEN, self::OPT_API, self::OPT_REMOTE, self::OPT_STATUS, self::OPT_LOG, self::OPT_CONSENT );
+	}
+
+	/* ---------- consent ---------- */
+
+	/**
+	 * Whether an administrator has explicitly agreed to send reports.
+	 * Nothing is ever sent without it, whatever else is configured.
+	 *
+	 * @return bool
+	 */
+	public static function has_consent() {
+		return '1' === (string) get_option( self::OPT_CONSENT, '' );
+	}
+
+	/**
+	 * Record or withdraw consent.
+	 *
+	 * @param bool $on Consent given.
+	 */
+	public static function set_consent( $on ) {
+		if ( $on ) {
+			update_option( self::OPT_CONSENT, '1', true ); // autoloaded: checked on every request.
+		} else {
+			delete_option( self::OPT_CONSENT );
+		}
 	}
 
 	/* ---------- token ---------- */

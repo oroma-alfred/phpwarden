@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Settings → phpwarden.
+ * Settings > phpwarden.
  */
 class PHPWarden_Admin {
 
@@ -24,6 +24,29 @@ class PHPWarden_Admin {
 		add_action( 'admin_post_phpwarden_save', array( __CLASS__, 'handle_save' ) );
 		add_action( 'admin_post_phpwarden_sync', array( __CLASS__, 'handle_sync' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( PHPWARDEN_PLUGIN_FILE ), array( __CLASS__, 'action_links' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'setup_notice' ) );
+	}
+
+	/**
+	 * On the Plugins screen only: say when reports are off because consent is missing
+	 * (for example after an upgrade from 1.1.0), or when the plugin is active on a
+	 * site of a network that is not the main site, where it does nothing.
+	 */
+	public static function setup_notice() {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'plugins' !== $screen->id ) {
+			return;
+		}
+		if ( ! PHPWarden_Plugin::should_run() ) {
+			if ( current_user_can( 'manage_options' ) ) {
+				echo '<div class="notice notice-info"><p>' . esc_html__( 'phpwarden reports from the main site of the network only. Activate it on the main site or network-activate it.', 'phpwarden' ) . '</p></div>';
+			}
+			return;
+		}
+		if ( ! current_user_can( PHPWarden_Plugin::capability() ) || PHPWarden_Settings::has_consent() || '' === PHPWarden_Settings::get_token() ) {
+			return;
+		}
+		echo '<div class="notice notice-warning"><p>' . esc_html__( 'phpwarden reports are off until an administrator agrees to send them.', 'phpwarden' ) . ' <a href="' . esc_url( self::page_url() ) . '">' . esc_html__( 'Review what is sent and turn reports on', 'phpwarden' ) . '</a></p></div>';
 	}
 
 	/**
@@ -70,28 +93,23 @@ class PHPWarden_Admin {
 	}
 
 	/**
-	 * Abort unless the current user may manage the plugin and the nonce is valid.
-	 *
-	 * @param string $action Nonce action.
+	 * Abort unless the current user may manage the plugin. Each handler checks its nonce itself.
 	 */
-	private static function guard( $action ) {
+	private static function guard() {
 		if ( ! PHPWarden_Plugin::should_run() || ! current_user_can( PHPWarden_Plugin::capability() ) ) {
 			wp_die( esc_html__( 'You are not allowed to do this.', 'phpwarden' ), '', array( 'response' => 403 ) );
 		}
-		check_admin_referer( $action );
 	}
 
 	/**
 	 * Save settings.
 	 */
 	public static function handle_save() {
-		self::guard( 'phpwarden_save' );
+		self::guard();
 		check_admin_referer( 'phpwarden_save' );
 
 		if ( ! PHPWarden_Settings::token_is_constant() ) {
-			// The token is opaque: it is reduced to bearer-token characters by sanitize_token().
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$token = isset( $_POST['phpwarden_token'] ) ? PHPWarden_Settings::sanitize_token( wp_unslash( $_POST['phpwarden_token'] ) ) : '';
+			$token = isset( $_POST['phpwarden_token'] ) ? PHPWarden_Settings::sanitize_token( sanitize_text_field( wp_unslash( $_POST['phpwarden_token'] ) ) ) : '';
 			if ( ! empty( $_POST['phpwarden_token_remove'] ) ) {
 				PHPWarden_Settings::delete_token();
 			} elseif ( '' !== $token ) {
@@ -105,6 +123,7 @@ class PHPWarden_Admin {
 			PHPWarden_Settings::set_api_base( $api );
 		}
 
+		PHPWarden_Settings::set_consent( ! empty( $_POST['phpwarden_consent'] ) );
 		PHPWarden_Plugin::ensure_schedule();
 		wp_safe_redirect( self::page_url( 'saved' ) );
 		exit;
@@ -114,7 +133,7 @@ class PHPWarden_Admin {
 	 * "Send report now".
 	 */
 	public static function handle_sync() {
-		self::guard( 'phpwarden_sync' );
+		self::guard();
 		check_admin_referer( 'phpwarden_sync' );
 		$status = PHPWarden_Client::sync( 'manual' );
 		wp_safe_redirect( self::page_url( $status['ok'] ? 'synced' : 'sync_failed' ) );
@@ -133,8 +152,8 @@ class PHPWarden_Admin {
 		$api_const   = PHPWarden_Settings::api_is_constant();
 		$status      = PHPWarden_Settings::get_status();
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only flag.
-		$notice      = isset( $_GET['phpwarden_notice'] ) ? sanitize_key( wp_unslash( $_GET['phpwarden_notice'] ) ) : '';
-		$const_note  = __( 'Set in wp-config.php.', 'phpwarden' );
+		$notice     = isset( $_GET['phpwarden_notice'] ) ? sanitize_key( wp_unslash( $_GET['phpwarden_notice'] ) ) : '';
+		$const_note = __( 'Set in wp-config.php.', 'phpwarden' );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'phpwarden', 'phpwarden' ); ?></h1>
@@ -185,8 +204,27 @@ class PHPWarden_Admin {
 							<?php if ( $api_const ) : ?>
 								<p class="description"><?php echo esc_html( $const_note ); ?> (<code>PHPWARDEN_API</code>)</p>
 							<?php else : ?>
-								<p class="description"><?php esc_html_e( 'Default: https://app.phpwarden.io. Must use HTTPS.', 'phpwarden' ); ?></p>
+								<p class="description"><?php esc_html_e( 'Default: https://app.phpwarden.io. Must use HTTPS (HTTP is allowed only for local development hosts).', 'phpwarden' ); ?></p>
 							<?php endif; ?>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Consent', 'phpwarden' ); ?></th>
+						<td>
+							<label><input type="checkbox" id="phpwarden_consent" name="phpwarden_consent" value="1" <?php checked( PHPWarden_Settings::has_consent() ); ?> /> <?php esc_html_e( 'I agree to send this site\'s software inventory to the phpwarden service.', 'phpwarden' ); ?></label>
+							<p class="description">
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %s: API base URL. */
+										__( 'What is sent: the site address, the WordPress version, the PHP version and server API, the version of this plugin, and for each installed plugin and theme its name, slug, version, whether it is active and any newer version WordPress knows of (for plugins, also the main file path), together with your project token to identify the project. It goes to %s twice a day, about a minute after plugins or themes change, when you press Send report now, and when an administrator runs wp phpwarden activate or wp phpwarden sync. No posts, users, e-mail addresses, passwords or visitor data are sent. Nothing is sent until this box is checked; uncheck it to stop.', 'phpwarden' ),
+										PHPWarden_Settings::get_api_base()
+									)
+								);
+								?>
+								<a href="https://phpwarden.io/terms" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Terms', 'phpwarden' ); ?></a> &middot;
+								<a href="https://phpwarden.io/privacy" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Privacy', 'phpwarden' ); ?></a>
+							</p>
 						</td>
 					</tr>
 				</table>
@@ -231,7 +269,7 @@ class PHPWarden_Admin {
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="phpwarden_sync" />
 					<?php wp_nonce_field( 'phpwarden_sync' ); ?>
-					<?php submit_button( __( 'Send report now', 'phpwarden' ), 'secondary', 'submit', true, '' === $token ? array( 'disabled' => 'disabled' ) : array() ); ?>
+					<?php submit_button( __( 'Send report now', 'phpwarden' ), 'secondary', 'submit', true, ( '' === $token || ! PHPWarden_Settings::has_consent() ) ? array( 'disabled' => 'disabled' ) : array() ); ?>
 				</form>
 			</div>
 

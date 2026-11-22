@@ -141,11 +141,28 @@ function phpwarden_shield_request($policy)
         $headers['content-type'] = (string)$_SERVER['CONTENT_TYPE'];
     }
     $ip = phpwarden_shield_client_ip($policy);
+    // original names of uploaded files (multipart bodies are not read as text)
+    $files = array();
+    if (!empty($_FILES) && is_array($_FILES)) {
+        // field[a][b] uploads nest the names: $_FILES['field']['name']['a']['b']
+        foreach ($_FILES as $f) {
+            if (!is_array($f) || !isset($f['name'])) {
+                continue;
+            }
+            $names = is_array($f['name']) ? $f['name'] : array($f['name']);
+            array_walk_recursive($names, function ($v) use (&$files) {
+                if (is_string($v) && $v !== '' && count($files) < 50) {
+                    $files[] = $v;
+                }
+            });
+        }
+    }
     return array(
         'method' => isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string)$_SERVER['REQUEST_METHOD']) : 'GET',
         'path' => $path, 'query' => $query, 'params' => $params, 'names' => $names,
         'cookies' => is_array($_COOKIE) ? $_COOKIE : array(), 'headers' => $headers, 'ip' => $ip,
         'body' => null,                                        // read lazily, only if a rule needs it
+        'files' => $files,
     );
 }
 
@@ -482,6 +499,15 @@ function phpwarden_shield_cond($c, &$req)
                 return array('cookie:' . $k, (string)$v);
             }
             $h = $test('cookie:' . $k, $v);
+            if ($h) {
+                return $h;
+            }
+        }
+        return null;
+    }
+    if ($in === 'file_name') {
+        foreach ($req['files'] as $fn) {
+            $h = $rx === null ? array('file_name', $fn) : $test('file_name', $fn);
             if ($h) {
                 return $h;
             }

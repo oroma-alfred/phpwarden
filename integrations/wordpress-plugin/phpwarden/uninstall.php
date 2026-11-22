@@ -15,7 +15,7 @@ if ( is_multisite() && ! is_main_site() ) {
 	$phpwarden_switched = true;
 }
 
-foreach ( array( 'phpwarden_token', 'phpwarden_api_base', 'phpwarden_remote_updates', 'phpwarden_status', 'phpwarden_log' ) as $phpwarden_option ) {
+foreach ( array( 'phpwarden_token', 'phpwarden_api_base', 'phpwarden_remote_updates', 'phpwarden_status', 'phpwarden_log', 'phpwarden_consent' ) as $phpwarden_option ) {
 	delete_option( $phpwarden_option );
 }
 delete_transient( 'phpwarden_sync_lock' );

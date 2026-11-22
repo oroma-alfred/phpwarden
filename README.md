@@ -6,6 +6,10 @@ exploited (CISA KEV, as of 2026-11-14). phpwarden puts those first, then sorts
 by EPSS probability, then CVSS — so a `composer.lock` with 30 findings tells
 you which one to fix today.
 
+**Watch it work:** [sign up to first fix, 84 seconds](https://phpwarden.io/demos/video/demo.mp4)
+(a client's WordPress site scanned, the exploited plugin updated, the report handed over) ·
+[agency tour, 2 minutes](https://phpwarden.io/partners#watch). Recorded live, nothing staged.
+
 It scans the PHP engine/FPM version, Composer dependencies, WordPress installs
 and your own PHP code, checks live sites from outside, and can block exploits
 inside PHP, against one bundled, offline advisory feed. Zero runtime dependencies

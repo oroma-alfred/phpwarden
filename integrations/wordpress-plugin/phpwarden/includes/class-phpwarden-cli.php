@@ -22,9 +22,13 @@ class PHPWarden_CLI {
 	 * <token>
 	 * : The project ingest token from your phpwarden dashboard.
 	 *
+	 * [--consent]
+	 * : Required. Confirms that you agree to send this site's software inventory
+	 * to the phpwarden service (see Settings > phpwarden for exactly what is sent).
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp phpwarden activate TOKEN
+	 *     wp phpwarden activate TOKEN --consent
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Flags.
@@ -32,14 +36,29 @@ class PHPWarden_CLI {
 	public function activate( $args, $assoc_args ) {
 		$this->require_main_site();
 
+		if ( empty( $assoc_args['consent'] ) ) {
+			WP_CLI::error( 'Add --consent to agree to send this site\'s software inventory to phpwarden. Nothing has been sent.' );
+		}
+
 		if ( PHPWarden_Settings::token_is_constant() ) {
 			WP_CLI::warning( 'PHPWARDEN_TOKEN is defined in wp-config.php; the token argument was ignored.' );
 		} elseif ( ! PHPWarden_Settings::set_token( isset( $args[0] ) ? $args[0] : '' ) ) {
 			WP_CLI::error( 'That does not look like a valid token.' );
 		}
 
+		PHPWarden_Settings::set_consent( true );
 		PHPWarden_Plugin::ensure_schedule();
 		$this->report( PHPWarden_Client::sync( 'cli' ) );
+	}
+
+	/**
+	 * Withdraw consent: stop all reports (the token is kept).
+	 */
+	public function disable() {
+		$this->require_main_site();
+		PHPWarden_Settings::set_consent( false );
+		PHPWarden_Plugin::ensure_schedule();
+		WP_CLI::success( 'Reports are off. Nothing will be sent until consent is given again.' );
 	}
 
 	/**
@@ -54,11 +73,13 @@ class PHPWarden_CLI {
 	 * Show configuration and the last sync result.
 	 */
 	public function status() {
+		$this->require_main_site();
 		$token  = PHPWarden_Settings::get_token();
 		$status = PHPWarden_Settings::get_status();
 		$next   = wp_next_scheduled( PHPWarden_Plugin::CRON_HOOK );
 
 		WP_CLI::line( 'Token:          ' . ( '' === $token ? '(not set)' : PHPWarden_Settings::mask_token( $token ) ) . ( PHPWarden_Settings::token_is_constant() ? ' (wp-config.php)' : '' ) );
+		WP_CLI::line( 'Consent:        ' . ( PHPWarden_Settings::has_consent() ? 'given' : 'not given (nothing is sent)' ) );
 		WP_CLI::line( 'API:            ' . PHPWarden_Settings::get_api_base() );
 		WP_CLI::line( 'Next report:    ' . ( $next ? gmdate( 'Y-m-d H:i:s', $next ) . ' UTC' : '(not scheduled)' ) );
 		if ( empty( $status['time'] ) ) {

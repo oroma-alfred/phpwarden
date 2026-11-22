@@ -23,8 +23,8 @@ ROUTER = ROOT / "integrations/php-shield/tests/router.php"
 bad = [(e["id"], "pos") for e in library.LIBRARY for r in e["pos"] if not matcher.match_rule(e, r)] + \
       [(e["id"], "neg") for e in library.LIBRARY for r in e["neg"] if matcher.match_rule(e, r)]
 check(f"library: {len(library.LIBRARY)} rules, every exploit-shape example matches and every near-miss does not", not bad)
-check("library has 25-40 entries, each with refs and a description",
-      25 <= len(library.LIBRARY) <= 40 and all(e["refs"] and e["description"] for e in library.LIBRARY))
+check("library has 25-80 entries, each with refs and a description",
+      25 <= len(library.LIBRARY) <= 80 and all(e["refs"] and e["description"] for e in library.LIBRARY))
 
 # ---- policy generation
 inv = {"composer": {"phpmailer/phpmailer": "5.2.16", "phpunit/phpunit": "5.6.2"},
@@ -97,9 +97,9 @@ else:
         h = dict(req.get("headers") or {})
         if req.get("cookies"):
             h["Cookie"] = "; ".join(f"{k}={v}" for k, v in req["cookies"].items())
-        body = (req.get("body") or "").encode("utf-8", "surrogateescape")
+        body, ctype = matcher.wire(req)             # multipart when the example uploads files
         if body:
-            h["Content-Type"] = req.get("ctype") or "application/octet-stream"
+            h["Content-Type"] = ctype
         c.putrequest(req.get("method", "GET"), req["uri"].replace(" ", "%20"), skip_accept_encoding=True)
         for k, v in h.items():
             c.putheader(k, v)

@@ -16,6 +16,7 @@ class PHPWarden_Plugin {
 
 	const CRON_HOOK   = 'phpwarden_sync';
 	const SINGLE_HOOK = 'phpwarden_sync_soon';
+	const DEBOUNCE    = 60;
 
 	/**
 	 * True while this plugin is being deactivated.
@@ -23,7 +24,6 @@ class PHPWarden_Plugin {
 	 * @var bool
 	 */
 	private static $deactivating = false;
-	const DEBOUNCE    = 60;
 
 	/**
 	 * Register hooks.
@@ -57,7 +57,7 @@ class PHPWarden_Plugin {
 	}
 
 	/**
-	 * Activation: schedule the twice-daily report.
+	 * Activation: schedule the twice-daily report (only once consent is given).
 	 */
 	public static function activate() {
 		self::ensure_schedule();
@@ -67,6 +67,14 @@ class PHPWarden_Plugin {
 	 * Make sure the recurring event exists (also covers network activation).
 	 */
 	public static function ensure_schedule() {
+		if ( ! PHPWarden_Settings::has_consent() ) {
+			foreach ( array( self::CRON_HOOK, self::SINGLE_HOOK ) as $hook ) {
+				if ( wp_next_scheduled( $hook ) ) {
+					wp_clear_scheduled_hook( $hook );
+				}
+			}
+			return;
+		}
 		if ( self::should_run() && ! wp_next_scheduled( self::CRON_HOOK ) ) {
 			wp_schedule_event( time() + 5 * MINUTE_IN_SECONDS, 'twicedaily', self::CRON_HOOK );
 		}
@@ -96,7 +104,7 @@ class PHPWarden_Plugin {
 	 * Debounced report after a plugin/theme change.
 	 */
 	public static function schedule_soon() {
-		if ( self::$deactivating || ! self::should_run() || '' === PHPWarden_Settings::get_token() ) {
+		if ( self::$deactivating || ! self::should_run() || ! PHPWarden_Settings::has_consent() || '' === PHPWarden_Settings::get_token() ) {
 			return;
 		}
 		if ( ! wp_next_scheduled( self::SINGLE_HOOK ) ) {

@@ -4,7 +4,7 @@ Tags: security, vulnerabilities, monitoring, inventory, cve
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,12 +30,13 @@ This plugin is **not a firewall and not a malware scanner**. It does not block r
 
 Each report contains exactly this, and nothing else:
 
-* The plugin's own agent version (for example `phpwarden-wp/1.0.0`).
+* The plugin's own agent version (for example `phpwarden-wp/1.2.0`).
 * The site address (`home_url()`).
 * The PHP version and PHP server API (for example `fpm-fcgi`).
 * The WordPress core version.
-* For every installed plugin: slug (directory name), main file path relative to the plugins directory, name, version, whether it is active, and the newer version WordPress knows of, if any.
+* For every installed plugin: slug (directory name, or for a single-file plugin its file name without .php), main file path relative to the plugins directory, name, version, whether it is active, and the newer version WordPress knows of, if any.
 * For every installed theme: slug (directory name), name, version, whether it is active, and the newer version WordPress knows of, if any.
+* `remote_updates: false`, a fixed value telling the service that this plugin never accepts actions from it.
 
 The project token is sent in the `Authorization` header to identify your project. No user accounts, e-mail addresses, post content, visitor data, file contents, database contents or secrets are sent. The plugin loads no external assets and contains no tracking.
 
@@ -48,27 +49,30 @@ Constants take precedence over the settings page and make the corresponding fiel
 
 = WP-CLI =
 
-    wp phpwarden activate <token>
-    wp phpwarden sync
+    wp phpwarden activate <token> --consent   # stores the token, records consent, sends a report
+    wp phpwarden sync                         # sends a report now (only if consent is given)
     wp phpwarden status
+    wp phpwarden disable                      # withdraws consent; nothing more is sent
 
 = Multisite =
 
-The plugin can be network-activated. It reports once for the whole network, from the network's main site, listing all installed plugins and themes. A plugin counts as active when it is network-active or active on the main site; plugins active only on other sites of the network are reported as inactive. Settings are on the main site (Settings → phpwarden) and require a network administrator.
+The plugin can be network-activated. It reports once for the whole network, from the network's main site, listing all installed plugins and themes. A plugin counts as active when it is network-active or active on the main site; plugins active only on other sites of the network are reported as inactive. Settings are on the main site (Settings > phpwarden) and require a network administrator.
 
 == External services ==
 
 This plugin connects to the phpwarden service at `https://app.phpwarden.io` (or the API base URL you configure). It is required for the plugin to do anything useful: the service matches your inventory against vulnerability data and shows the result in your dashboard.
 
-* **What is sent and when:** the inventory listed under "Data sent" above, together with your project token, twice a day, about a minute after plugin or theme changes, and when you press "Send report now".
-* **Nothing is sent** until you have entered a project token.
+* **Consent first:** nothing is sent until an administrator checks "I agree to send this site's software inventory to the phpwarden service" on Settings > phpwarden, or runs `wp phpwarden activate <token> --consent`. The box is unchecked by default. Defining `PHPWARDEN_TOKEN` in wp-config.php does not give consent on its own. Unchecking the box (or `wp phpwarden disable`) stops all reports.
+* **What is sent and when:** the inventory listed under "Data sent" above, together with your project token, twice a day, about a minute after plugin or theme changes, when you press "Send report now", and when you run `wp phpwarden activate` or `wp phpwarden sync`.
+* **Nothing is sent** without both consent and a project token.
+* **WordPress's own update check:** to report which plugins and themes have updates waiting, the plugin reads WordPress's cached update list. If that list is missing or more than 12 hours old, it first asks WordPress core to refresh it, which is the same request to api.wordpress.org that WordPress makes on its own schedule. This happens only when a report is being sent, so never without consent, and it is skipped when the site has turned off WordPress's update checks.
 * Service provider: phpwarden. [Terms of service](https://phpwarden.io/terms), [privacy policy](https://phpwarden.io/privacy).
 
 == Installation ==
 
 1. Install and activate the plugin.
 2. Create a project in your phpwarden dashboard and copy its token.
-3. Go to Settings → phpwarden, paste the token and save.
+3. Go to Settings > phpwarden, paste the token, check the consent box (it explains exactly what is sent) and save.
 4. Press "Send report now". The site appears in your dashboard.
 
 == Frequently Asked Questions ==
@@ -103,8 +107,16 @@ All plugin options (token, settings, status) and its scheduled events.
 
 == Changelog ==
 
+= 1.2.0 =
+* Nothing is sent until an administrator explicitly agrees: a new, unchecked consent box on the settings page (or `wp phpwarden activate <token> --consent`). This includes sites with the token set in wp-config.php.
+* The settings page says what is sent and where, with links to the terms and privacy policy.
+* New `wp phpwarden disable` to withdraw consent; `wp phpwarden status` shows the consent state.
+* Readme documents every field sent and every action that sends a report.
+* A notice on the Plugins screen when reports are off because consent has not been given yet (for example after upgrading from 1.1.0).
+* The WordPress update-list refresh is skipped on sites that have turned off WordPress's update checks.
+
 = 1.1.0 =
 * Report only. Removed the optional remote updates: the plugin never acts on the site for the service.
 
 = 1.0.0 =
-* Initial release: inventory reports, status box, optional remote updates, WP-CLI commands.
+* Initial release: inventory reports, status box, WP-CLI commands (it also had optional remote updates, removed in 1.1.0).
