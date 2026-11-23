@@ -4,7 +4,7 @@ Tags: security, vulnerabilities, updates, monitoring, inventory
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,7 +48,11 @@ If, and only if, you tick "Allow the phpwarden dashboard to update plugins and t
 * update an installed theme,
 * deactivate an installed plugin.
 
-Updates are performed by WordPress's own updater and install exactly the version WordPress.org offers for that plugin or theme. The plugin never downloads anything from an address supplied by phpwarden, ignores any other instruction, only acts on plugins and themes that are already installed, runs at most five commands per report, and never deactivates itself. Every command is recorded in a log shown on the settings page. While remote updates are disabled, any command returned by the service is ignored.
+Updates are performed by WordPress's own updater and install the version WordPress.org offers for that plugin or theme, or, when the dashboard asks for the lowest version that fixes an exploited vulnerability, that exact earlier release from downloads.wordpress.org (never newer than what WordPress offers). The plugin never downloads anything from an address supplied by phpwarden, ignores any other instruction, only acts on plugins and themes that are already installed, runs at most five commands per report, and never deactivates itself. Every command is recorded in a log shown on the settings page. While remote updates are disabled, any command returned by the service is ignored.
+
+= Health check and automatic rollback =
+
+Before each remote update the plugin copies the installed plugin or theme files to `wp-content/uploads/phpwarden-backups/` (protected from web access) and fetches the site's homepage and wp-admin once as an anonymous visitor. After the update it fetches them again. If either page no longer returns HTTP 200, shows a PHP fatal error, or the homepage is less than half its earlier size, the plugin puts the previous files back and reports "rolled back" with the reason. Only files are restored: the database is never read or changed by the rollback. The copy is deleted once the update is finished. This runs only for updates requested while remote updates are enabled.
 
 = Configuration in wp-config.php =
 
@@ -72,7 +76,7 @@ The plugin can be network-activated. It reports once for the whole network, from
 
 This plugin connects to the phpwarden service at `https://app.phpwarden.io` (or the API base URL you configure). It is required for the plugin to do anything useful: the service matches your inventory against vulnerability data and shows the result in your dashboard.
 
-* **What is sent and when:** the inventory listed under "Data sent" above, together with your project token, twice a day, about a minute after plugin or theme changes, and when you press "Send report now". When remote updates are enabled, the result of each requested update (success or failure, the version before and after, and an error message if any) is also sent.
+* **What is sent and when:** the inventory listed under "Data sent" above, together with your project token, twice a day, about a minute after plugin or theme changes, and when you press "Send report now". When remote updates are enabled, the result of each requested update (success or failure, the version before and after, the health check result, whether it was rolled back, and an error message if any) is also sent.
 * **Nothing is sent** until you have entered a project token.
 * Service provider: phpwarden. [Terms of service](https://phpwarden.io/terms), [privacy policy](https://phpwarden.io/privacy).
 
@@ -116,6 +120,10 @@ No. Reports are sent in the background by WP-Cron, not during visitor page loads
 All plugin options (token, settings, status, command log) and its scheduled events.
 
 == Changelog ==
+
+= 1.1.0 =
+* Remote updates: health check of the homepage and wp-admin after each update, with automatic file rollback on failure.
+* Remote updates: can install the lowest WordPress.org release that fixes an exploited vulnerability instead of the latest.
 
 = 1.0.0 =
 * Initial release: inventory reports, status box, optional remote updates, WP-CLI commands.

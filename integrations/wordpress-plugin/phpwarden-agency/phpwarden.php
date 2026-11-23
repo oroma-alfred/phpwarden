@@ -3,7 +3,7 @@
  * Plugin Name:       phpwarden (agency edition)
  * Plugin URI:        https://phpwarden.io/docs#wp-plugin
  * Description:       Reports the installed WordPress core, plugins, themes and PHP version to your phpwarden dashboard, which ranks vulnerabilities by real-world exploitation (CISA KEV, then EPSS). Optional, off-by-default remote updates.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Update URI:        https://phpwarden.io/phpwarden-wp-agency.zip
  * Requires at least: 5.8
  * Requires PHP:      7.4
@@ -20,11 +20,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PHPWARDEN_VERSION', '1.0.0' );
+define( 'PHPWARDEN_VERSION', '1.1.0' );
 define( 'PHPWARDEN_PLUGIN_FILE', __FILE__ );
 
 require_once __DIR__ . '/includes/class-phpwarden-settings.php';
 require_once __DIR__ . '/includes/class-phpwarden-inventory.php';
+require_once __DIR__ . '/includes/class-phpwarden-safe-update.php';
 require_once __DIR__ . '/includes/class-phpwarden-commands.php';
 require_once __DIR__ . '/includes/class-phpwarden-client.php';
 require_once __DIR__ . '/includes/class-phpwarden-plugin.php';

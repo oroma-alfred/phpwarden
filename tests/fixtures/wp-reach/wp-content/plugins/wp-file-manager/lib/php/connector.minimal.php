@@ -1,0 +1,1 @@
+<?php // elFinder connector stub

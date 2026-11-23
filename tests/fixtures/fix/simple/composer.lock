@@ -1,0 +1,33 @@
+{
+ "_readme": [
+  "fixture"
+ ],
+ "content-hash": "x",
+ "packages": [
+  {
+   "name": "laravel/framework",
+   "version": "v8.10.0",
+   "require": {
+    "php": ">=7.3",
+    "monolog/monolog": "^2.0"
+   }
+  },
+  {
+   "name": "monolog/monolog",
+   "version": "2.3.0",
+   "require": {
+    "php": ">=7.2"
+   }
+  }
+ ],
+ "packages-dev": [
+  {
+   "name": "facade/ignition",
+   "version": "2.4.0",
+   "require": {
+    "php": "^7.2.5|^8.0",
+    "monolog/monolog": "^2.0"
+   }
+  }
+ ]
+}

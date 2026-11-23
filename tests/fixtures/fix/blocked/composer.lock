@@ -1,0 +1,30 @@
+{
+ "_readme": [
+  "fixture"
+ ],
+ "content-hash": "x",
+ "packages": [
+  {
+   "name": "phpmailer/phpmailer",
+   "version": "v5.2.18",
+   "require": {
+    "php": ">=7.2"
+   }
+  },
+  {
+   "name": "acme/mailer-bridge",
+   "version": "1.0.3",
+   "require": {
+    "phpmailer/phpmailer": "5.2.18 || ~5.2.0,<5.2.19"
+   }
+  },
+  {
+   "name": "guzzlehttp/guzzle",
+   "version": "7.2.0",
+   "require": {
+    "php": "^7.2.5 || ^8.0"
+   }
+  }
+ ],
+ "packages-dev": []
+}

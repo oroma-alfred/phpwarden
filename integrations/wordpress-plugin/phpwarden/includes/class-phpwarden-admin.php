@@ -124,6 +124,7 @@ class PHPWarden_Admin {
 		}
 
 		PHPWarden_Settings::set_consent( ! empty( $_POST['phpwarden_consent'] ) );
+		PHPWarden_Settings::set_usage_consent( ! empty( $_POST['phpwarden_consent'] ) && ! empty( $_POST['phpwarden_usage_consent'] ) );
 		PHPWarden_Plugin::ensure_schedule();
 		wp_safe_redirect( self::page_url( 'saved' ) );
 		exit;
@@ -225,6 +226,13 @@ class PHPWarden_Admin {
 								<a href="https://phpwarden.io/terms" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Terms', 'phpwarden' ); ?></a> &middot;
 								<a href="https://phpwarden.io/privacy" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Privacy', 'phpwarden' ); ?></a>
 							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Usage names (optional)', 'phpwarden' ); ?></th>
+						<td>
+							<label><input type="checkbox" id="phpwarden_usage_consent" name="phpwarden_usage_consent" value="1" <?php checked( PHPWarden_Settings::has_usage_consent() ); ?> /> <?php esc_html_e( 'Also send the names of features in use, so phpwarden can mark findings that are likely not reachable on this site.', 'phpwarden' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Adds four lists of names to the report: shortcodes and blocks that appear in published posts, pages or widgets (only names of registered ones), registered REST API namespaces, and registered AJAX action names. Up to 2,000 recent published posts are read on this site to find the names; the content itself is never sent. Off by default, and only sent while the consent box above is also checked.', 'phpwarden' ); ?></p>
 						</td>
 					</tr>
 				</table>

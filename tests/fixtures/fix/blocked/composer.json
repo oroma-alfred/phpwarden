@@ -1,0 +1,7 @@
+{
+ "require": {
+  "acme/mailer-bridge": "^1.0",
+  "phpmailer/phpmailer": "^5.2",
+  "guzzlehttp/guzzle": "7.2.*"
+ }
+}

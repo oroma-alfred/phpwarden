@@ -70,7 +70,8 @@ class PHPWarden_Commands {
 			'id'     => '',
 			'action' => '',
 			'slug'   => '',
-			'target' => '',
+			'target'  => '',
+			'version' => '',
 		);
 		if ( true !== $remote_enabled ) {
 			$out['reason'] = 'remote_updates_disabled';
@@ -92,6 +93,14 @@ class PHPWarden_Commands {
 			return $out;
 		}
 		$out['action'] = $action;
+
+		if ( isset( $command['version'] ) && '' !== $command['version'] ) {
+			if ( 'deactivate_plugin' === $action || ! PHPWarden_Safe_Update::valid_version( $command['version'] ) ) {
+				$out['reason'] = 'bad_version';
+				return $out;
+			}
+			$out['version'] = $command['version'];
+		}
 
 		$slug = isset( $command['slug'] ) && is_string( $command['slug'] ) ? $command['slug'] : '';
 		if ( '' === $slug || strlen( $slug ) > 200 ) {
@@ -178,13 +187,80 @@ class PHPWarden_Commands {
 		require_once ABSPATH . 'wp-admin/includes/update.php';
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-		if ( 'update_plugin' === $cmd['action'] ) {
-			return self::update_plugin( $cmd['target'] );
+		if ( 'update_plugin' !== $cmd['action'] && 'update_theme' !== $cmd['action'] ) {
+			return self::result( false, '', '', 'unknown action' );
 		}
-		if ( 'update_theme' === $cmd['action'] ) {
-			return self::update_theme( $cmd['target'] );
+		$kind    = 'update_plugin' === $cmd['action'] ? 'plugin' : 'theme';
+		$version = isset( $cmd['version'] ) ? (string) $cmd['version'] : '';
+
+		// 1. Baseline, then a copy of the installed files. No backup, no update.
+		$before = PHPWarden_Safe_Update::probe();
+		$backup = PHPWarden_Safe_Update::backup( $kind, $cmd['target'] );
+		if ( is_wp_error( $backup ) ) {
+			return self::result( false, '', '', 'not updated: ' . $backup->get_error_message() );
 		}
-		return self::result( false, '', '', 'unknown action' );
+
+		// 2. The update itself, with WordPress's own upgrader.
+		$result = 'plugin' === $kind ? self::update_plugin( $cmd['target'], $version ) : self::update_theme( $cmd['target'], $version );
+
+		if ( ! $result['ok'] ) {
+			// A failed upgrade can leave the old files removed: put them back.
+			$gone = 'plugin' === $kind ? null === self::plugin_version( $cmd['target'] ) : ! wp_get_theme( $cmd['target'] )->exists();
+			if ( $gone && PHPWarden_Safe_Update::restore( $backup ) ) {
+				$result['message']     = 'rolled back: update failed (' . $result['message'] . ')';
+				$result['rolled_back'] = true;
+				$result['health']      = 'update failed';
+			}
+			PHPWarden_Safe_Update::discard( $backup );
+			return $result;
+		}
+
+		// 3. Health check. On failure, restore the previous files (never the database).
+		$health           = PHPWarden_Safe_Update::evaluate( $before, PHPWarden_Safe_Update::probe() );
+		$result['health'] = $health;
+		if ( 'ok' !== $health ) {
+			$restored              = PHPWarden_Safe_Update::restore( $backup );
+			$result['ok']          = false;
+			$result['rolled_back'] = $restored;
+			$result['message']     = $restored ? 'rolled back: ' . $health : 'health check failed (' . $health . ') and the rollback failed';
+			$after                 = 'plugin' === $kind ? self::plugin_version( $cmd['target'] ) : (string) wp_get_theme( $cmd['target'] )->get( 'Version' );
+			$result['to']          = null === $after ? '' : $after;
+		}
+		PHPWarden_Safe_Update::discard( $backup );
+		return $result;
+	}
+
+	/**
+	 * While an exact version is being installed, point WordPress's update data at
+	 * that version on WordPress.org.
+	 *
+	 * @param string $transient update_plugins|update_themes.
+	 * @param string $key       Local plugin file or theme stylesheet.
+	 * @param string $kind      plugin|theme.
+	 * @param string $version   Exact version.
+	 * @return callable|null The filter to remove afterwards, or null when not applicable.
+	 */
+	private static function pin_version( $transient, $key, $kind, $version ) {
+		$slug = 'plugin' === $kind ? PHPWarden_Inventory::plugin_slug( $key ) : $key;
+		$url  = PHPWarden_Safe_Update::package_url( $kind, $slug, $version );
+		if ( '' === $url ) {
+			return null;
+		}
+		$filter = function ( $value ) use ( $key, $kind, $version, $url ) {
+			if ( is_object( $value ) && isset( $value->response[ $key ] ) ) {
+				if ( 'plugin' === $kind && is_object( $value->response[ $key ] ) ) {
+					$value->response[ $key ]              = clone $value->response[ $key ];
+					$value->response[ $key ]->new_version = $version;
+					$value->response[ $key ]->package     = $url;
+				} elseif ( is_array( $value->response[ $key ] ) ) {
+					$value->response[ $key ]['new_version'] = $version;
+					$value->response[ $key ]['package']     = $url;
+				}
+			}
+			return $value;
+		};
+		add_filter( 'site_transient_' . $transient, $filter, 99 );
+		return $filter;
 	}
 
 	/**
@@ -193,7 +269,7 @@ class PHPWarden_Commands {
 	 * @param string $local_file Key of get_plugins().
 	 * @return array
 	 */
-	private static function update_plugin( $local_file ) {
+	private static function update_plugin( $local_file, $version = '' ) {
 		$from = self::plugin_version( $local_file );
 		if ( null === $from ) {
 			return self::result( false, '', '', 'plugin is not installed' );
@@ -204,10 +280,21 @@ class PHPWarden_Commands {
 			return self::result( false, $from, $from, 'no update available from WordPress' );
 		}
 
+		$pin = null;
+		if ( '' !== $version && $version !== $offered ) {
+			if ( version_compare( $version, $from, '<=' ) || version_compare( $version, $offered, '>' ) ) {
+				return self::result( false, $from, $from, 'requested version ' . $version . ' is not between the installed and the offered version' );
+			}
+			$pin = self::pin_version( 'update_plugins', $local_file, 'plugin', $version );
+		}
+
 		$skin     = new Automatic_Upgrader_Skin();
 		$upgrader = new Plugin_Upgrader( $skin );
 		$results  = $upgrader->bulk_upgrade( array( $local_file ) );
 		$outcome  = is_array( $results ) && isset( $results[ $local_file ] ) ? $results[ $local_file ] : false;
+		if ( $pin ) {
+			remove_filter( 'site_transient_update_plugins', $pin, 99 );
+		}
 
 		wp_clean_plugins_cache( false );
 		$to = self::plugin_version( $local_file );
@@ -222,7 +309,7 @@ class PHPWarden_Commands {
 	 * @param string $local_slug Key of wp_get_themes().
 	 * @return array
 	 */
-	private static function update_theme( $local_slug ) {
+	private static function update_theme( $local_slug, $version = '' ) {
 		$theme = wp_get_theme( $local_slug );
 		if ( ! $theme->exists() ) {
 			return self::result( false, '', '', 'theme is not installed' );
@@ -234,10 +321,21 @@ class PHPWarden_Commands {
 			return self::result( false, $from, $from, 'no update available from WordPress' );
 		}
 
+		$pin = null;
+		if ( '' !== $version && $version !== $offered ) {
+			if ( version_compare( $version, $from, '<=' ) || version_compare( $version, $offered, '>' ) ) {
+				return self::result( false, $from, $from, 'requested version ' . $version . ' is not between the installed and the offered version' );
+			}
+			$pin = self::pin_version( 'update_themes', $local_slug, 'theme', $version );
+		}
+
 		$skin     = new Automatic_Upgrader_Skin();
 		$upgrader = new Theme_Upgrader( $skin );
 		$results  = $upgrader->bulk_upgrade( array( $local_slug ) );
 		$outcome  = is_array( $results ) && isset( $results[ $local_slug ] ) ? $results[ $local_slug ] : false;
+		if ( $pin ) {
+			remove_filter( 'site_transient_update_themes', $pin, 99 );
+		}
 
 		wp_clean_themes_cache();
 		$to = (string) wp_get_theme( $local_slug )->get( 'Version' );

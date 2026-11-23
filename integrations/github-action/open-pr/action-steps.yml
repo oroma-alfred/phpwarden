@@ -1,0 +1,48 @@
+# Staged for oroma-alfred/phpwarden-action. NOT live: the Marketplace action
+# lives in its own repo and is updated only with Oroma's OK.
+#
+# Merge into that repo's action.yml: the input goes under `inputs:`, the step
+# goes at the end of `runs.steps:` (after phpwarden is installed). It is off by
+# default, so existing users see no change.
+
+inputs:
+  open-pr:
+    description: >-
+      "true" opens one pull request with the minimal Composer bumps for
+      exploited (CISA KEV) findings only. Needs `contents: write` and
+      `pull-requests: write` permissions and composer on the runner.
+    required: false
+    default: "false"
+  lockfile:
+    description: Path to composer.lock
+    required: false
+    default: composer.lock
+
+runs:
+  using: composite
+  steps:
+    - name: phpwarden minimal fix PR
+      if: ${{ inputs.open-pr == 'true' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        LOCKFILE: ${{ inputs.lockfile }}
+      run: |
+        set -euo pipefail
+        dir="$(dirname "$LOCKFILE")"
+        branch="phpwarden/minimal-fix-${GITHUB_RUN_ID}"
+        body="$RUNNER_TEMP/phpwarden-fix.md"
+        # --only kev: exploited findings only. Exit 1 just means findings remain.
+        phpwarden fix "$LOCKFILE" --only kev --packagist --apply --pr-body "$body" || true
+        if git diff --quiet -- "$dir/composer.lock" "$dir/composer.json"; then
+          echo "phpwarden: no exploited findings with a clean minimal fix; no PR opened."
+          exit 0
+        fi
+        git config user.name "phpwarden[bot]"
+        git config user.email "phpwarden-bot@users.noreply.github.com"
+        git checkout -b "$branch"
+        git add "$dir/composer.lock" "$dir/composer.json"
+        git commit -m "fix(deps): minimal upgrades for exploited vulnerabilities (phpwarden)"
+        git push origin "$branch"
+        gh pr create --title "Minimal fix for exploited Composer vulnerabilities" \
+          --body-file "$body" --head "$branch" --base "${GITHUB_BASE_REF:-${GITHUB_REF_NAME}}"

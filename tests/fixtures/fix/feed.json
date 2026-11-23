@@ -1,0 +1,107 @@
+{
+ "feed_version": "test-fix",
+ "channel": "test",
+ "generated": "2026-11-23",
+ "cves": [],
+ "wp_advisories": [],
+ "composer_advisories": [
+  {
+   "package": "facade/ignition",
+   "cve": "CVE-2021-3129",
+   "title": "facade/ignition CVE-2021-3129",
+   "cvss": 9.8,
+   "severity": "critical",
+   "affected": ">=2.0.0,<2.5.2|>=1.7.0,<1.16.14",
+   "fixed": [
+    "2.5.2",
+    "1.16.14"
+   ],
+   "known_exploited": true,
+   "references": [],
+   "epss": 0.94
+  },
+  {
+   "package": "phpmailer/phpmailer",
+   "cve": "CVE-2016-10033",
+   "title": "phpmailer/phpmailer CVE-2016-10033",
+   "cvss": 9.8,
+   "severity": "critical",
+   "affected": ">=5.0.0,<5.2.20",
+   "fixed": [
+    "5.2.20"
+   ],
+   "known_exploited": true,
+   "references": [],
+   "epss": 0.97
+  },
+  {
+   "package": "guzzlehttp/guzzle",
+   "cve": "CVE-2099-0001",
+   "title": "guzzlehttp/guzzle CVE-2099-0001",
+   "cvss": 9.8,
+   "severity": "critical",
+   "affected": ">=7.0.0,<7.4.5|>=6.0.0,<6.5.8",
+   "fixed": [
+    "6.5.8",
+    "7.4.5"
+   ],
+   "known_exploited": false,
+   "references": [],
+   "epss": 0.62
+  },
+  {
+   "package": "guzzlehttp/guzzle",
+   "cve": "CVE-2099-0002",
+   "title": "guzzlehttp/guzzle CVE-2099-0002",
+   "cvss": 5.0,
+   "severity": "critical",
+   "affected": ">=7.0.0,<7.4.5",
+   "fixed": [
+    "7.4.5"
+   ],
+   "known_exploited": false,
+   "references": [],
+   "epss": 0.01
+  },
+  {
+   "package": "acme/legacy",
+   "cve": "CVE-2099-0003",
+   "title": "acme/legacy CVE-2099-0003",
+   "cvss": 9.8,
+   "severity": "critical",
+   "affected": "<2.1.0",
+   "fixed": [
+    "2.1.0"
+   ],
+   "known_exploited": true,
+   "references": [],
+   "epss": 0.4
+  },
+  {
+   "package": "acme/abandoned",
+   "cve": "CVE-2099-0004",
+   "title": "acme/abandoned CVE-2099-0004",
+   "cvss": 9.8,
+   "severity": "critical",
+   "affected": "<=3.0.0",
+   "fixed": [],
+   "known_exploited": true,
+   "references": [],
+   "epss": null
+  },
+  {
+   "package": "monolog/monolog",
+   "cve": "CVE-2099-0005",
+   "title": "monolog/monolog CVE-2099-0005",
+   "cvss": 6.1,
+   "severity": "critical",
+   "affected": ">=2.0.0,<2.3.5",
+   "fixed": [
+    "2.3.5"
+   ],
+   "known_exploited": false,
+   "references": [],
+   "epss": 0.02
+  }
+ ]
+}

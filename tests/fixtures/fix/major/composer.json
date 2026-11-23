@@ -1,0 +1,6 @@
+{
+ "require": {
+  "acme/legacy": "^1.2",
+  "acme/abandoned": "^3.0"
+ }
+}

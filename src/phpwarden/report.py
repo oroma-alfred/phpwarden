@@ -60,8 +60,14 @@ def _rows_from_doc(host: str, doc: dict) -> List[Row]:
                                 f"{f['slug']} {f.get('version') or ''} / {f['cve']}",
                                 _sev(f.get("severity")), _num(f.get("cvss")), "EXPOSED",
                                 str(f.get("title") or ""), _fixed(f.get("fixed")),
-                                bool(f.get("known_exploited")), _fnum(f.get("epss"))))
+                                bool(f.get("known_exploited")), _fnum(f.get("epss")),
+                                _wp_reach(f.get("reachability"))))
     return rows
+
+
+def _wp_reach(d) -> str:
+    from phpwarden.wp_reach import encode_dict
+    return encode_dict(d)
 
 
 _HOST_SUFFIX = re.compile(r"[-_.](deps|scan|wp|wordpress|detect)$", re.I)

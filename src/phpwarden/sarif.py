@@ -110,7 +110,9 @@ def wordpress(doc: dict) -> dict:
         results.append(_result(rid, level(f.get("severity"), f.get("known_exploited"), f.get("epss")),
                                text, f"{root}/{where}", 1,
                                {"slug": f["slug"], "version": f.get("version"),
-                                "known_exploited": bool(f.get("known_exploited")), "epss": f.get("epss")}))
+                                "known_exploited": bool(f.get("known_exploited")), "epss": f.get("epss"),
+                                **({"reachability": f["reachability"].get("status")}
+                                   if isinstance(f.get("reachability"), dict) else {})}))
     return _doc(results, rules)
 
 

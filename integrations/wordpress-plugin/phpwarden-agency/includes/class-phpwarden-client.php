@@ -102,6 +102,7 @@ class PHPWarden_Client {
 					'from'    => $result['from'],
 					'to'      => $result['to'],
 					'message' => $result['message'],
+					'health'  => isset( $result['health'] ) ? $result['health'] : '',
 				)
 			);
 

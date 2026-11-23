@@ -3,7 +3,7 @@
  * Plugin Name:       phpwarden
  * Plugin URI:        https://phpwarden.io/docs#wp-plugin
  * Description:       Reports the installed WordPress core, plugins, themes and PHP version to your phpwarden dashboard, which ranks vulnerabilities by real-world exploitation (CISA KEV, then EPSS). Report only: it never performs actions on the site for the service.
- * Version:           1.2.0
+ * Version:           1.3.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            phpwarden
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PHPWARDEN_VERSION', '1.2.0' );
+define( 'PHPWARDEN_VERSION', '1.3.0' );
 define( 'PHPWARDEN_PLUGIN_FILE', __FILE__ );
 
 require_once __DIR__ . '/includes/class-phpwarden-settings.php';

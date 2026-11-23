@@ -87,6 +87,7 @@ class T_Theme {
 $base = dirname( __DIR__ ) . '/phpwarden-agency/includes/';
 require $base . 'class-phpwarden-settings.php';
 require $base . 'class-phpwarden-inventory.php';
+require $base . 'class-phpwarden-safe-update.php';
 require $base . 'class-phpwarden-commands.php';
 
 $GLOBALS['t_pass'] = 0;
@@ -279,7 +280,7 @@ same( 'validate: non-string file rejected', false, $v['valid'] );
 $v = $val( array( 'id' => 'c_1', 'action' => 'update_theme', 'slug' => 0 ) );
 same( 'validate: non-string slug rejected', false, $v['valid'] );
 $v = $val( array_merge( $good, array( 'url' => 'https://evil.example/x.zip', 'package' => 'https://evil.example/x.zip' ) ) );
-same( 'validate: extra server fields (url/package) are dropped', array( 'valid', 'reason', 'id', 'action', 'slug', 'target' ), array_keys( $v ) );
+same( 'validate: extra server fields (url/package) are dropped', array( 'valid', 'reason', 'id', 'action', 'slug', 'target', 'version' ), array_keys( $v ) );
 
 foreach ( array( '../c', 'c/1', 'c 1', '', str_repeat( 'a', 65 ), 12 ) as $id ) {
 	$v = $val( array_merge( $good, array( 'id' => $id ) ) );
@@ -353,5 +354,42 @@ foreach ( $out as $line ) {
 	}
 }
 check( 'constants: child process passed', 0 === $rc );
+
+// --- safe exploited-only updates: version pin, health check rules -----------
+check( 'version: plain dotted', PHPWarden_Safe_Update::valid_version( '4.2.1' ) );
+check( 'version: rejects path tricks', ! PHPWarden_Safe_Update::valid_version( '1.0/../../x' ) );
+check( 'version: rejects a URL', ! PHPWarden_Safe_Update::valid_version( 'https://evil.test/x.zip' ) );
+check( 'version: rejects non-strings', ! PHPWarden_Safe_Update::valid_version( array( '1' ) ) );
+same( 'package: always downloads.wordpress.org', 'https://downloads.wordpress.org/plugin/akismet.5.3.1.zip', PHPWarden_Safe_Update::package_url( 'plugin', 'akismet', '5.3.1' ) );
+same( 'package: theme', 'https://downloads.wordpress.org/theme/astra.4.1.0.zip', PHPWarden_Safe_Update::package_url( 'theme', 'astra', '4.1.0' ) );
+same( 'package: bad slug gives nothing', '', PHPWarden_Safe_Update::package_url( 'plugin', '../x', '1.0' ) );
+same( 'package: bad kind gives nothing', '', PHPWarden_Safe_Update::package_url( 'core', 'wordpress', '6.5' ) );
+check( 'fatal: WordPress critical-error page', PHPWarden_Safe_Update::has_fatal( '<p>There has been a critical error on this website.</p>' ) );
+check( 'fatal: display_errors output', PHPWarden_Safe_Update::has_fatal( '<b>Fatal error</b>:  Uncaught Error in x.php' ) );
+check( 'fatal: normal page is fine', ! PHPWarden_Safe_Update::has_fatal( '<html><body>Welcome, no errors here</body></html>' ) );
+$good = array( 'home' => array( 'code' => 200, 'len' => 40000, 'fatal' => false ), 'admin' => array( 'code' => 200, 'len' => 5000, 'fatal' => false ) );
+same( 'health: unchanged site is ok', 'ok', PHPWarden_Safe_Update::evaluate( $good, $good ) );
+$a = $good; $a['home']['code'] = 500;
+same( 'health: homepage 500 fails', 'homepage returned HTTP 500', PHPWarden_Safe_Update::evaluate( $good, $a ) );
+$a = $good; $a['admin']['code'] = 0;
+same( 'health: wp-admin unreachable fails', 'wp-admin did not respond', PHPWarden_Safe_Update::evaluate( $good, $a ) );
+$a = $good; $a['home']['fatal'] = true;
+same( 'health: new fatal fails', 'PHP fatal error on the homepage', PHPWarden_Safe_Update::evaluate( $good, $a ) );
+$a = $good; $a['home']['len'] = 9000;
+same( 'health: drastic shrink fails', 'homepage shrank from 40000 to 9000 bytes', PHPWarden_Safe_Update::evaluate( $good, $a ) );
+$a = $good; $a['home']['len'] = 30000;
+same( 'health: modest shrink is ok', 'ok', PHPWarden_Safe_Update::evaluate( $good, $a ) );
+$b = $good; $b['home']['code'] = 503; $a = $good; $a['home']['code'] = 503;
+same( 'health: a page already broken before is not blamed on the update', 'ok', PHPWarden_Safe_Update::evaluate( $b, $a ) );
+$b = $good; $b['home']['len'] = 300; $a = $good; $a['home']['len'] = 10;
+same( 'health: tiny baseline skips the size rule', 'ok', PHPWarden_Safe_Update::evaluate( $b, $a ) );
+$v = PHPWarden_Commands::validate( array( 'id' => 'c_1', 'action' => 'update_plugin', 'slug' => 'akismet', 'version' => '5.3.1' ), true, array( 'akismet/akismet.php' ), array() );
+same( 'validate: exact version passes through', array( true, '5.3.1' ), array( $v['valid'], $v['version'] ) );
+$v = PHPWarden_Commands::validate( array( 'id' => 'c_1', 'action' => 'update_plugin', 'slug' => 'akismet', 'version' => 'http://x/y.zip' ), true, array( 'akismet/akismet.php' ), array() );
+same( 'validate: a URL as version is rejected', array( false, 'bad_version' ), array( $v['valid'], $v['reason'] ) );
+$v = PHPWarden_Commands::validate( array( 'id' => 'c_1', 'action' => 'deactivate_plugin', 'slug' => 'akismet', 'version' => '1.0' ), true, array( 'akismet/akismet.php' ), array() );
+same( 'validate: deactivate takes no version', 'bad_version', $v['reason'] );
+$v = PHPWarden_Commands::validate( array( 'id' => 'c_1', 'action' => 'update_plugin', 'slug' => 'akismet', 'version' => '5.3.1' ), false, array( 'akismet/akismet.php' ), array() );
+same( 'validate: remote updates off still wins', 'remote_updates_disabled', $v['reason'] );
 
 finish();

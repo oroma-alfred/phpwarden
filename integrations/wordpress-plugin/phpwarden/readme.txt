@@ -4,7 +4,7 @@ Tags: security, vulnerabilities, monitoring, inventory, cve
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,6 +13,8 @@ Reports installed plugins, themes, WordPress and PHP versions to phpwarden, whic
 == Description ==
 
 phpwarden connects a WordPress site to a [phpwarden](https://phpwarden.io/) project.
+
+https://www.youtube.com/watch?v=eBR4--6SfsY
 
 The plugin reports which components are installed. Your phpwarden dashboard matches them against known vulnerabilities and ranks the results by real-world exploitation: first whether a vulnerability is in the CISA Known Exploited Vulnerabilities (KEV) catalog, then by its EPSS score. You see what to patch first instead of a flat list of CVEs.
 
@@ -30,13 +32,14 @@ This plugin is **not a firewall and not a malware scanner**. It does not block r
 
 Each report contains exactly this, and nothing else:
 
-* The plugin's own agent version (for example `phpwarden-wp/1.2.0`).
+* The plugin's own agent version (for example `phpwarden-wp/1.3.0`).
 * The site address (`home_url()`).
 * The PHP version and PHP server API (for example `fpm-fcgi`).
 * The WordPress core version.
 * For every installed plugin: slug (directory name, or for a single-file plugin its file name without .php), main file path relative to the plugins directory, name, version, whether it is active, and the newer version WordPress knows of, if any.
 * For every installed theme: slug (directory name), name, version, whether it is active, and the newer version WordPress knows of, if any.
 * `remote_updates: false`, a fixed value telling the service that this plugin never accepts actions from it.
+* Only if you also check the separate, optional "Usage names" box: `usage`, four lists of names (no content) used to mark findings that are likely not reachable on your site. They are: registered shortcodes and blocks that appear in published posts, pages or widgets (up to 2,000 recent published posts are read on your site to find them), registered REST API namespaces, and registered AJAX action names, plus the number of posts read. At most 300 names per list.
 
 The project token is sent in the `Authorization` header to identify your project. No user accounts, e-mail addresses, post content, visitor data, file contents, database contents or secrets are sent. The plugin loads no external assets and contains no tracking.
 
@@ -106,6 +109,9 @@ No. Reports are sent in the background by WP-Cron, not during visitor page loads
 All plugin options (token, settings, status) and its scheduled events.
 
 == Changelog ==
+
+= 1.3.0 =
+* New optional "Usage names" setting, off by default and separate from the main consent: also sends the names (never content) of shortcodes and blocks used in published content, registered REST namespaces and registered AJAX actions, so the dashboard can tell which findings are likely not reachable on this site. Still report only.
 
 = 1.2.0 =
 * Nothing is sent until an administrator explicitly agrees: a new, unchecked consent box on the settings page (or `wp phpwarden activate <token> --consent`). This includes sites with the token set in wp-config.php.

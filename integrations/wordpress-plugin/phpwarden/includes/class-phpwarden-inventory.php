@@ -175,7 +175,7 @@ class PHPWarden_Inventory {
 		}
 		$active_themes = array_values( array_unique( array( (string) get_stylesheet(), (string) get_template() ) ) );
 
-		return array(
+		$payload = array(
 			'agent'          => 'phpwarden-wp/' . PHPWARDEN_VERSION,
 			'site_url'       => (string) home_url(),
 			'php'            => array(
@@ -197,6 +197,122 @@ class PHPWarden_Inventory {
 			),
 			'remote_updates' => false, // report-only plugin: never runs commands.
 		);
+		if ( PHPWarden_Settings::has_usage_consent() ) {
+			$payload['usage'] = self::collect_usage();
+		}
+		return $payload;
+	}
+
+	/**
+	 * Most published posts read for shortcode and block names.
+	 */
+	const USAGE_POSTS = 2000;
+
+	/**
+	 * Most names sent per list.
+	 */
+	const USAGE_NAMES = 300;
+
+	/**
+	 * Names in use on this site, for reachability. Read-only: names only, never content.
+	 *
+	 * @return array
+	 */
+	public static function collect_usage() {
+		global $wpdb, $shortcode_tags, $wp_filter;
+
+		$texts = array();
+		$posts = 0;
+		for ( $offset = 0; $offset < self::USAGE_POSTS; $offset += 200 ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- read-only, twice a day, names extracted below and content discarded.
+			$batch = $wpdb->get_col( $wpdb->prepare( "SELECT post_content FROM {$wpdb->posts} WHERE post_status = 'publish' ORDER BY ID DESC LIMIT %d OFFSET %d", 200, $offset ) );
+			if ( empty( $batch ) ) {
+				break;
+			}
+			$posts += count( $batch );
+			$texts  = array_merge( $texts, $batch );
+		}
+		foreach ( array( 'widget_text', 'widget_block', 'widget_custom_html' ) as $opt ) {
+			$texts[] = wp_json_encode( get_option( $opt, array() ) );
+		}
+
+		$namespaces = array();
+		if ( function_exists( 'rest_get_server' ) ) {
+			$namespaces = rest_get_server()->get_namespaces();
+		}
+		$blocks = array();
+		if ( class_exists( 'WP_Block_Type_Registry' ) ) {
+			$blocks = array_keys( WP_Block_Type_Registry::get_instance()->get_all_registered() );
+		}
+
+		$usage          = self::build_usage(
+			$texts,
+			is_array( $shortcode_tags ) ? array_keys( $shortcode_tags ) : array(),
+			$blocks,
+			$namespaces,
+			is_array( $wp_filter ) ? array_keys( $wp_filter ) : array()
+		);
+		$usage['posts'] = $posts;
+		return $usage;
+	}
+
+	/**
+	 * Build the usage field from raw inputs (pure, for tests).
+	 *
+	 * @param string[] $texts      Published post content and widget settings. Only scanned, never returned.
+	 * @param string[] $shortcodes Registered shortcode tags.
+	 * @param string[] $blocks     Registered block names.
+	 * @param string[] $namespaces Registered REST namespaces.
+	 * @param string[] $hooks      Registered action hook names.
+	 * @return array
+	 */
+	public static function build_usage( array $texts, array $shortcodes, array $blocks, array $namespaces, array $hooks ) {
+		$seen_sc = array();
+		$seen_bl = array();
+		foreach ( $texts as $text ) {
+			$text = (string) $text;
+			if ( preg_match_all( '/\\[([A-Za-z0-9_\\-]+)/', $text, $m ) ) {
+				foreach ( $m[1] as $tag ) {
+					$seen_sc[ $tag ] = true;
+				}
+			}
+			if ( preg_match_all( '#<!--\\s+wp:([a-z0-9-]+/[a-z0-9-]+)#', str_replace( '\\/', '/', $text ), $m ) ) {
+				foreach ( $m[1] as $name ) {
+					$seen_bl[ $name ] = true;
+				}
+			}
+		}
+		$ajax = array();
+		foreach ( $hooks as $hook ) {
+			if ( preg_match( '/^wp_ajax_(?:nopriv_)?([A-Za-z0-9_\\-]+)$/', (string) $hook, $m ) ) {
+				$ajax[ $m[1] ] = true;
+			}
+		}
+		return array(
+			'shortcodes_used' => self::names( array_intersect( array_map( 'strval', $shortcodes ), array_keys( $seen_sc ) ) ),
+			'blocks_used'     => self::names( array_intersect( array_map( 'strval', $blocks ), array_keys( $seen_bl ) ) ),
+			'rest_namespaces' => self::names( $namespaces ),
+			'ajax_actions'    => self::names( array_keys( $ajax ) ),
+		);
+	}
+
+	/**
+	 * Sorted, unique, length-limited identifier names.
+	 *
+	 * @param array $list Names.
+	 * @return string[]
+	 */
+	private static function names( $list ) {
+		$out = array();
+		foreach ( $list as $name ) {
+			$name = (string) $name;
+			if ( preg_match( '#^[A-Za-z0-9_\\-/.]{1,120}$#', $name ) ) {
+				$out[ $name ] = true;
+			}
+		}
+		$out = array_keys( $out );
+		sort( $out );
+		return array_slice( $out, 0, self::USAGE_NAMES );
 	}
 
 	/**

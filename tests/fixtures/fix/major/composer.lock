@@ -1,0 +1,23 @@
+{
+ "_readme": [
+  "fixture"
+ ],
+ "content-hash": "x",
+ "packages": [
+  {
+   "name": "acme/legacy",
+   "version": "1.4.0",
+   "require": {
+    "php": ">=7.2"
+   }
+  },
+  {
+   "name": "acme/abandoned",
+   "version": "3.0.0",
+   "require": {
+    "php": ">=7.2"
+   }
+  }
+ ],
+ "packages-dev": []
+}

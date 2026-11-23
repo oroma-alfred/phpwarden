@@ -2,6 +2,7 @@
 
   phpwarden scan                 assess this host against the whole CVE feed
   phpwarden deps composer.lock   Composer dependencies, with reachability
+  phpwarden fix composer.lock    smallest upgrades that remove exploited Composer findings
   phpwarden wordpress PATH       WordPress core, plugins and themes
   phpwarden integrity PATH       WordPress files against wordpress.org checksums
   phpwarden rules                WAF rules (ModSecurity / nginx) from the feed
@@ -18,6 +19,7 @@
 Exit codes (shared by every subcommand; usable as a CI gate):
   0   nothing applies / clean
   1   exposed (scan), vulnerable packages or components found (deps, wordpress),
+      exploited findings left to fix (fix),
       signature hits (detect), high/critical findings (code, probe), or the feed
       update failed
   2   possibly exposed (scan only)
@@ -300,7 +302,12 @@ def _deps(args):
                 r = reach.get(f.package, "unknown")
                 if r != "unknown":
                     print(f"      reachability: {r}")
-    return _combine(1 if findings else 0, _maybe_report(args, doc))
+    # The upload (not the printed/JSON output) carries the full name+version list,
+    # so the dashboard's supply-chain watch can check packages that have no CVE.
+    upload = dict(doc, packages=[{"name": str(p.get("name") or ""), "version": str(p.get("version") or "")}
+                                 for sec in ("packages", "packages-dev")
+                                 for p in (lock_doc.get(sec) or []) if isinstance(p, dict)][:5000])
+    return _combine(1 if findings else 0, _maybe_report(args, upload))
 
 
 def _sev(severity, cvss):
@@ -436,12 +443,24 @@ def _wordpress(args):
         return 4
     feed = FeedManager().current()
     findings = wp.scan(args.path, feed)
+    reach_notes = []
+    if not getattr(args, "no_reachability", False):
+        try:
+            from phpwarden import wp_reach
+            st = wp_reach.load_inventory(args.inventory) if getattr(args, "inventory", None) else None
+            findings, st = wp_reach.apply(args.path, findings, st)
+            reach_notes = [f"reachability source: {st.source}"] + st.notes
+        except Exception as e:  # noqa: BLE001  (reachability is best-effort)
+            reach_notes = [f"reachability skipped: {e.__class__.__name__}"]
     doc = {"wordpress": args.path, "host": args.host, "findings": [{
         "kind": f.component.kind, "slug": f.component.slug, "version": f.component.version,
         "cve": f.advisory.cve, "severity": f.advisory.severity, "cvss": f.advisory.cvss,
         "known_exploited": f.advisory.known_exploited, "ransomware": f.advisory.ransomware,
         "epss": f.advisory.epss, "epss_percentile": f.advisory.epss_percentile,
-        "title": f.advisory.title, "fixed": f.fixed} for f in findings]}
+        "title": f.advisory.title, "fixed": f.fixed,
+        **({"reachability": f.reach.to_dict()} if getattr(f, "reach", None) else {})} for f in findings]}
+    if reach_notes:
+        doc["reachability_notes"] = reach_notes
     if args.json:
         print(json.dumps(doc, indent=2))
     elif _fmt(args) == "sarif":
@@ -454,6 +473,11 @@ def _wordpress(args):
                   f"{_risk(f.advisory.known_exploited, f.advisory.epss, f.advisory.epss_percentile, f.advisory.ransomware)}")
             print(f"      {f.advisory.title}")
             print(f"      fixed in: {', '.join(f.fixed)}")
+            r = getattr(f, "reach", None)
+            if r:
+                print(f"      reachability: {r.status} ({'; '.join(r.reasons)})")
+        for n in reach_notes:
+            print(f"\n  note: {n}")
     return _combine(1 if findings else 0, _maybe_report(args, doc))
 
 
@@ -780,6 +804,94 @@ def _report(args):
     return 0
 
 
+def _fix(args):
+    """Minimal fix plan for exploited / likely-exploited Composer findings."""
+    from pathlib import Path as _P
+    from phpwarden import fix as fixmod
+    lp = _P(args.lockfile)
+    if not lp.is_file():
+        sys.stderr.write(f"error: lockfile not found: {args.lockfile}\n")
+        return 4
+    try:
+        lock_doc = json.loads(lp.read_text())
+    except ValueError as e:
+        sys.stderr.write(f"error: {args.lockfile} is not valid JSON: {e}\n")
+        return 4
+    if not isinstance(lock_doc, dict) or not any(k in lock_doc for k in ("packages", "packages-dev")):
+        sys.stderr.write(f"error: {args.lockfile} is not a composer.lock (no \"packages\" section)\n")
+        return 4
+    cj_path = _P(args.composer_json) if args.composer_json else lp.resolve().parent / "composer.json"
+    composer_json = None
+    if cj_path.is_file():
+        try:
+            composer_json = json.loads(cj_path.read_text())
+        except ValueError as e:
+            sys.stderr.write(f"error: {cj_path} is not valid JSON: {e}\n")
+            return 4
+    elif args.composer_json:
+        sys.stderr.write(f"error: composer.json not found: {args.composer_json}\n")
+        return 4
+    feed = FeedManager().current()
+    findings = scan_lock(args.lockfile, feed)
+    pk = None
+    if args.packagist or args.packagist_cache:
+        pk = fixmod.Packagist(cache_dir=args.packagist_cache, offline=not args.packagist)
+    fixes = fixmod.plan(findings, lock_doc, composer_json, pk, only=args.only)
+    cmds = fixmod.commands(fixes)
+    if args.pr_body:
+        try:
+            _P(args.pr_body).write_text(fixmod.pr_body(fixes, args.lockfile))
+        except OSError as e:
+            sys.stderr.write(f"error: cannot write {args.pr_body}: {e}\n")
+            return 4
+    if args.json:
+        print(json.dumps({"lockfile": args.lockfile, "feed": feed.feed_version,
+                          "composer_json": str(cj_path) if composer_json is not None else None,
+                          "only": args.only, "fixes": [f.to_dict() for f in fixes],
+                          "commands": cmds}, indent=2))
+    else:
+        scope = {"kev": "exploited (CISA KEV)", "likely": "exploited (CISA KEV) or likely exploited (EPSS >= 50%)",
+                 "all": "vulnerable"}[args.only]
+        if not fixes:
+            print(f"No {scope} Composer findings in {args.lockfile} (feed {feed.feed_version}). Nothing to fix.")
+        else:
+            print(f"Minimal fix plan for {args.lockfile}: {len(fixes)} {scope} package(s), exploited first.")
+            if composer_json is None:
+                print("  (no composer.json found next to the lockfile; root constraints not checked)")
+            for f in fixes:
+                tag = "KEV" if f.kev else (f"EPSS {f.epss * 100:.0f}%" if f.epss else "")
+                arrow = f"{f.installed} -> {f.target}" if f.target else f"{f.installed} -> (none)"
+                print(f"\n  {f.package}  {arrow}  [{f.status}]" + (f"  {tag}" if tag else ""))
+                print(f"      removes: {', '.join(f.cves)}")
+                if f.reason:
+                    print(f"      {'note' if f.status == fixmod.OK else 'why'}: {f.reason}")
+                if f.verified_release is False:
+                    print("      note: target is not a release listed on Packagist; check the version exists")
+            if cmds:
+                print("\nRun:")
+                for c in cmds:
+                    print(f"  {c}")
+            else:
+                print("\nNo fix can be applied automatically; see the reasons above.")
+            if pk and pk.errors:
+                print(f"\n  Packagist lookups failed for {len(pk.errors)} package(s); used the feed's fixed versions.")
+    if not fixes:
+        return 0
+    if args.apply:
+        if not cmds:
+            return 1
+        rc = fixmod.apply(fixes, lp.resolve().parent)
+        if rc == 127:
+            sys.stderr.write("error: composer not found on PATH; run the commands above yourself\n")
+            return 4
+        if rc:
+            sys.stderr.write(f"error: composer exited {rc}\n")
+            return 1
+        left = [f for f in fixes if f.status not in (fixmod.OK, fixmod.ROOT)]
+        return 1 if left else 0
+    return 1
+
+
 def main(argv=None):
     # _Parser exits 64 on usage errors (argparse's default 2 is "possibly
     # exposed"); add_subparsers() reuses the parent's class, so the subcommand
@@ -826,6 +938,28 @@ def main(argv=None):
     _report_args(dp)
     dp.set_defaults(func=_deps)
 
+    fx = sub.add_parser("fix", help="smallest upgrades that remove exploited Composer findings "
+                                    "(prints the exact composer command; --apply runs it)",
+                        description="For each exploited (CISA KEV) or likely exploited (EPSS >= 50%) "
+                                    "finding in composer.lock, pick the lowest fixed version in the "
+                                    "installed major, check it against composer.json and every locked "
+                                    "package's require/conflict, and print the composer command. A fix "
+                                    "that needs a major bump or conflicts is explained, never guessed. "
+                                    "Works offline; --packagist adds a cached check of released versions.")
+    fx.add_argument("lockfile")
+    fx.add_argument("--composer-json", metavar="FILE",
+                    help="root composer.json (default: next to the lockfile)")
+    fx.add_argument("--only", choices=["kev", "likely", "all"], default="likely",
+                    help="kev: CISA KEV only; likely: KEV or EPSS >= 50%% (default); all: every finding")
+    fx.add_argument("--packagist", action="store_true",
+                    help="look up released versions on Packagist (cached 24h in ~/.cache/phpwarden/packagist)")
+    fx.add_argument("--packagist-cache", metavar="DIR",
+                    help="Packagist cache dir; without --packagist only the cache is read (no network)")
+    fx.add_argument("--apply", action="store_true", help="run the composer commands (needs composer on PATH)")
+    fx.add_argument("--pr-body", metavar="FILE", help="write a Markdown pull request body for the plan")
+    fx.add_argument("--json", action="store_true", help="machine-readable JSON output")
+    fx.set_defaults(func=_fix)
+
     rl = sub.add_parser("rules", help="generate WAF blocking rules from the feed signatures")
     rl.add_argument("--format", choices=["modsecurity", "nginx"], default="modsecurity",
                     help="rule syntax (default: modsecurity)")
@@ -841,6 +975,10 @@ def main(argv=None):
     wpc.add_argument("path", help="path to the WordPress root")
     wpc.add_argument("--host", help="host label for fleet reports")
     wpc.add_argument("--json", action="store_true", help="machine-readable JSON output")
+    wpc.add_argument("--no-reachability", action="store_true",
+                     help="skip the active/shortcode/route checks (reads the database via wp-config.php)")
+    wpc.add_argument("--inventory", metavar="JSON",
+                     help="use a phpwarden WordPress plugin report for active/usage data instead of the database")
     _format_arg(wpc)
     _report_args(wpc)
     wpc.set_defaults(func=_wordpress)

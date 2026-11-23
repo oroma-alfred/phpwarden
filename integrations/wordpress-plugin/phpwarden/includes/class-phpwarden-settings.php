@@ -20,6 +20,7 @@ class PHPWarden_Settings {
 	const OPT_STATUS  = 'phpwarden_status';
 	const OPT_CONSENT = 'phpwarden_consent';
 	const OPT_LOG     = 'phpwarden_log'; // older versions only; removed on uninstall.
+	const OPT_USAGE   = 'phpwarden_usage_consent';
 	const DEFAULT_API = 'https://app.phpwarden.io';
 
 	/**
@@ -28,7 +29,7 @@ class PHPWarden_Settings {
 	 * @return string[]
 	 */
 	public static function option_names() {
-		return array( self::OPT_TOKEN, self::OPT_API, self::OPT_REMOTE, self::OPT_STATUS, self::OPT_LOG, self::OPT_CONSENT );
+		return array( self::OPT_TOKEN, self::OPT_API, self::OPT_REMOTE, self::OPT_STATUS, self::OPT_LOG, self::OPT_CONSENT, self::OPT_USAGE );
 	}
 
 	/* ---------- consent ---------- */
@@ -53,6 +54,30 @@ class PHPWarden_Settings {
 			update_option( self::OPT_CONSENT, '1', true ); // autoloaded: checked on every request.
 		} else {
 			delete_option( self::OPT_CONSENT );
+		}
+	}
+
+	/**
+	 * Whether an administrator also agreed to send usage names (shortcodes,
+	 * blocks, REST namespaces, AJAX action names) for reachability. Separate,
+	 * off by default, and only meaningful when the main consent is given.
+	 *
+	 * @return bool
+	 */
+	public static function has_usage_consent() {
+		return self::has_consent() && '1' === (string) get_option( self::OPT_USAGE, '' );
+	}
+
+	/**
+	 * Record or withdraw the usage-names consent.
+	 *
+	 * @param bool $on Consent given.
+	 */
+	public static function set_usage_consent( $on ) {
+		if ( $on ) {
+			update_option( self::OPT_USAGE, '1', false );
+		} else {
+			delete_option( self::OPT_USAGE );
 		}
 	}
 

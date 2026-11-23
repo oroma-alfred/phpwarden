@@ -158,14 +158,16 @@ def limits_for(inventory, rules=(), extra_paths=()):
 
 def build_policy(inventory, feed, site="", mode="log", log_path=None, max_log_bytes=5_000_000,
                  limits=True, limit_paths=(), trust_proxy=None, limits_store=None):
+    from phpwarden.shield import sameday
     rules, skipped = [], []
-    for e in LIBRARY:
+    for e in LIBRARY + sameday.load_rules():
         ok, why = rule_status(e, inventory, feed)
         if not ok:
             skipped.append({"id": e["id"], "cve": e.get("cve"), "reason": why})
             continue
         rules.append({"id": e["id"], "cve": e.get("cve"), "component": _component_label(e["target"]),
                       "description": e["description"], "why": why, "mode": "log",
+                      **({"sameday": {**e["sameday"], "new": sameday.is_new(e)}} if e.get("sameday") else {}),
                       **({"method": e["method"]} if e.get("method") else {}),
                       **({"path": e["path"]} if e.get("path") else {}),
                       "all": e.get("all", [])})
