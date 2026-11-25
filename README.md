@@ -231,6 +231,31 @@ The token comes from the project page in the dashboard; it can also be set as
 `PHPWARDEN_REPORT_TOKEN` (and the URL as `PHPWARDEN_REPORT_URL`). Local output
 is always printed first, so an unreachable dashboard never hides a finding.
 
+## Ask your AI assistant about your client sites (MCP)
+
+Agencies on the Team or Agency plan can connect phpwarden to Claude, Cursor,
+ChatGPT desktop or any other MCP client. The assistant can then answer from
+phpwarden's own data: which client sites have an actively exploited
+vulnerability, what to fix first on a site and to which version, which sites
+run a given plugin or CVE, what became exploited this week, and the facts for
+a client's monthly update. It is read-only: it cannot change anything.
+
+```json
+{
+  "mcpServers": {
+    "phpwarden": {
+      "command": "phpwarden",
+      "args": ["mcp"],
+      "env": { "PHPWARDEN_PARTNER_KEY": "pwp_..." }
+    }
+  }
+}
+```
+
+The partner key is in the dashboard under Settings, Agency. It stays in the
+local `phpwarden mcp` process; the assistant never sees it. Check the key and
+connection with `phpwarden mcp --check`.
+
 ## In CI
 
 **GitHub Actions** — the [phpwarden action](https://github.com/oroma-alfred/phpwarden-action)

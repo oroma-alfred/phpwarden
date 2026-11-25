@@ -791,6 +791,11 @@ def _integrity(args):
     return 1 if res.tampered else 0
 
 
+def _mcp(args):
+    from . import mcp
+    return mcp.main(args)
+
+
 def _report(args):
     rows = reportgen.load_rows(args.files)
     feed = FeedManager().current()
@@ -1088,6 +1093,12 @@ def main(argv=None):
     rp.add_argument("files", nargs="+", help="JSON files from scan/deps/wordpress --json")
     rp.add_argument("--out", help="write HTML to a file instead of stdout")
     rp.set_defaults(func=_report)
+
+    mc = sub.add_parser("mcp", help="MCP server for AI assistants (Claude, Cursor, ChatGPT): ask about your "
+                                    "client sites from phpwarden's data. Read-only; needs PHPWARDEN_PARTNER_KEY (Team plan)")
+    mc.add_argument("--api", metavar="URL", help="phpwarden server (default https://app.phpwarden.io)")
+    mc.add_argument("--check", action="store_true", help="test the key and connection, then exit")
+    mc.set_defaults(func=_mcp)
 
     args = p.parse_args(argv)
     if getattr(args, "format", None) == "json":   # --format json is --json

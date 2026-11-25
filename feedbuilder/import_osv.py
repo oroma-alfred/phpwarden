@@ -23,6 +23,7 @@ Usage:
   python3 -I import_osv.py <dir-of-osv-json> <out.json>
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -92,11 +93,34 @@ def _open_group(intro):
     return "*"
 
 
+_MD = re.compile(r"[*_`#>]+")
+_LINK = re.compile(r"\[([^\]]*)\]\([^)]*\)")
+_NOTE = re.compile(r"^(update|note|edit|correction|changelog)\b", re.I)
+
+
+def _title_from_details(details, n=120):
+    """A title for a record that has no summary: the first sentence of the first
+    real paragraph of `details`, in plain text. Skips markdown headings and
+    italic or bold notes such as "*Update:* exploited since ..." that some
+    advisories (Drupal's, for example) put above the description."""
+    for para in re.split(r"\n\s*\n", details or ""):
+        para = para.strip()
+        if not para or para.startswith("#"):
+            continue
+        text = _MD.sub("", _LINK.sub(r"\1", para))
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text or _NOTE.match(text):
+            continue
+        sentence = re.split(r"(?<=[.!?])\s", text, maxsplit=1)[0]
+        return sentence if len(sentence) <= n else sentence[: n - 3].rstrip() + "..."
+    return ""
+
+
 def convert(doc):
     if doc.get("withdrawn"):
         return []
     cve = _cve_id(doc)
-    title = (doc.get("summary") or (doc.get("details") or "")[:120] or "").strip()
+    title = (doc.get("summary") or _title_from_details(doc.get("details")) or "").strip()
     refs = [r["url"] for r in (doc.get("references") or []) if r.get("url")][:3]
     score, severity = cvss.derive(doc.get("severity"),
                                   (doc.get("database_specific") or {}).get("severity"))
